@@ -68,7 +68,7 @@ public class GA<E> extends MLMethod<E> {
 
     @Override
     protected void doIteration() {
-        sortCandidates();
+//        sortCandidates();
         List<Candidate<E>> elites = getElites();
         
         final List<Candidate<E>> selected = selection.selectCandidates(this, numSelection);

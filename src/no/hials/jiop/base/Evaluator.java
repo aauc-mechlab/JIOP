@@ -29,6 +29,7 @@ package no.hials.jiop.base;
 /**
  *
  * @author LarsIvar
+ * @param <E>
  */
 public interface Evaluator<E> {
     

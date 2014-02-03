@@ -94,13 +94,15 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         if (!initialized) {
             throw new NotInitializedException("Container not yet initialized!");
         }
-        for (Candidate<E> cand : this) {
-            double cost = factory.evaluate(cand.getElements());
-            cand.setCost(cost);
-            if (cost < bestCandidate.getCost()) {
-                setBestCandidate(cand);
-            }
-        }
+        factory.updateCost(this);
+        setBestCandidate(sortCandidates().get(0));
+//        for (Candidate<E> cand : this) {
+//            double cost = factory.evaluate(cand.getElements());
+//            cand.setCost(cost);
+//            if (cost < bestCandidate.getCost()) {
+//                setBestCandidate(cand);
+//            }
+//        }
         return this;
     }
 
@@ -211,21 +213,12 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
     public boolean hasAverage() {
         return hasAverage;
     }
-
+    
     private MLMethod<E> initialize(int howMany) {
         clear();
-        for (int i = 0; i < howMany; i++) {
-            Candidate<E> cand = factory.generateRandom(candidateLength);
-            this.add(cand);
-            if (i == 0) {
-                setBestCandidate(cand);
-            } else {
-                if (cand.getCost() < bestCandidate.getCost()) {
-                    setBestCandidate(cand);
-                }
-            }
-        }
+        addAll(factory.createCandidates(howMany, candidateLength));
         initialized = true;
+        setBestCandidate(sortCandidates().get(0));
         return this;
     }
 
@@ -235,22 +228,13 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         for (; i < initials.size(); i++) {
             Candidate<E> cand = factory.createCandidate(initials.get(i));
             this.add(cand);
-            if (i == 0) {
-                setBestCandidate(cand);
-            } else {
-                if (cand.getCost() < bestCandidate.getCost()) {
-                    setBestCandidate(cand);
-                }
-            }
         }
         for (; i < howMany; i++) {
             Candidate<E> cand = factory.generateRandom(candidateLength);
             this.add(cand);
-            if (cand.getCost() < bestCandidate.getCost()) {
-                setBestCandidate(cand);
-            }
         }
         initialized = true;
+        setBestCandidate(sortCandidates().get(0));
         return this;
     }
 
