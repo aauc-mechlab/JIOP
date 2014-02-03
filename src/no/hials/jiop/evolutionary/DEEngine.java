@@ -29,7 +29,7 @@ import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.factories.AbstractCandidateFactory;
 import java.util.Random;
 import no.hials.jiop.base.MLMethod;
-import no.hials.jiop.base.candidates.BasicEncoding;
+import no.hials.jiop.base.candidates.encoding.BasicEncoding;
 
 /**
  *

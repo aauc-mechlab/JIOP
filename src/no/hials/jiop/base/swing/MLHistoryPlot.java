@@ -37,7 +37,7 @@ public class MLHistoryPlot extends Plot2DPanel {
 
     public MLHistoryPlot(MLMethod method) {
         addLegend("INVISIBLE");
-        if (method.hasAverage()) {
+        if (method.getAvgHistory() != null) {
             addLinePlot("", method.getHistory().getTimestampsD(), method.getHistory().getCosts());
             addLinePlot("", method.getAvgHistory().getTimestampsD(), method.getAvgHistory().getCosts());
         } else {
@@ -47,7 +47,7 @@ public class MLHistoryPlot extends Plot2DPanel {
     
      public MLHistoryPlot(MLMethod method, Color ... c) {
         addLegend("INVISIBLE");
-        if (method.hasAverage()) {
+       if (method.getAvgHistory() != null) {
             addLinePlot("", c[0], method.getHistory().getTimestampsD(), method.getHistory().getCosts());
             addLinePlot("", c[1], method.getAvgHistory().getTimestampsD(), method.getAvgHistory().getCosts());
         } else {
@@ -55,11 +55,4 @@ public class MLHistoryPlot extends Plot2DPanel {
         }
         
     }
-    
-//    public MLHistoryPlot(MLHistory history, Color c1, MLHistory avgHistory, Color c2) {
-//        addLegend("INVISIBLE");
-//        addLinePlot("", c1, history.getTimestampsD(), history.getCosts());
-//        addLinePlot("", c2,avgHistory.getTimestampsD(), avgHistory.getCosts());
-//    }
-
 }

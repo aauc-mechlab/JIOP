@@ -25,10 +25,10 @@
  */
 package no.hials.jiop.factories;
 
-import no.hials.jiop.ArrayUtil;
+import no.hials.jiop.utils.ArrayUtil;
 import no.hials.jiop.base.Evaluator;
-import no.hials.jiop.base.candidates.DoubleArrayEncoding;
-import no.hials.jiop.base.candidates.BasicEncoding;
+import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
+import no.hials.jiop.base.candidates.encoding.BasicEncoding;
 
 /**
  *

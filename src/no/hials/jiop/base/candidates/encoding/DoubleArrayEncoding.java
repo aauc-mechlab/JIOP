@@ -24,16 +24,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop.base.candidates;
+package no.hials.jiop.base.candidates.encoding;
+
+import java.util.Arrays;
 
 /**
  *
  * @author LarsIvar
  */
-public interface ParticleEncoding<E> extends BasicEncoding<E>{
+public class DoubleArrayEncoding implements BasicEncoding<double[]>{
+
+    private final double[] elements;
+
+    public DoubleArrayEncoding(double[] elements) {
+        this.elements = elements;
+    }
     
-    public double[] getVelocity();
-    public Candidate<E> getLocalBest();
-    public void setLocalBest(Candidate<E> localBest);
-    public void update(double omega, double c1, double c2, E globalBest);
+    @Override
+    public double[] getElements() {
+        return elements;
+    }
+
+    @Override
+    public BasicEncoding<double[]> copy() {
+        return new DoubleArrayEncoding(elements.clone());
+    }
+
+    @Override
+    public String toString() {
+        return "DoubleArrayEncoding{" + "elements=" + Arrays.toString(elements) + '}';
+    }
+
+    @Override
+    public int size() {
+        return elements.length;
+    } 
 }

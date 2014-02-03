@@ -26,10 +26,10 @@
 
 package no.hials.jiop.evolutionary;
 
-import no.hials.jiop.ArrayUtil;
+import no.hials.jiop.utils.ArrayUtil;
 import static no.hials.jiop.Main.dim;
-import no.hials.jiop.base.candidates.BasicEncoding;
-import no.hials.jiop.base.candidates.DoubleArrayEncoding;
+import no.hials.jiop.base.candidates.encoding.BasicEncoding;
+import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
 import no.hials.jiop.factories.AbstractCandidateFactory;
 
 /**

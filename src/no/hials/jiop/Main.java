@@ -25,6 +25,7 @@
  */
 package no.hials.jiop;
 
+import no.hials.jiop.utils.ArrayUtil;
 import java.util.Arrays;
 import no.hials.jiop.factories.DoubleArrayParticleFactory;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;

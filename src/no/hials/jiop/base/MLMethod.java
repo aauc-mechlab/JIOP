@@ -49,17 +49,15 @@ import no.hials.jiop.factories.AbstractCandidateFactory;
  */
 public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
 
+    private final AbstractCandidateFactory<E> factory;
     private final MLHistory history, avgHistory;
     protected final int size, candidateLength;
-    private final AbstractCandidateFactory<E> factory;
-
-    private final boolean hasAverage;
 
     private Candidate<E> bestCandidate = null;
     private boolean initialized = false;
-    
-     public MLMethod(int candiateLength, AbstractCandidateFactory<E> factory) {
-         this(1, candiateLength, factory);
+
+    public MLMethod(int candiateLength, AbstractCandidateFactory<E> factory) {
+        this(1, candiateLength, factory);
     }
 
     public MLMethod(int size, int candiateLength, AbstractCandidateFactory<E> factory) {
@@ -67,8 +65,7 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         this.factory = factory;
         this.candidateLength = candiateLength;
         this.history = new MLHistory();
-        this.hasAverage = size > 1;
-        this.avgHistory = hasAverage ? new MLHistory() : null;
+        this.avgHistory = size > 1 ? new MLHistory() : null;
     }
 
     protected abstract void doIteration();
@@ -133,9 +130,9 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
     }
 
     public MLHistory getAvgHistory() {
-        if (!hasAverage) {
-            throw new NoAverageException("The current method does not contain an average!");
-        }
+//        if (!(size > 1)) {
+//            throw new NoAverageException("The current method does not contain an average!");
+//        }
         return avgHistory;
     }
 
@@ -172,7 +169,7 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         doIteration();
         long t = System.nanoTime() - t0;
         history.add(getBestCandidate().getCost(), t);
-        if (hasAverage) {
+        if (size > 1) {
             avgHistory.add(getAverageCost(), t);
         }
     }
@@ -181,7 +178,7 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         super.clear();
         if (clearHistory) {
             history.clear();
-            if (hasAverage) {
+            if (avgHistory != null) {
                 avgHistory.clear();
             }
         }
@@ -192,15 +189,11 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         super.clear();
         if (clearHistory) {
             history.clear();
-            if (hasAverage) {
+            if (avgHistory != null) {
                 avgHistory.clear();
             }
         }
         initialize(initials, size);
-    }
-
-    public boolean hasAverage() {
-        return hasAverage;
     }
 
     private MLMethod<E> initialize(int howMany) {
@@ -232,16 +225,18 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         if (!file.exists()) {
             file.mkdir();
         }
+        StringBuilder sb = new StringBuilder();
         try (
                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dir + "//" + fileName)))) {
             for (int i = 0; i < history.size(); i++) {
-                if (hasAverage) {
-                    bw.write(history.getIterations()[i] + "\t" + history.getTimestampsL()[i] + "\t" + history.getCosts()[i] + "\t" + avgHistory.getCosts()[i] + "\n");
+                if (avgHistory != null) {
+                    sb.append(history.getIterations()[i]).append("\t").append(history.getTimestampsL()[i]).append("\t").append(history.getCosts()[i]).append("\t").append(avgHistory.getCosts()[i]).append("\n");
                 } else {
-                    bw.write(history.getIterations()[i] + "\t" + history.getTimestampsL()[i] + "\t" + history.getCosts()[i] + "\n");
+                    sb.append(history.getIterations()[i]).append("\t").append(history.getTimestampsL()[i]).append("\t").append(history.getCosts()[i]).append("\n");
                 }
 
             }
+            bw.write(sb.toString());
             bw.flush();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MLHistory.class.getName()).log(Level.SEVERE, null, ex);

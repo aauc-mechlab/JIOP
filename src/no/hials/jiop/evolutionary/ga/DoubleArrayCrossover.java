@@ -27,9 +27,9 @@ package no.hials.jiop.evolutionary.ga;
 
 import no.hials.jiop.base.candidates.CandidatePair;
 import java.util.Random;
-import no.hials.jiop.ArrayUtil;
+import no.hials.jiop.utils.ArrayUtil;
 import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.base.candidates.DoubleArrayEncoding;
+import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
 
 /**
  *

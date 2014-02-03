@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package no.hials.jiop;
+package no.hials.jiop.utils;
 
 /**
  * Utility for normalization

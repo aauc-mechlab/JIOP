@@ -25,6 +25,8 @@
  */
 package no.hials.jiop.base.candidates;
 
+import no.hials.jiop.base.candidates.encoding.BasicEncoding;
+
 /**
  *
  * @author LarsIvar

@@ -24,7 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop.base.candidates;
+package no.hials.jiop.base.candidates.encoding;
 
 /**
  *

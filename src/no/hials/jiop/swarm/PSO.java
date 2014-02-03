@@ -27,7 +27,7 @@ package no.hials.jiop.swarm;
 
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.MLMethod;
-import no.hials.jiop.base.candidates.ParticleEncoding;
+import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
 import no.hials.jiop.factories.AbstractCandidateFactory;
 
 /**

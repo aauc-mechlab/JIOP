@@ -23,10 +23,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.candidates;
+package no.hials.jiop.base.candidates.encoding;
 
 import java.util.Random;
-import no.hials.jiop.ArrayUtil;
+import no.hials.jiop.utils.ArrayUtil;
+import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *

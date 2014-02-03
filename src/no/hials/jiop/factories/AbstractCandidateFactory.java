@@ -37,7 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.Evaluator;
-import no.hials.jiop.base.candidates.BasicEncoding;
+import no.hials.jiop.base.candidates.encoding.BasicEncoding;
 
 /**
  *

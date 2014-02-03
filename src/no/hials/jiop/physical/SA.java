@@ -39,7 +39,6 @@ public class SA<E> extends MLMethod<E> {
     private double temperature;
     private final double startingTemperature;
     private final AnnealingSchedule schedule;
-    private Candidate<E> current;
 
     public SA(double startingTemperature, int candiateLength, AnnealingSchedule schedule, AbstractCandidateFactory<E> factory) {
         super(candiateLength, factory);
@@ -49,9 +48,9 @@ public class SA<E> extends MLMethod<E> {
 
     @Override
     protected void doIteration() {
-        Candidate<E> newSample = getFactory().generateNeighbor(current);
-        if (doAccept(current, newSample)) {
-            current = newSample;
+        Candidate<E> newSample = getFactory().generateNeighbor(get(0));
+        if (doAccept(get(0), newSample)) {
+            set(0, newSample);
         }
         if (newSample.getCost() < getBestCandidate().getCost()) {
             setBestCandidate(newSample);
@@ -67,15 +66,12 @@ public class SA<E> extends MLMethod<E> {
     public void reset(List<E> initials, boolean clearHistory) {
         super.reset(initials, clearHistory); //To change body of generated methods, choose Tools | Templates.
         this.temperature = startingTemperature;
-        this.current = getBestCandidate();
-
     }
 
     @Override
     public void reset(boolean clearHistory) {
         super.reset(clearHistory); //To change body of generated methods, choose Tools | Templates.
         this.temperature = startingTemperature;
-        this.current = getBestCandidate();
     }
 
     @Override
