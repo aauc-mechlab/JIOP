@@ -23,29 +23,43 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.tuning;
+package no.hials.jiop.base.swing;
 
+import java.awt.Color;
 import no.hials.jiop.base.MLMethod;
+import org.math.plot.Plot2DPanel;
 
 /**
  *
  * @author LarsIvar
  */
-public class VariableOptimizer {
-    
-    private final MLMethod<double[]> method;
+public class MLHistoryPlot extends Plot2DPanel {
 
-    public VariableOptimizer(MLMethod<double[]> method) {
-        this.method = method;
-        while (true) {
-            method.iteration();
-            
+    public MLHistoryPlot(MLMethod method) {
+        addLegend("INVISIBLE");
+        if (method.hasAverage()) {
+            addLinePlot("", method.getHistory().getTimestampsD(), method.getHistory().getCosts());
+            addLinePlot("", method.getAvgHistory().getTimestampsD(), method.getAvgHistory().getCosts());
+        } else {
+            addLinePlot("", method.getHistory().getTimestampsD(), method.getHistory().getCosts());
         }
     }
     
-    
-    
-    public static void main (String[] args) {
+     public MLHistoryPlot(MLMethod method, Color ... c) {
+        addLegend("INVISIBLE");
+        if (method.hasAverage()) {
+            addLinePlot("", c[0], method.getHistory().getTimestampsD(), method.getHistory().getCosts());
+            addLinePlot("", c[1], method.getAvgHistory().getTimestampsD(), method.getAvgHistory().getCosts());
+        } else {
+            addLinePlot("", c[0], method.getHistory().getTimestampsD(), method.getHistory().getCosts());
+        }
         
     }
+    
+//    public MLHistoryPlot(MLHistory history, Color c1, MLHistory avgHistory, Color c2) {
+//        addLegend("INVISIBLE");
+//        addLinePlot("", c1, history.getTimestampsD(), history.getCosts());
+//        addLinePlot("", c2,avgHistory.getTimestampsD(), avgHistory.getCosts());
+//    }
+
 }

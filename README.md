@@ -10,3 +10,11 @@ Currently supports the following methods:
 	- Real coded Genetic Algorithm	(GA)
 
 Come back later for documentation of the methods, as the framework is still early in development
+
+
+See LICENSE for license details. JIOP is licensed under the BSD(2-clause) license.
+
+Dependencies:
+
+JIOP uses a external library (JMathPlot) for plotting purposes, which can be downloaded from:
+http://jmathtools.berlios.de/doku.php?id=jmathplot:tutorial (BSD license)

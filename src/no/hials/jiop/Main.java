@@ -28,7 +28,7 @@ package no.hials.jiop;
 import java.util.Arrays;
 import no.hials.jiop.factories.DoubleArrayParticleFactory;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
-import no.hials.jiop.base.MLHistoryPlot;
+import no.hials.jiop.base.swing.MLHistoryPlot;
 import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.factories.DoubleArrayCandidateFactory;
 import no.hials.jiop.swarm.PSO;
