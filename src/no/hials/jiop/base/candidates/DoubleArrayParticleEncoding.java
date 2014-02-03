@@ -34,19 +34,20 @@ import no.hials.jiop.ArrayUtil;
  */
 public class DoubleArrayParticleEncoding extends DoubleArrayEncoding implements ParticleEncoding<double[]> {
 
+    private final Random rng = new Random();
     private final double[] velocity;
     private Candidate<double[]> localBest;
 
     public DoubleArrayParticleEncoding(double[] elements, Candidate<double[]> localBest) {
         super(elements);
         this.velocity = ArrayUtil.randomD(size());
-        this.localBest = localBest;
+        this.localBest = new Candidate<>(new DoubleArrayEncoding(localBest.getElements()), localBest.getCost());
     }
     
     public DoubleArrayParticleEncoding(double[] elements, double[] velocity, Candidate<double[]> localBest) {
         super(elements);
         this.velocity = velocity;
-        this.localBest = new Candidate<>(localBest);
+        this.localBest = new Candidate<>(new DoubleArrayEncoding(localBest.getElements().clone()), localBest.getCost());
     }
 
     @Override
@@ -71,7 +72,7 @@ public class DoubleArrayParticleEncoding extends DoubleArrayEncoding implements 
 
     @Override
     public void update(double omega, double c1, double c2, double[] globalBest) {
-        Random rng = new Random();
+        
         for (int i = 0; i < globalBest.length; i++) {
             double vi = getVelocity()[i];
             double li = getLocalBest().getElements()[i];

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,48 +23,24 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.swarm;
 
-import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.base.MLMethod;
-import no.hials.jiop.base.candidates.ParticleEncoding;
-import no.hials.jiop.factories.AbstractCandidateFactory;
+package no.hials.jiop.physical;
 
 /**
  *
  * @author LarsIvar
- * @param <E>
  */
-public class PSO<E> extends MLMethod<E> {
+public class GeometricAnnealingSchedule implements AnnealingSchedule{
+    private final double k;
 
-    private final double omega, c1, c2;
-
-    public PSO(int size, double omega, double c1, double c2, int candiateLength, AbstractCandidateFactory<E> generator) {
-        super(size, candiateLength, generator);
-        this.omega = omega;
-        this.c1 = c1;
-        this.c2 = c2;
+    public GeometricAnnealingSchedule(double k) {
+        this.k = k;
     }
 
     @Override
-    protected void doIteration() {
-        for (Candidate<E> c : this) {
-            ParticleEncoding<E> p = (ParticleEncoding) c.getEncoding();
-            p.update(omega, c1, c2, getBestCandidate().getElements());
-            double evaluate = evaluate(c.getElements());
-            c.setCost(evaluate);
-            if (evaluate < p.getLocalBest().getCost()) {
-                p.setLocalBest(c);
-            }
-            if (evaluate < getBestCandidate().getCost()) {
-                setBestCandidate(c);
-            }
-        }
+    public double cool(double t) {
+        return t*k;
     }
-
-    @Override
-    public String getName() {
-        return "Particle Swarm Optimization";
-    }
-
+    
+    
 }

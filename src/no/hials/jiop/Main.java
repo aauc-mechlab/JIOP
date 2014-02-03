@@ -41,35 +41,39 @@ import no.hials.jiop.evolutionary.ga.DoubleArrayMutation;
 import no.hials.jiop.evolutionary.ga.GA;
 import no.hials.jiop.evolutionary.ga.selection.StochasticUniversalSampling;
 import no.hials.jiop.evolutionary.ga.selection.TournamentSelection;
+import no.hials.jiop.physical.GeometricAnnealingSchedule;
+import no.hials.jiop.physical.SA;
 
 /**
  *
  * @author LarsIvar
  */
 public class Main {
-
+    
     public static final int dim = 6;
     public static double[] desired = ArrayUtil.randomD(dim);
-
+    
     public static void main(String[] args) {
-
+        
         System.out.println(Arrays.toString(desired));
         
-        MLMethod[] methods = new MLMethod[]{new DoubleArrayDE(30, 0.8, 0.9, dim, new DoubleArrayCandidateFactory(new MyEvaluator())),
-            new PSO<>(40, 0.5, 0.9, 0.9, dim, new DoubleArrayParticleFactory(new MyEvaluator())),
+        MLMethod[] methods = new MLMethod[]{
+            new DoubleArrayDE(30, 0.8, 0.9, dim, new DoubleArrayCandidateFactory(new MyEvaluator())),
+            new PSO<>(30, 0.0, 2, 2, dim, new DoubleArrayParticleFactory(new MyEvaluator())),
+            new SA<>(10, dim, new GeometricAnnealingSchedule(0.85), new DoubleArrayCandidateFactory(new MyEvaluator())),
             new GA(20, 0.1f, 0.5f, 0.1f, dim, new StochasticUniversalSampling(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0.5), new DoubleArrayCandidateFactory(new MyEvaluator())),
             new GA(80, 0.1f, 0.5f, 0.2f, dim, new TournamentSelection<>(0.85), new DoubleArrayCrossover(), new DoubleArrayMutation(0.001, 1), new DoubleArrayCandidateFactory(new MyEvaluator()))};
-
+        
         for (final MLMethod method : methods) {
 //            method.getFactory().setNumThreads(4);
             method.warmUp(250);
-            EvaluatedCandidate run = method.runFor(100l);
+            EvaluatedCandidate run = method.runFor(10l);
             System.out.println(run);
-
+            
             final JFrame frame = new JFrame(method.getName());
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             SwingUtilities.invokeLater(new Runnable() {
-
+                
                 @Override
                 public void run() {
                     frame.getContentPane().add(new MLHistoryPlot(method));
@@ -77,15 +81,15 @@ public class Main {
                     frame.setSize(500, 500);
                 }
             });
-
+            
         }
     }
-
+    
     static class MyEvaluator implements Evaluator<double[]> {
-
+        
         @Override
         public double evaluate(double[] encoding) {
-
+            
             double cost = 0;
             int i = 0;
             for (double d : encoding) {
@@ -93,6 +97,6 @@ public class Main {
             }
             return cost;
         }
-
+        
     }
 }

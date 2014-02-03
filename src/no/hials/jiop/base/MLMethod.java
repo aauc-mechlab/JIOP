@@ -36,7 +36,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.hials.jiop.base.candidates.BasicEncoding;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
 import no.hials.jiop.exceptions.NoAverageException;
@@ -58,6 +57,10 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
 
     private Candidate<E> bestCandidate = null;
     private boolean initialized = false;
+    
+     public MLMethod(int candiateLength, AbstractCandidateFactory<E> factory) {
+         this(1, candiateLength, factory);
+    }
 
     public MLMethod(int size, int candiateLength, AbstractCandidateFactory<E> factory) {
         this.size = size;
