@@ -73,7 +73,7 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
     public abstract String getName();
 
     public void warmUp(long millis) {
-        initialize(size);
+        reset(true);
         runFor(millis);
         reset(true);
     }
@@ -96,13 +96,6 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         }
         factory.updateCost(this);
         setBestCandidate(sortCandidates().get(0));
-//        for (Candidate<E> cand : this) {
-//            double cost = factory.evaluate(cand.getElements());
-//            cand.setCost(cost);
-//            if (cost < bestCandidate.getCost()) {
-//                setBestCandidate(cand);
-//            }
-//        }
         return this;
     }
 
@@ -128,13 +121,6 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         return factory;
     }
 
-//    public void initialize() {
-//        initialize(size);
-//    }
-//
-//    public void initialize(List<BasicEncoding<E>> initials) {
-//        initialize(initials, size);
-//    }
     public double evaluate(E encoding) {
         return getFactory().evaluate(encoding);
     }
@@ -199,7 +185,7 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         initialize(size);
     }
 
-    public void reset(List<BasicEncoding<E>> initials, boolean clearHistory) {
+    public void reset(List<E> initials, boolean clearHistory) {
         super.clear();
         if (clearHistory) {
             history.clear();
@@ -213,7 +199,7 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
     public boolean hasAverage() {
         return hasAverage;
     }
-    
+
     private MLMethod<E> initialize(int howMany) {
         clear();
         addAll(factory.createCandidates(howMany, candidateLength));
@@ -222,7 +208,7 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         return this;
     }
 
-    private MLMethod<E> initialize(List<BasicEncoding<E>> initials, int howMany) {
+    private MLMethod<E> initialize(List<E> initials, int howMany) {
         clear();
         int i = 0;
         for (; i < initials.size(); i++) {

@@ -61,8 +61,9 @@ public class Main {
             new GA(80, 0.1f, 0.5f, 0.2f, dim, new TournamentSelection<>(0.85), new DoubleArrayCrossover(), new DoubleArrayMutation(0.001, 1), new DoubleArrayCandidateFactory(new MyEvaluator()))};
 
         for (final MLMethod method : methods) {
+//            method.getFactory().setNumThreads(4);
             method.warmUp(250);
-            EvaluatedCandidate run = method.runFor(10l);
+            EvaluatedCandidate run = method.runFor(100l);
             System.out.println(run);
 
             final JFrame frame = new JFrame(method.getName());

@@ -40,7 +40,7 @@ public class DoubleArrayParticleEncoding extends DoubleArrayEncoding implements 
     public DoubleArrayParticleEncoding(double[] elements, Candidate<double[]> localBest) {
         super(elements);
         this.velocity = ArrayUtil.randomD(size());
-        this.localBest = new Candidate<>(localBest);
+        this.localBest = localBest;
     }
     
     public DoubleArrayParticleEncoding(double[] elements, double[] velocity, Candidate<double[]> localBest) {

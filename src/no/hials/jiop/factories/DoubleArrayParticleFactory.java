@@ -29,6 +29,7 @@ package no.hials.jiop.factories;
 import no.hials.jiop.ArrayUtil;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.Evaluator;
+import no.hials.jiop.base.candidates.BasicEncoding;
 import no.hials.jiop.base.candidates.DoubleArrayEncoding;
 import no.hials.jiop.base.candidates.DoubleArrayParticleEncoding;
 import no.hials.jiop.base.candidates.ParticleEncoding;
@@ -47,6 +48,11 @@ public class DoubleArrayParticleFactory extends DoubleArrayCandidateFactory {
     public ParticleEncoding<double[]> random(int length) {
         double[] rand = ArrayUtil.randomD(length);
         return new DoubleArrayParticleEncoding(rand, new Candidate<>(new DoubleArrayEncoding(rand), evaluate(rand)));
+    }
+
+    @Override
+    public BasicEncoding<double[]> wrap(double[] original) {
+         return new DoubleArrayParticleEncoding(original, new Candidate<>(new DoubleArrayEncoding(original), evaluate(original)));
     }
 
     

@@ -83,12 +83,19 @@ public abstract class AbstractCandidateFactory<E> {
     public Candidate<E> createCandidate(BasicEncoding<E> encoding) {
         return new Candidate<>(encoding, evaluate(encoding.getElements()));
     }
+    
+    public Candidate<E> createCandidate(E elements) {
+        BasicEncoding<E> encoding = wrap(elements);
+        return new Candidate<>(encoding, evaluate(encoding.getElements()));
+    }
 
     public double evaluate(E encoding) {
         return evaluator.evaluate(encoding);
     }
 
     public abstract BasicEncoding<E> random(int length);
+    
+    public abstract BasicEncoding<E> wrap(E original);
 
     public abstract BasicEncoding<E> neighbor(E original);
 

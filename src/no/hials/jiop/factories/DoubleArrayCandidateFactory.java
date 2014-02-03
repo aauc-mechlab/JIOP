@@ -50,4 +50,9 @@ public class DoubleArrayCandidateFactory extends AbstractCandidateFactory<double
         return new DoubleArrayEncoding(ArrayUtil.neighbor(original, 0.001));
     }
 
+    @Override
+    public BasicEncoding<double[]> wrap(double[] original) {
+        return new DoubleArrayEncoding(original);
+    }
+
 }
