@@ -26,8 +26,8 @@
 package no.hials.jiop.evolutionary;
 
 import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.factories.AbstractCandidateFactory;
 import java.util.Random;
+import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.encoding.BasicEncoding;
 
@@ -40,41 +40,43 @@ public abstract class DEEngine<E> extends MLMethod<E> {
     private final double F, CR;
     private final Random rng = new Random();
 
-    public DEEngine(int size, double F, double CR, int candiateLength, AbstractCandidateFactory<E> factory) {
-        super(size, candiateLength, factory);
+    public DEEngine(double F, double CR, CandidateContainer<E> container) {
+        super(container);
         this.F = F;
         this.CR = CR;
     }
 
     @Override
     protected void doIteration() {
-        for (Candidate<E> c : this) {
-            E p = c.getElements();
+        for (Candidate<E> c : getContainer()) {
+            E p = c.getVariables();
             E p1, p2, p3;
             do {
-                int rand = rng.nextInt(size);
-                p1 = get(rand).getElements();
+                int rand = rng.nextInt(getContainer().size());
+                p1 = getContainer().get(rand).getVariables();
             } while (p1 == c);
             do {
-                int rand = rng.nextInt(size);
-                p2 = get(rand).getElements();
+                int rand = rng.nextInt(getContainer().size());
+                p2 = getContainer().get(rand).getVariables();
             } while (p2 == c && p2 == p1);
             do {
-                int rand = rng.nextInt(size);
-                p3 = get(rand).getElements();
+                int rand = rng.nextInt(getContainer().size());
+                p3 = getContainer().get(rand).getVariables();
             } while (p3 == c && p3 == p1 && p3 == p2);
 
-            int R = rng.nextInt(candidateLength);
+            int R = rng.nextInt(getContainer().candidateLength());
             BasicEncoding<E> differentiate = differentiate(R, F, CR, p, p1, p2, p3);
-            Candidate<E> sample = getFactory().createCandidate(differentiate);
+            Candidate<E> sample = getContainer().createCandidate(differentiate);
             if (sample.getCost() < c.getCost()) {
-                set(indexOf(c), sample);
-                if (sample.getCost() < getBestCandidate().getCost()) {
-                    setBestCandidate(sample);
+                getContainer().set(getContainer().indexOf(c), sample);
+                if (sample.getCost() < getContainer().getBestCandidate().getCost()) {
+                    getContainer().setBestCandidate(sample);
                 }
             }
         }
     }
+    
+    
 
     public abstract BasicEncoding<E> differentiate(int R, double F, double CR, E c, E c1, E c2, E c3);
 

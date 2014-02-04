@@ -39,21 +39,21 @@ public class DoubleArrayParticleEncoding extends DoubleArrayEncoding implements 
     private final double[] velocity;
     private Candidate<double[]> localBest;
 
-    public DoubleArrayParticleEncoding(double[] elements, Candidate<double[]> localBest) {
-        super(elements);
-        this.velocity = ArrayUtil.randomD(size());
-        this.localBest = new Candidate<>(new DoubleArrayEncoding(localBest.getElements()), localBest.getCost());
+    public DoubleArrayParticleEncoding(double[] variables, Candidate<double[]> localBest) {
+        super(variables);
+        this.velocity = ArrayUtil.randomD(-1, 1, size());
+        this.localBest = new Candidate<>(new DoubleArrayEncoding(localBest.getVariables()), localBest.getCost());
     }
     
-    public DoubleArrayParticleEncoding(double[] elements, double[] velocity, Candidate<double[]> localBest) {
-        super(elements);
+    public DoubleArrayParticleEncoding(double[] variables, double[] velocity, Candidate<double[]> localBest) {
+        super(variables);
         this.velocity = velocity;
-        this.localBest = new Candidate<>(new DoubleArrayEncoding(localBest.getElements().clone()), localBest.getCost());
+        this.localBest = new Candidate<>(new DoubleArrayEncoding(localBest.getVariables().clone()), localBest.getCost());
     }
 
     @Override
     public DoubleArrayParticleEncoding copy() {
-        return new DoubleArrayParticleEncoding(getElements().clone(), velocity.clone(), (localBest));
+        return new DoubleArrayParticleEncoding(getVariables().clone(), velocity.clone(), new Candidate<>(localBest));
     }
 
     @Override
@@ -73,11 +73,12 @@ public class DoubleArrayParticleEncoding extends DoubleArrayEncoding implements 
 
     @Override
     public void update(double omega, double c1, double c2, double[] globalBest) {
-        
+//        double r1 = rng.nextDouble();
+//        double r2 = rng.nextDouble();
         for (int i = 0; i < globalBest.length; i++) {
             double vi = getVelocity()[i];
-            double li = getLocalBest().getElements()[i];
-            double pi = getElements()[i];
+            double li = getLocalBest().getVariables()[i];
+            double pi = getVariables()[i];
             double gi = globalBest[i];
             double vel = (omega * vi) + (rng.nextDouble() * c1 * (li - pi)) + (rng.nextDouble() * c2 * (gi - pi));
 
@@ -87,13 +88,13 @@ public class DoubleArrayParticleEncoding extends DoubleArrayEncoding implements 
                 vel = 0.5;
             }
 
-            double newPos = getElements()[i] + vel;
+            double newPos = getVariables()[i] + vel;
             if (newPos < 0) {
                 newPos = 0;
             } else if (newPos > 1) {
                 newPos = 1;
             }
-            getElements()[i] = newPos;
+            getVariables()[i] = newPos;
             getVelocity()[i] = vel;
         }
     }

@@ -34,29 +34,29 @@ import java.util.Arrays;
  */
 public class DoubleArrayEncoding implements BasicEncoding<double[]>{
 
-    private final double[] elements;
+    private final double[] variables;
 
-    public DoubleArrayEncoding(double[] elements) {
-        this.elements = elements;
+    public DoubleArrayEncoding(double[] variables) {
+        this.variables = variables;
     }
     
     @Override
-    public double[] getElements() {
-        return elements;
+    public double[] getVariables() {
+        return variables;
     }
 
     @Override
     public BasicEncoding<double[]> copy() {
-        return new DoubleArrayEncoding(elements.clone());
+        return new DoubleArrayEncoding(variables.clone());
     }
 
     @Override
     public String toString() {
-        return "DoubleArrayEncoding{" + "elements=" + Arrays.toString(elements) + '}';
+        return "DoubleArrayEncoding{" + "elements=" + Arrays.toString(variables) + '}';
     }
 
     @Override
     public int size() {
-        return elements.length;
+        return variables.length;
     } 
 }

@@ -27,21 +27,21 @@ package no.hials.jiop;
 
 import no.hials.jiop.utils.ArrayUtil;
 import java.util.Arrays;
-import no.hials.jiop.factories.DoubleArrayParticleFactory;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
 import no.hials.jiop.base.swing.MLHistoryPlot;
 import no.hials.jiop.base.Evaluator;
-import no.hials.jiop.factories.DoubleArrayCandidateFactory;
 import no.hials.jiop.swarm.PSO;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import no.hials.jiop.base.MLMethod;
+import no.hials.jiop.base.candidates.containers.DoubleArrayCandidateArrayContainer;
+import no.hials.jiop.base.candidates.containers.DoubleArrayCandidateListContainer;
+import no.hials.jiop.base.candidates.containers.DoubleArrayParticleListContainer;
 import no.hials.jiop.evolutionary.DoubleArrayDE;
 import no.hials.jiop.evolutionary.ga.DoubleArrayCrossover;
 import no.hials.jiop.evolutionary.ga.DoubleArrayMutation;
 import no.hials.jiop.evolutionary.ga.GA;
 import no.hials.jiop.evolutionary.ga.selection.StochasticUniversalSampling;
-import no.hials.jiop.evolutionary.ga.selection.TournamentSelection;
 import no.hials.jiop.physical.GeometricAnnealingSchedule;
 import no.hials.jiop.physical.SA;
 
@@ -51,24 +51,30 @@ import no.hials.jiop.physical.SA;
  */
 public class Main {
     
-    public static final int dim = 6;
+    public static final int dim = 5;
     public static double[] desired = ArrayUtil.randomD(dim);
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+//        long t0 = System.currentTimeMillis();
+//        long t1 = System.nanoTime();
+//        Thread.sleep(20);
+//        System.out.println(System.currentTimeMillis()-t0);
+//        System.out.println((System.nanoTime() -t1)/1000000);
         
         System.out.println(Arrays.toString(desired));
         
         MLMethod[] methods = new MLMethod[]{
-            new DoubleArrayDE(30, 0.8, 0.9, dim, new DoubleArrayCandidateFactory(new MyEvaluator())),
-            new PSO<>(30, 0.0, 2, 2, dim, new DoubleArrayParticleFactory(new MyEvaluator())),
-            new SA<>(10, dim, new GeometricAnnealingSchedule(0.85), new DoubleArrayCandidateFactory(new MyEvaluator())),
-            new GA(20, 0.1f, 0.5f, 0.1f, dim, new StochasticUniversalSampling(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0.5), new DoubleArrayCandidateFactory(new MyEvaluator())),
-            new GA(80, 0.1f, 0.5f, 0.2f, dim, new TournamentSelection<>(0.85), new DoubleArrayCrossover(), new DoubleArrayMutation(0.001, 1), new DoubleArrayCandidateFactory(new MyEvaluator()))};
+            new DoubleArrayDE(0.8, 0.9, new DoubleArrayCandidateListContainer(30, dim, new MyEvaluator(), false)),
+            new PSO<>(0.1, 0.4, 2, new DoubleArrayParticleListContainer(40, dim, new MyEvaluator(), false)),
+            new SA<>(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayCandidateListContainer(1, dim, new MyEvaluator(), false)),
+            new GA(0.1f, 0.5f, 0.2f, new StochasticUniversalSampling<>(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayCandidateArrayContainer(60, dim, new MyEvaluator(), false))};
+//            new GA(20, 0.1f, 0.5f, 0.1f, dim, new StochasticUniversalSampling(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0.5), new DoubleArrayCandidateFactory(new MyEvaluator())),
+//            new GA(80, 0.1f, 0.5f, 0.2f, dim, new TournamentSelection<>(0.85), new DoubleArrayCrossover(), new DoubleArrayMutation(0.001, 1), new DoubleArrayCandidateFactory(new MyEvaluator()))};
         
         for (final MLMethod method : methods) {
-//            method.getFactory().setNumThreads(4);
-            method.warmUp(250);
-            EvaluatedCandidate run = method.runFor(10l);
+//            method.warmUp(250);
+            method.reset(true);
+            EvaluatedCandidate run = method.runFor(50l);
             System.out.println(run);
             
             final JFrame frame = new JFrame(method.getName());
@@ -82,7 +88,6 @@ public class Main {
                     frame.setSize(500, 500);
                 }
             });
-            
         }
     }
     

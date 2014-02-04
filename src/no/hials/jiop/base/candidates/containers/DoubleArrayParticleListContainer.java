@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, Lars Ivar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,59 +23,44 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.candidates;
 
+package no.hials.jiop.base.candidates.containers;
+
+import no.hials.jiop.base.Evaluator;
+import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.BasicEncoding;
+import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
+import no.hials.jiop.base.candidates.encoding.DoubleArrayParticleEncoding;
+import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
+import no.hials.jiop.utils.ArrayUtil;
 
 /**
  *
- * @author LarsIvar
- * @param <E>
+ * @author Lars Ivar
  */
-public class Candidate<E> implements Comparable<Candidate<E>>{
+public class DoubleArrayParticleListContainer extends ParticleListContainer<double[]>{
 
-    private final BasicEncoding<E> encoding;
-    private double cost;
+    public DoubleArrayParticleListContainer(int size, int candidateLength, Evaluator<double[]> evaluator, boolean multiThreaded) {
+        super(size, candidateLength, evaluator, multiThreaded);
+    }
 
-    public Candidate(BasicEncoding<E> encoding, double cost) {
-        this.encoding = encoding;
-        this.cost = cost;
+     @Override
+    public ParticleEncoding<double[]> randomEncoding(int length) {
+        double[] rand = ArrayUtil.randomD(length);
+        return new DoubleArrayParticleEncoding(rand, new Candidate<>(new DoubleArrayEncoding(rand), evaluate(rand)));
+    }
+
+    @Override
+    public ParticleEncoding<double[]> wrapVariables(double[] original) {
+         return new DoubleArrayParticleEncoding(original, new Candidate<>(new DoubleArrayEncoding(original), evaluate(original)));
     }
     
-    public Candidate(Candidate<E> candidate) {
-        this(candidate.encoding.copy(), candidate.cost);
-    }
-
-    public BasicEncoding<E> getEncoding() {
-        return encoding;
-    }
-
-    public E getVariables() {
-        return encoding.getVariables();
-    }
-
-    public double getCost() {
-        return cost;
-    }
-
-    public void setCost(double cost) {
-        this.cost = cost;
-    }
-
+    
     @Override
-    public int compareTo(Candidate<E> c) {
-       if (getCost() == c.getCost()) {
-           return 0;
-       } else if (getCost() < c.getCost()) {
-           return -1;
-       } else {
-           return 1;
-       }
+    public BasicEncoding<double[]> neighborEncoding(double[] original) {
+        double[] neighbor = ArrayUtil.neighbor(original, 0.001);
+       return new DoubleArrayParticleEncoding(neighbor, new Candidate<>(new DoubleArrayEncoding(neighbor), evaluate(neighbor)));
     }
-
-    @Override
-    public String toString() {
-        return "Candidate{" + "cost=" + cost +  ", encoding=" + encoding + '}';
-    }
-
+    
+    
 }

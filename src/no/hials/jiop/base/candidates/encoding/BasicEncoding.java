@@ -33,6 +33,6 @@ package no.hials.jiop.base.candidates.encoding;
 public interface BasicEncoding<E> {
     
     public int size();
-    public E getElements();
+    public E getVariables();
     public BasicEncoding<E> copy();
 }

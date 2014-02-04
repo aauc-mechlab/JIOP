@@ -43,7 +43,7 @@ public class EvaluatedCandidate<E> extends Candidate<E>{
     }
 
     public EvaluatedCandidate(Candidate<E> candidate, int iterations, long time) {
-        super(candidate.getEncoding().copy(), candidate.getCost());
+        super(candidate);
         this.iterations = iterations;
         this.time = time;
     }

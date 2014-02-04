@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, Lars Ivar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,36 +23,58 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.factories;
 
-import no.hials.jiop.utils.ArrayUtil;
-import no.hials.jiop.base.Evaluator;
-import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
-import no.hials.jiop.base.candidates.encoding.BasicEncoding;
+package no.hials.jiop.utils;
+
+import java.util.Iterator;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar
  */
-public class DoubleArrayCandidateFactory extends AbstractCandidateFactory<double[]> {
-
-    public DoubleArrayCandidateFactory(Evaluator<double[]> evaluator) {
-        super(evaluator);
+public class Candidates<E> implements Iterable<E> {
+    
+    private E[] elements;
+    
+    public Candidates(E ... elements) {
+        if (elements.length < 1) {
+            throw new IllegalArgumentException();
+        }
+        this.elements = elements;
+    }
+    
+    public E get(int index) {
+        return elements[index];
+    }
+    
+    public void set(int index, E element) {
+        
     }
 
     @Override
-    public BasicEncoding<double[]> random(int length) {
-        return new DoubleArrayEncoding(ArrayUtil.randomD(length));
+    public Iterator<E> iterator() {
+        return new ArrayIterator();
     }
+    
+    public class ArrayIterator implements Iterator<E> {
+        
+        private int i = 0;
 
-    @Override
-    public BasicEncoding<double[]> neighbor(double[] original) {
-        return new DoubleArrayEncoding(ArrayUtil.neighbor(original, 0.001));
+        @Override
+        public boolean hasNext() {
+            return i != elements.length;
+        }
+
+        @Override
+        public E next() {
+            return elements[i++];
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        
     }
-
-    @Override
-    public BasicEncoding<double[]> wrap(double[] original) {
-        return new DoubleArrayEncoding(original);
-    }
-
+    
 }

@@ -25,10 +25,10 @@
  */
 package no.hials.jiop.swarm;
 
+import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
-import no.hials.jiop.factories.AbstractCandidateFactory;
 
 /**
  *
@@ -39,8 +39,8 @@ public class PSO<E> extends MLMethod<E> {
 
     private final double omega, c1, c2;
 
-    public PSO(int size, double omega, double c1, double c2, int candiateLength, AbstractCandidateFactory<E> generator) {
-        super(size, candiateLength, generator);
+    public PSO(double omega, double c1, double c2,  CandidateContainer<E> container) {
+        super(container);
         this.omega = omega;
         this.c1 = c1;
         this.c2 = c2;
@@ -48,23 +48,27 @@ public class PSO<E> extends MLMethod<E> {
 
     @Override
     protected void doIteration() {
-        for (Candidate<E> c : this) {
+        for (Candidate<E> c : getContainer()) {
             ParticleEncoding<E> p = (ParticleEncoding) c.getEncoding();
-            p.update(omega, c1, c2, getBestCandidate().getElements());
-            double evaluate = evaluate(c.getElements());
-            c.setCost(evaluate);
-            if (evaluate < p.getLocalBest().getCost()) {
-                p.setLocalBest(c);
-            }
-            if (evaluate < getBestCandidate().getCost()) {
-                setBestCandidate(c);
-            }
+            p.update(omega, c1, c2, getContainer().getBestCandidate().getVariables());
+            
+//            double evaluate = evaluate(c.getVariables());
+//            c.setCost(evaluate);
+//            if (evaluate < p.getLocalBest().getCost()) {
+//                p.setLocalBest(c);
+//            }
+//            if (evaluate < getContainer().getBestCandidate().getCost()) {
+//                getContainer().setBestCandidate(c);
+//            }
         }
+        getContainer().evaluateAll();
+        
     }
 
     @Override
     public String getName() {
         return "Particle Swarm Optimization";
     }
+
 
 }

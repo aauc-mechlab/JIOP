@@ -25,104 +25,51 @@
  */
 package no.hials.jiop.base;
 
+import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
-import no.hials.jiop.exceptions.NoAverageException;
-import no.hials.jiop.exceptions.NotInitializedException;
-import no.hials.jiop.factories.AbstractCandidateFactory;
 
 /**
  *
  * @author LarsIvar
  * @param <E>
  */
-public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
+public abstract class MLMethod<E> {
 
-    private final AbstractCandidateFactory<E> factory;
+    private final CandidateContainer<E> container;
     private final MLHistory history, avgHistory;
-    protected final int size, candidateLength;
 
-    private Candidate<E> bestCandidate = null;
-    private boolean initialized = false;
-
-    public MLMethod(int candiateLength, AbstractCandidateFactory<E> factory) {
-        this(1, candiateLength, factory);
-    }
-
-    public MLMethod(int size, int candiateLength, AbstractCandidateFactory<E> factory) {
-        this.size = size;
-        this.factory = factory;
-        this.candidateLength = candiateLength;
+    public MLMethod(CandidateContainer<E> container) {
         this.history = new MLHistory();
-        this.avgHistory = size > 1 ? new MLHistory() : null;
+        this.avgHistory = container.size() > 1 ? new MLHistory() : null;
+        this.container = container;
+
     }
 
     protected abstract void doIteration();
 
+
     public abstract String getName();
 
     public void warmUp(long millis) {
-        reset(true);
         runFor(millis);
         reset(true);
     }
 
-    public void setBestCandidate(Candidate<E> bestCandidate) {
-        this.bestCandidate = new Candidate<>(bestCandidate);
-    }
-
-    public MLMethod<E> sortCandidates() {
-        if (!initialized) {
-            throw new NotInitializedException("Container not yet initialized!");
-        }
-        Collections.sort(this);
-        return this;
-    }
-
-    public MLMethod<E> updateCost() {
-        if (!initialized) {
-            throw new NotInitializedException("Container not yet initialized!");
-        }
-        factory.updateCost(this);
-        setBestCandidate(sortCandidates().get(0));
-        return this;
-    }
-
-    public double getAverageCost() {
-        if (!initialized) {
-            throw new NotInitializedException("Container not yet initialized!");
-        }
-        double avg = 0;
-        for (Candidate<E> c : this) {
-            avg += c.getCost();
-        }
-        return avg / size();
-    }
-
-    public Candidate<E> getBestCandidate() {
-        if (!initialized) {
-            throw new NotInitializedException("Container not yet initialized!");
-        }
-        return new Candidate<>(bestCandidate);
-    }
-
-    public AbstractCandidateFactory<E> getFactory() {
-        return factory;
+    public CandidateContainer<E> getContainer() {
+        return container;
     }
 
     public double evaluate(E encoding) {
-        return getFactory().evaluate(encoding);
+        return getContainer().evaluate(encoding);
     }
 
     public MLHistory getHistory() {
@@ -130,19 +77,16 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
     }
 
     public MLHistory getAvgHistory() {
-//        if (!(size > 1)) {
-//            throw new NoAverageException("The current method does not contain an average!");
-//        }
         return avgHistory;
     }
 
     public EvaluatedCandidate<E> runFor(int iterations) {
         int it = 0;
-        long t0 = System.currentTimeMillis();
+        long t0 = System.nanoTime();
         do {
             iteration();
         } while (it++ < iterations);
-        return new EvaluatedCandidate<>(getBestCandidate(), it, System.currentTimeMillis() - t0);
+        return new EvaluatedCandidate<>(getContainer().getBestCandidate(), it, System.currentTimeMillis() - t0);
     }
 
     public EvaluatedCandidate<E> runFor(long time) {
@@ -152,72 +96,49 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
             iteration();
             it++;
         } while (System.currentTimeMillis() - t0 < time);
-        return new EvaluatedCandidate<>(getBestCandidate(), it, System.currentTimeMillis() - t0);
+        return new EvaluatedCandidate<>(getContainer().getBestCandidate(), it, System.currentTimeMillis() - t0);
     }
+
+
 
     public EvaluatedCandidate<E> runFor(double error) {
         int it = 0;
-        long t0 = System.currentTimeMillis();
+        long t0 = System.nanoTime();
         do {
             iteration();
-        } while (getBestCandidate().getCost() > error);
-        return new EvaluatedCandidate<>(getBestCandidate(), it, System.currentTimeMillis() - t0);
+            it++;
+        } while (getContainer().getBestCandidate().getCost() > error);
+        return new EvaluatedCandidate<>(getContainer().getBestCandidate(), it, System.currentTimeMillis() - t0);
     }
 
     public void iteration() {
         long t0 = System.nanoTime();
         doIteration();
         long t = System.nanoTime() - t0;
-        history.add(getBestCandidate().getCost(), t);
-        if (size > 1) {
-            avgHistory.add(getAverageCost(), t);
+        history.add(getContainer().getBestCandidate().getCost(), t);
+        if (container.size() > 1) {
+            avgHistory.add(container.getAverage(), t);
         }
     }
 
     public void reset(boolean clearHistory) {
-        super.clear();
         if (clearHistory) {
             history.clear();
             if (avgHistory != null) {
                 avgHistory.clear();
             }
         }
-        initialize(size);
+        container.initialize();
     }
 
-    public void reset(List<E> initials, boolean clearHistory) {
-        super.clear();
+    public void reset(List<E> seed, boolean clearHistory) {
         if (clearHistory) {
             history.clear();
             if (avgHistory != null) {
                 avgHistory.clear();
             }
         }
-        initialize(initials, size);
-    }
-
-    private MLMethod<E> initialize(int howMany) {
-        clear();
-        addAll(factory.createCandidates(howMany, candidateLength));
-        initialized = true;
-        setBestCandidate(sortCandidates().get(0));
-        return this;
-    }
-
-    private MLMethod<E> initialize(List<E> initials, int howMany) {
-        clear();
-        int i = 0;
-        for (; i < initials.size(); i++) {
-            Candidate<E> cand = factory.createCandidate(initials.get(i));
-            this.add(cand);
-        }
-        for (; i < howMany; i++) {
-            Candidate<E> cand = factory.generateRandom(candidateLength);
-            this.add(cand);
-        }
-        initialized = true;
-        setBestCandidate(sortCandidates().get(0));
-        return this;
+        container.initialize(seed);
     }
 
     public void dumpHistoryToFile(String dir, String fileName) {
@@ -245,17 +166,4 @@ public abstract class MLMethod<E> extends ArrayList<Candidate<E>> {
         }
 
     }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < size(); i++) {
-            sb.append(get(i));
-            if (i != size() - 1) {
-                sb.append('\n');
-            }
-        }
-        return sb.toString();
-    }
-
 }

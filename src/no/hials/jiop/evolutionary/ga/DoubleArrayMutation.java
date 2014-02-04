@@ -42,7 +42,7 @@ public class DoubleArrayMutation extends AbstractMutatationOperator<double[]> {
 
     @Override
     public void mutate(Candidate<double[]> chromosome, int geneIndex) {
-        double[] elements = chromosome.getElements();
+        double[] elements = chromosome.getVariables();
         if (r >= Math.random()) {
             elements[geneIndex] = Math.random();
         } else {

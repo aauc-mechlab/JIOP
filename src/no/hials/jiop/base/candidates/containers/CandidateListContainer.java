@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, Lars Ivar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,38 +23,63 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package no.hials.jiop.base.candidates.containers;
 
-package no.hials.jiop.factories;
-
-import no.hials.jiop.utils.ArrayUtil;
-import no.hials.jiop.base.candidates.Candidate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import no.hials.jiop.base.Evaluator;
-import no.hials.jiop.base.candidates.encoding.BasicEncoding;
-import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
-import no.hials.jiop.base.candidates.encoding.DoubleArrayParticleEncoding;
-import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
+import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar
  */
-public class DoubleArrayParticleFactory extends DoubleArrayCandidateFactory {
+public abstract class CandidateListContainer<E> extends CandidateContainer<E> {
 
-    public DoubleArrayParticleFactory(Evaluator<double[]> evaluator) {
-        super(evaluator);
+    private  List<Candidate<E>> candidates;
+
+    public CandidateListContainer(int size, int candidateLength, Evaluator<E> evaluator, boolean multiThreaded) {
+        super(size, candidateLength, evaluator, multiThreaded);
+        this.candidates = new ArrayList<>(size);
     }
 
     @Override
-    public ParticleEncoding<double[]> random(int length) {
-        double[] rand = ArrayUtil.randomD(length);
-        return new DoubleArrayParticleEncoding(rand, new Candidate<>(new DoubleArrayEncoding(rand), evaluate(rand)));
+    public List<Candidate<E>> getCandidates() {
+        return candidates;
     }
 
     @Override
-    public BasicEncoding<double[]> wrap(double[] original) {
-         return new DoubleArrayParticleEncoding(original, new Candidate<>(new DoubleArrayEncoding(original), evaluate(original)));
+    public synchronized  void set(int index, Candidate<E> candidate) {
+        candidates.set(index, candidate);
     }
 
+    @Override
+    public Candidate<E> get(int i) {
+        return candidates.get(i);
+    }
+
+    @Override
+    public  int indexOf(Candidate<E> candidate) {
+        return candidates.indexOf(candidate);
+    }
     
-    
+
+    @Override
+    public CandidateContainer<E> sort() {
+        Collections.sort(candidates);
+        return this;
+    }
+
+    @Override
+    public void clearAndAddAll(List<Candidate<E>> candidates) {
+        this.candidates = candidates;
+    }
+
+    @Override
+    public Iterator<Candidate<E>> iterator() {
+        return candidates.iterator();
+    }
+
 }

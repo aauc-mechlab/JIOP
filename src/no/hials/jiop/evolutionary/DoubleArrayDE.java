@@ -23,42 +23,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
 package no.hials.jiop.evolutionary;
 
 import no.hials.jiop.utils.ArrayUtil;
-import static no.hials.jiop.Main.dim;
+import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.candidates.encoding.BasicEncoding;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
-import no.hials.jiop.factories.AbstractCandidateFactory;
 
 /**
  *
  * @author LarsIvar
  */
-public class DoubleArrayDE extends DEEngine<double[]>{
+public class DoubleArrayDE extends DEEngine<double[]> {
 
-    public DoubleArrayDE(int size, double F, double CR, int candiateLength, AbstractCandidateFactory<double[]> factory) {
-        super(size, F, CR, candiateLength, factory);
+    public DoubleArrayDE(double F, double CR, CandidateContainer<double[]> container) {
+        super(F, CR, container);
     }
 
-     @Override
-            public BasicEncoding<double[]> differentiate(int R, double F, double CR, double[] c, double[] c1, double[] c2, double[] c3) {
-                double[] array = new double[dim];
-                for (int i = 0; i < array.length; i++) {
-                    if ((Math.random() < CR) || (i == R)) {
-                        array[i] = c1[i] + F * (c2[i] - c3[i]);
-                    } else {
-                        array[i] = c[i];
-                    }
-                }
-
-                return new DoubleArrayEncoding(ArrayUtil.clamp(0, 1, array));
+    @Override
+    public BasicEncoding<double[]> differentiate(int R, double F, double CR, double[] c, double[] c1, double[] c2, double[] c3) {
+        double[] array = new double[getContainer().candidateLength()];
+        for (int i = 0; i < array.length; i++) {
+            if ((Math.random() < CR) || (i == R)) {
+                array[i] = c1[i] + F * (c2[i] - c3[i]);
+            } else {
+                array[i] = c[i];
             }
+        }
+
+        return new DoubleArrayEncoding(ArrayUtil.clamp(0, 1, array));
+    }
 
     @Override
     public String getName() {
         return "Differential Evolution";
     }
-    
+
 }
