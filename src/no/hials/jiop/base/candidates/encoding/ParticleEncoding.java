@@ -32,7 +32,7 @@ import no.hials.jiop.base.candidates.Candidate;
  *
  * @author LarsIvar
  */
-public interface ParticleEncoding<E> extends BasicEncoding<E>{
+public interface ParticleEncoding<E> extends Encoding<E>{
     
     public double[] getVelocity();
     public Candidate<E> getLocalBest();

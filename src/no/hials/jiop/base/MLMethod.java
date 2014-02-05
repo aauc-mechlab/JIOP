@@ -33,11 +33,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
+import no.hials.jiop.base.candidates.factories.CandidateFactory;
 
 /**
  *
@@ -46,6 +48,9 @@ import no.hials.jiop.base.candidates.EvaluatedCandidate;
  */
 public abstract class MLMethod<E> {
 
+    private final Object mutex = new Object();
+
+    private final CandidateFactory<E> factory;
     private final CandidateContainer<E> container;
     private final MLHistory history, avgHistory;
 
@@ -53,39 +58,30 @@ public abstract class MLMethod<E> {
 
     private Candidate<E> bestCandidate;
 
-    public MLMethod(CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+    public MLMethod(CandidateFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
         this.avgHistory = container.size() > 1 ? new MLHistory() : null;
         this.history = new MLHistory();
         this.evaluator = evaluator;
-        this.container = container.setOwner(this);
+        this.factory = factory;
+        this.container = container;
+        this.factory.setOwner(this);
     }
 
-    protected abstract void doIteration();
+    public MLMethod(CandidateFactory<E> factory, AbstractEvaluator<E> evaluator) {
+        this.history = new MLHistory();
+        this.evaluator = evaluator;
+        this.factory = factory;
+        this.container = null;
+        this.avgHistory = null;
+        this.factory.setOwner(this);
+    }
+
+    public abstract void internalIteration();
 
     public abstract String getName();
 
-    public void warmUp(long millis) {
-        reset(true);
-        runFor(millis);
-        reset(true);
-    }
-
-    public CandidateContainer<E> getContainer() {
-        return container;
-    }
-
-    public double evaluate(E encoding) {
-        return getContainer().evaluate(encoding);
-    }
-
-    public MLHistory getHistory() {
-        return history;
-    }
-
-    public MLHistory getAvgHistory() {
-        return avgHistory;
-    }
-
+    
+    
     public EvaluatedCandidate<E> runFor(int iterations) {
         int it = 0;
         long t0 = System.nanoTime();
@@ -117,10 +113,10 @@ public abstract class MLMethod<E> {
 
     public void iteration() {
         long t0 = System.nanoTime();
-        doIteration();
+        internalIteration();
         long t = System.nanoTime() - t0;
         history.add(getBestCandidate().getCost(), t);
-        if (container.size() > 1) {
+        if (container != null) {
             avgHistory.add(container.getAverage(), t);
         }
     }
@@ -133,8 +129,12 @@ public abstract class MLMethod<E> {
                 avgHistory.clear();
             }
         }
-        container.initialize();
-        setBestCandidate(getContainer().evaluateAll().sort().get(0));
+        if (container != null) {
+            getContainer().clearAndAddAll(getFactory().randomCandidates(getContainer().size()));
+            setBestCandidate(getContainer().sort().get(0));
+        } else {
+            setBestCandidate(getFactory().randomCandidate());
+        }
     }
 
     public void reset(List<E> seed, boolean clearHistory) {
@@ -145,21 +145,60 @@ public abstract class MLMethod<E> {
                 avgHistory.clear();
             }
         }
-        container.initialize(seed);
-        setBestCandidate(getContainer().evaluateAll().sort().get(0));
+        if (container != null) {
+            List<Candidate<E>> candidates = new ArrayList<>(getContainer().size());
+            candidates.addAll(getFactory().toCandidates(seed));
+            candidates.addAll(getFactory().randomCandidates(getContainer().size()-candidates.size()));
+            getContainer().clearAndAddAll(candidates);
+            setBestCandidate(getContainer().sort().get(0));
+        } else {
+            setBestCandidate(getFactory().toCandidate(seed.get(0)));
+        }
     }
+    
+     
 
     public Candidate<E> getBestCandidate() {
-        return bestCandidate;
+//        synchronized (mutex) {
+            return new Candidate<>(bestCandidate);
+//        }
     }
 
     public void setBestCandidate(Candidate<E> candidate) {
-        if (this.bestCandidate == null) {
-            this.bestCandidate = new Candidate<>(candidate);
-        } else if (candidate.getCost() < this.bestCandidate.getCost()) {
-            this.bestCandidate = new Candidate<>(candidate);
-        }
+//        synchronized (mutex) {
+            if (this.bestCandidate == null) {
+                this.bestCandidate = new Candidate<>(candidate);
+            } else if (candidate.getCost() < this.bestCandidate.getCost()) {
+                this.bestCandidate = new Candidate<>(candidate);
+            }
+//        }
     }
+    
+     public void warmUp(long millis) {
+        reset(true);
+        runFor(millis);
+        reset(true);
+    }
+
+    public CandidateFactory getFactory() {
+        return factory;
+    }
+
+    public CandidateContainer<E> getContainer() {
+        return container;
+    }
+
+    public int encodingLength() {
+        return factory.getEncodingLength();
+    }
+
+    public MLHistory getHistory() {
+        return history;
+    }
+
+    public MLHistory getAvgHistory() {
+        return avgHistory;
+    }    
 
     public AbstractEvaluator<E> getEvaluator() {
         return evaluator;

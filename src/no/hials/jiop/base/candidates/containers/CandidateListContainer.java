@@ -29,20 +29,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
  * @author Lars Ivar
  */
-public abstract class CandidateListContainer<E> extends CandidateContainer<E> {
+public class CandidateListContainer<E> extends CandidateContainer<E> {
 
-    private  List<Candidate<E>> candidates;
+    private List<Candidate<E>> candidates;
 
-    public CandidateListContainer(int size, int candidateLength) {
-        super(size, candidateLength);
-        this.candidates = new ArrayList<>(size());
+    public CandidateListContainer(int size) {
+        super(size);
+        this.candidates = new ArrayList<>(size);
     }
 
     @Override
@@ -51,7 +50,7 @@ public abstract class CandidateListContainer<E> extends CandidateContainer<E> {
     }
 
     @Override
-    public  void set(int index, Candidate<E> candidate) {
+    public void set(int index, Candidate<E> candidate) {
         candidates.set(index, candidate);
     }
 
@@ -61,10 +60,9 @@ public abstract class CandidateListContainer<E> extends CandidateContainer<E> {
     }
 
     @Override
-    public  int indexOf(Candidate<E> candidate) {
+    public int indexOf(Candidate<E> candidate) {
         return candidates.indexOf(candidate);
     }
-    
 
     @Override
     public CandidateContainer<E> sort() {

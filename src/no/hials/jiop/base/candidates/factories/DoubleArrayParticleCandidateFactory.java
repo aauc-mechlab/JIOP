@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, Lars Ivar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,41 +23,39 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.evolutionary;
+package no.hials.jiop.base.candidates.factories;
 
-import no.hials.jiop.base.AbstractEvaluator;
-import no.hials.jiop.utils.ArrayUtil;
-import no.hials.jiop.base.candidates.containers.CandidateContainer;
-import no.hials.jiop.base.candidates.encoding.BasicEncoding;
+import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
+import no.hials.jiop.base.candidates.encoding.DoubleArrayParticleEncoding;
+import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
+import no.hials.jiop.utils.ArrayUtil;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar
  */
-public class DoubleArrayDE extends DEEngine<double[]> {
+public class DoubleArrayParticleCandidateFactory extends CandidateFactory<double[]> {
 
-    public DoubleArrayDE(double F, double CR, CandidateContainer<double[]> container, AbstractEvaluator<double[]> evaluator) {
-        super(F, CR, container, evaluator);
+    public DoubleArrayParticleCandidateFactory(int encodingLength) {
+        super(encodingLength);
     }
 
     @Override
-    public BasicEncoding<double[]> differentiate(int R, double F, double CR, double[] c, double[] c1, double[] c2, double[] c3) {
-        double[] array = new double[getContainer().candidateLength()];
-        for (int i = 0; i < array.length; i++) {
-            if ((Math.random() < CR) || (i == R)) {
-                array[i] = c1[i] + F * (c2[i] - c3[i]);
-            } else {
-                array[i] = c[i];
-            }
-        }
-
-        return new DoubleArrayEncoding(ArrayUtil.clamp(0, 1, array));
+    public ParticleEncoding<double[]> randomEncoding(int length) {
+        double[] rand = ArrayUtil.randomD(length);
+        return new DoubleArrayParticleEncoding(rand, new Candidate<>(new DoubleArrayEncoding(rand), Double.MAX_VALUE));
     }
 
     @Override
-    public String getName() {
-        return "Differential Evolution";
+    public ParticleEncoding<double[]> wrapVariables(double[] original) {
+        return new DoubleArrayParticleEncoding(original, new Candidate<>(new DoubleArrayEncoding(original), Double.MAX_VALUE));
+    }
+
+    @Override
+    public ParticleEncoding<double[]> neighborEncoding(double[] original) {
+        double[] neighbor = ArrayUtil.neighbor(original, 0.001);
+        return new DoubleArrayParticleEncoding(neighbor, new Candidate<>(new DoubleArrayEncoding(neighbor), Double.MAX_VALUE));
     }
 
 }

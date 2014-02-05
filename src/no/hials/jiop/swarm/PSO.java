@@ -30,6 +30,7 @@ import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
+import no.hials.jiop.base.candidates.factories.CandidateFactory;
 
 /**
  *
@@ -40,25 +41,26 @@ public class PSO<E> extends MLMethod<E> {
 
     private final double omega, c1, c2;
 
-    public PSO(double omega, double c1, double c2, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
-        super(container, evaluator);
+    public PSO(double omega, double c1, double c2, CandidateFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+        super(factory, container, evaluator);
         this.omega = omega;
         this.c1 = c1;
         this.c2 = c2;
     }
 
     @Override
-    protected void doIteration() {
-        for (Candidate<E> c : getContainer()) {
+    public void internalIteration() {
+        for (Candidate<E> c : getContainer().getCandidates()) {
             ParticleEncoding<E> p = (ParticleEncoding<E>) c.getEncoding();
             p.update(omega, c1, c2, getBestCandidate().getVariables());
-            double evaluate = evaluate(c.getVariables());
+            double evaluate = getEvaluator().evaluate(c.getVariables());
             c.setCost(evaluate);
             if (evaluate < p.getLocalBest().getCost()) {
-                p.setLocalBest(c);
+                p.setLocalBest(new Candidate<>(c));
             }
             if (evaluate < getBestCandidate().getCost()) {
                 setBestCandidate(c);
+//                System.out.println(evaluate);
             }
         }
     }

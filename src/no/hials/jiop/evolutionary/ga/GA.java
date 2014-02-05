@@ -31,6 +31,7 @@ import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.Candidate;
+import no.hials.jiop.base.candidates.factories.CandidateFactory;
 
 /**
  *
@@ -38,17 +39,17 @@ import no.hials.jiop.base.candidates.Candidate;
  * @param <E>
  */
 public class GA<E> extends MLMethod<E> {
-
+    
     private final SelectionOperator<E> selection;
     private final CrossoverOperator<E> crossover;
     private final MutationOperator<E> mutation;
-
+    
     private final int numElites;
     private final int numSelection;
     private final int numMutations;
-
-    public GA(int numElites, int numSelection, int numMutations, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
-        super(container, evaluator);
+    
+    public GA(int numElites, int numSelection, int numMutations, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, CandidateFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+        super(factory, container, evaluator);
         this.selection = selection;
         this.crossover = crossover;
         this.mutation = mutation;
@@ -56,9 +57,9 @@ public class GA<E> extends MLMethod<E> {
         this.numSelection = numSelection;
         this.numMutations = numMutations;
     }
-
-    public GA(float elitism, float keep, float mutrate, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
-        super(container, evaluator);
+    
+    public GA(float elitism, float keep, float mutrate, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, CandidateFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+        super(factory, container, evaluator);
         this.selection = selection;
         this.crossover = crossover;
         this.mutation = mutation;
@@ -66,25 +67,25 @@ public class GA<E> extends MLMethod<E> {
         this.numSelection = Math.round(getContainer().size() * keep);
         this.numMutations = Math.round((getContainer().size() - numElites) * mutrate);
     }
-
+    
     @Override
-    protected void doIteration() {
+    public void internalIteration() {
         List<Candidate<E>> elites = getElites();
         final List<Candidate<E>> selected = selection.selectCandidates(getContainer().getCandidates(), numSelection);
         final List<Candidate<E>> offspring = crossover.createoffspring(selected, Math.round((getContainer().size() - numElites - numSelection) / 2));
-        List<Candidate<E>> newpop = new ArrayList<>(getContainer().size());
+        final List<Candidate<E>> newpop = new ArrayList<>(getContainer().size());
         newpop.addAll(selected);
         newpop.addAll(offspring);
         mutation.mutateCandidates(newpop, numMutations);
         newpop.addAll(elites);
-        while (newpop.size() < getContainer().size()) {
-            newpop.add(getContainer().generateRandomCandidate());
+        if (getContainer().size() > newpop.size()) {
+            newpop.addAll(getFactory().randomCandidates(getContainer().size()-newpop.size()));
         }
         getContainer().clearAndAddAll(newpop);
-        getContainer().evaluateAll().sort();
+        getEvaluator().evaluateAll(getContainer());
         setBestCandidate(getContainer().get(0));
     }
-
+    
     private List<Candidate<E>> getElites() {
         List<Candidate<E>> elites = new ArrayList<>(numElites);
         for (int i = 0; i < numElites; i++) {
@@ -93,10 +94,10 @@ public class GA<E> extends MLMethod<E> {
         }
         return elites;
     }
-
+    
     @Override
     public String getName() {
         return "Genetic Algorithm";
     }
-
+    
 }

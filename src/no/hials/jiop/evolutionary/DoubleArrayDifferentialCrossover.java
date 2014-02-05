@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Lars Ivar
+ * Copyright (c) 2014, Aalesund University College 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,25 +23,36 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.candidates.containers;
+package no.hials.jiop.evolutionary;
 
 import no.hials.jiop.base.AbstractEvaluator;
-import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
+import no.hials.jiop.utils.ArrayUtil;
+import no.hials.jiop.base.candidates.containers.CandidateContainer;
+import no.hials.jiop.base.candidates.encoding.Encoding;
+import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
 
 /**
  *
- * @author Lars Ivar
+ * @author LarsIvar
  */
-public abstract class ParticleListContainer<E> extends CandidateListContainer<E> {
+public class DoubleArrayDifferentialCrossover extends DifferentialCrossover<double[]> {
 
-    public ParticleListContainer(int size, int candidateLength) {
-        super(size, candidateLength);
+    public DoubleArrayDifferentialCrossover(double F, double CR) {
+        super(F, CR);
     }
-    
-    @Override
-    public abstract ParticleEncoding<E> randomEncoding(int length);
 
     @Override
-    public abstract ParticleEncoding<E> wrapVariables(E original);
+    protected Encoding<double[]> crossover(int R, double F, double CR, double[] c, double[] c1, double[] c2, double[] c3) {
+        double[] array = new double[c.length];
+        for (int i = 0; i < array.length; i++) {
+            if ((Math.random() < CR) || (i == R)) {
+                array[i] = c1[i] + F * (c2[i] - c3[i]);
+            } else {
+                array[i] = c[i];
+            }
+        }
+
+        return new DoubleArrayEncoding(ArrayUtil.clamp(0, 1, array));
+    }
 
 }

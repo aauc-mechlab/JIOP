@@ -25,6 +25,7 @@
  */
 package no.hials.jiop.base.candidates.encoding;
 
+import java.util.Arrays;
 import java.util.Random;
 import no.hials.jiop.utils.ArrayUtil;
 import no.hials.jiop.base.candidates.Candidate;
@@ -73,19 +74,19 @@ public class DoubleArrayParticleEncoding extends DoubleArrayEncoding implements 
 
     @Override
     public void update(double omega, double c1, double c2, double[] globalBest) {
-//        double r1 = rng.nextDouble();
-//        double r2 = rng.nextDouble();
+        double r1 = rng.nextDouble();
+        double r2 = rng.nextDouble();
         for (int i = 0; i < globalBest.length; i++) {
             double vi = getVelocity()[i];
             double li = getLocalBest().getVariables()[i];
             double pi = getVariables()[i];
             double gi = globalBest[i];
-            double vel = (omega * vi) + (rng.nextDouble() * c1 * (li - pi)) + (rng.nextDouble() * c2 * (gi - pi));
+            double vel = (omega * vi) + ((r1 * c1 * (li - pi)) + (r2 * c2 * (gi - pi)));
 
-            if (vel < -0.5) {
-                vel = -0.5;
-            } else if (vel > 0.5) {
-                vel = 0.5;
+            if (vel < -0.1) {
+                vel = -0.1;
+            } else if (vel > 0.1) {
+                vel = 0.1;
             }
 
             double newPos = getVariables()[i] + vel;

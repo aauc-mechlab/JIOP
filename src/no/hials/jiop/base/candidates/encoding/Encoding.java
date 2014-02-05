@@ -30,9 +30,9 @@ package no.hials.jiop.base.candidates.encoding;
  *
  * @author LarsIvar
  */
-public interface BasicEncoding<E> {
+public interface Encoding<E> {
     
     public int size();
     public E getVariables();
-    public BasicEncoding<E> copy();
+    public Encoding<E> copy();
 }

@@ -24,35 +24,35 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop.base.candidates.containers;
+package no.hials.jiop.base.candidates.factories;
 
-import no.hials.jiop.base.AbstractEvaluator;
-import no.hials.jiop.base.candidates.encoding.BasicEncoding;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
+import no.hials.jiop.base.candidates.encoding.Encoding;
 import no.hials.jiop.utils.ArrayUtil;
 
 /**
  *
  * @author Lars Ivar
  */
-public class DoubleArrayCandidateListContainer extends CandidateListContainer<double[]>{
+public class DoubleArrayCandidateFactory extends CandidateFactory<double[]>{
 
-    public DoubleArrayCandidateListContainer(int size, int candidateLength) {
-        super(size, candidateLength);
+    public DoubleArrayCandidateFactory(int encodingLength) {
+        super(encodingLength);
     }
 
     @Override
-    public BasicEncoding<double[]> randomEncoding(int length) {
-       return new DoubleArrayEncoding(ArrayUtil.randomD(length));
+    public Encoding<double[]> randomEncoding(int length) {
+        return new DoubleArrayEncoding(ArrayUtil.randomD(length));
     }
 
     @Override
-    public BasicEncoding<double[]> wrapVariables(double[] original) {
-       return new DoubleArrayEncoding(original);
+    public Encoding<double[]> wrapVariables(double[] original) {
+        return new DoubleArrayEncoding(original);
     }
 
     @Override
-    public BasicEncoding<double[]> neighborEncoding(double[] original) {
+    public Encoding<double[]> neighborEncoding(double[] original) {
         return new DoubleArrayEncoding(ArrayUtil.neighbor(original, 0.001));
-    } 
+    }
+    
 }

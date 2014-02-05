@@ -23,36 +23,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package no.hials.jiop.evolutionary;
 
-package no.hials.jiop.base.candidates.containers;
-
-import no.hials.jiop.base.candidates.encoding.BasicEncoding;
-import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
-import no.hials.jiop.utils.ArrayUtil;
+import java.util.Random;
+import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
  * @author Lars Ivar
  */
-public class DoubleArrayCandidateArrayContainer extends CandidateArrayContainer<double[]>{
+public abstract class DifferentialCrossover<E> {
 
-    public DoubleArrayCandidateArrayContainer(int size, int candidateLength) {
-        super(size, candidateLength);
-    }
-    
- @Override
-    public BasicEncoding<double[]> randomEncoding(int length) {
-       return new DoubleArrayEncoding(ArrayUtil.randomD(length));
-    }
+    private final Random rng = new Random();
 
-    @Override
-    public BasicEncoding<double[]> wrapVariables(double[] original) {
-       return new DoubleArrayEncoding(original);
+    private final double F, CR;
+
+    public DifferentialCrossover(double F, double CR) {
+        this.F = F;
+        this.CR = CR;
     }
 
-    @Override
-    public BasicEncoding<double[]> neighborEncoding(double[] original) {
-        return new DoubleArrayEncoding(ArrayUtil.neighbor(original, 0.001));
-    } 
-    
+    public Encoding<E> crossover(int R, E c, E c1, E c2, E c3) {
+        return crossover(R, F, CR, c, c1, c2, c3);
+    }
+
+    protected abstract Encoding<E> crossover(int R, double F, double CR, E c, E c1, E c2, E c3);
+
 }

@@ -25,11 +25,8 @@
  */
 package no.hials.jiop.base.candidates.containers;
 
-import java.util.ArrayList;
 import java.util.List;
-import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.base.candidates.encoding.BasicEncoding;
 
 /**
  *
@@ -37,33 +34,17 @@ import no.hials.jiop.base.candidates.encoding.BasicEncoding;
  */
 public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
     
-    private MLMethod<E> owner;
-    protected final int size, candidateLength;
+    protected final int size;
+    
 
-    public CandidateContainer(int size, int candidateLength) {
+    public CandidateContainer(int size) {
         this.size = size;
-        this.candidateLength = candidateLength;
-    }
-
-    public CandidateContainer<E> setOwner(MLMethod<E> owner) {
-        this.owner = owner;
-        return this;
     }
     
-    public int size() {
+     public int size() {
         return size;
     }
-
-    public int candidateLength() {
-        return candidateLength;
-    }
     
-    public abstract BasicEncoding<E> randomEncoding(int length);
-
-    public abstract BasicEncoding<E> wrapVariables(E original);
-
-    public abstract BasicEncoding<E> neighborEncoding(E original);
-
     public abstract List<Candidate<E>> getCandidates();
 
     public abstract CandidateContainer<E> sort();
@@ -76,36 +57,6 @@ public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
 
     public abstract void clearAndAddAll(List<Candidate<E>> candidates);
 
-    public void initialize() {
-        List<Candidate<E>> candidates = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            candidates.add(generateRandomCandidate());
-        }
-        clearAndAddAll(candidates);
-        evaluateAll();
-    }
-
-    public void initialize(List<E> seed) {
-        if (seed.size() > size) {
-            throw new IllegalArgumentException("The number of seeds are greater than the preset container size");
-        }
-        List<Candidate<E>> candidates = new ArrayList<>(size);
-        int i = 0;
-        for (; i < seed.size(); i++) {
-            candidates.add(createCandidate(seed.get(i)));
-        }
-        for (; i < size; i++) {
-            candidates.add(generateRandomCandidate());
-        }
-        clearAndAddAll(candidates);
-        evaluateAll();
-    }
-
-    public CandidateContainer<E> evaluateAll() {
-        owner.getEvaluator().evaluateAll(this);
-        return this;
-    }
-
     public double getAverage() {
         double avg = 0;
         for (Candidate<E> c : this) {
@@ -113,49 +64,6 @@ public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
         }
         return avg / size();
     }
-
-//    public  Candidate<E> getBestCandidate() {
-//        return bestCandidate;
-//    }
-
-//    public  void setBestCandidate(Candidate<E> candidate) {
-//        if (this.bestCandidate == null) {
-//            this.bestCandidate = new Candidate<>(candidate);
-//        } else if (candidate.getCost() < this.bestCandidate.getCost()) {
-//            this.bestCandidate = new Candidate<>(candidate);
-//        }
-//    }
-
-    public double evaluate(E encoding) {
-        return owner.getEvaluator().evaluate(encoding);
-    }
-
-    public Candidate<E> generateRandomCandidate() {
-        BasicEncoding<E> random = randomEncoding(candidateLength());
-        return new Candidate<>(random, owner.getEvaluator().evaluate(random.getVariables()));
-    }
-
-    public Candidate<E> generateNeighborCandidate(Candidate<E> original) {
-        BasicEncoding<E> neighbor = neighborEncoding(original.getVariables());
-        return new Candidate<>(neighbor, owner.getEvaluator().evaluate(neighbor.getVariables()));
-    }
-
-    public Candidate<E> createCandidate(BasicEncoding<E> encoding) {
-        return new Candidate<>(encoding, evaluate(encoding.getVariables()));
-    }
-
-    public Candidate<E> createCandidate(E elements) {
-        BasicEncoding<E> encoding = wrapVariables(elements);
-        return new Candidate<>(encoding, evaluate(encoding.getVariables()));
-    }
-
-//    public int candidateLength() {
-//        return candidateLength;
-//    }
-//
-//    public int size() {
-//        return size;
-//    }
 
     @Override
     public String toString() {
@@ -169,37 +77,4 @@ public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
         }
         return sb.toString();
     }
-
-//    private class EvaluateCandidates implements Callable<Candidate> {
-//
-//        private final Candidate<E> candidate;
-//
-//        public EvaluateCandidates(Candidate<E> candidate) {
-//            this.candidate = candidate;
-//        }
-//
-//        @Override
-//        public Candidate call() throws Exception {
-//            candidate.setCost(owner.getEvaluator().evaluate(candidate.getVariables()));
-//            return candidate;
-//        }
-//    }
-//
-//    private class CreateCandidates implements Callable<Candidate> {
-//
-//        private final E elements;
-//
-//        public CreateCandidates(E elements) {
-//            this.elements = elements;
-//        }
-//
-//        @Override
-//        public Candidate call() throws Exception {
-//            if (elements == null) {
-//                return createCandidate(randomEncoding(candidateLength()));
-//            } else {
-//                return createCandidate(elements);
-//            }
-//        }
-//    }
 }

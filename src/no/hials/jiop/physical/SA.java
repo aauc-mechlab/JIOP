@@ -27,9 +27,9 @@ package no.hials.jiop.physical;
 
 import java.util.List;
 import no.hials.jiop.base.AbstractEvaluator;
-import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.Candidate;
+import no.hials.jiop.base.candidates.factories.CandidateFactory;
 
 /**
  *
@@ -40,21 +40,21 @@ public class SA<E> extends MLMethod<E> {
     private double temperature;
     private final double startingTemperature;
     private final AnnealingSchedule schedule;
+    private Candidate<E> current;
 
-    public SA(double startingTemperature,  AnnealingSchedule schedule, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
-        super(container, evaluator);
+    public SA(double startingTemperature, AnnealingSchedule schedule, CandidateFactory<E> factory, AbstractEvaluator<E> evaluator) {
+        super(factory, evaluator);
         this.startingTemperature = startingTemperature;
         this.schedule = schedule;
     }
 
     @Override
-    protected void doIteration() {
-
-        Candidate<E> newSample = getContainer().generateNeighborCandidate(getContainer().get(0));
-        if (doAccept(getContainer().get(0), newSample)) {
-            getContainer().set(0, newSample);
+    public void internalIteration() {
+        Candidate<E> newSample = getFactory().neighborCandidate(current);
+        if (doAccept(current, newSample)) {
+            current = newSample;
         }
-        if (newSample.getCost() <getBestCandidate().getCost()) {
+        if (newSample.getCost() < getBestCandidate().getCost()) {
             setBestCandidate(newSample);
         }
         temperature = schedule.cool(temperature);
@@ -66,13 +66,17 @@ public class SA<E> extends MLMethod<E> {
 
     @Override
     public void reset(List<E> initials, boolean clearHistory) {
-        super.reset(initials, clearHistory); //To change body of generated methods, choose Tools | Templates.
+        super.reset(initials, clearHistory);
+        this.current = getFactory().toCandidate(initials.get(0));
+//        setBestCandidate(current);
         this.temperature = startingTemperature;
     }
 
     @Override
     public void reset(boolean clearHistory) {
-        super.reset(clearHistory); //To change body of generated methods, choose Tools | Templates.
+        super.reset(clearHistory);
+        this.current = getFactory().randomCandidate();
+//        setBestCandidate(current);
         this.temperature = startingTemperature;
     }
 

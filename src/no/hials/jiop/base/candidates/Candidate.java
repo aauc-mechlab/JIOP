@@ -25,7 +25,7 @@
  */
 package no.hials.jiop.base.candidates;
 
-import no.hials.jiop.base.candidates.encoding.BasicEncoding;
+import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
@@ -34,10 +34,10 @@ import no.hials.jiop.base.candidates.encoding.BasicEncoding;
  */
 public class Candidate<E> implements Comparable<Candidate<E>>{
 
-    private final BasicEncoding<E> encoding;
+    private final Encoding<E> encoding;
     private double cost;
 
-    public Candidate(BasicEncoding<E> encoding, double cost) {
+    public Candidate(Encoding<E> encoding, double cost) {
         this.encoding = encoding;
         this.cost = cost;
     }
@@ -46,7 +46,7 @@ public class Candidate<E> implements Comparable<Candidate<E>>{
         this(candidate.encoding.copy(), candidate.cost);
     }
 
-    public BasicEncoding<E> getEncoding() {
+    public Encoding<E> getEncoding() {
         return encoding;
     }
 

@@ -35,21 +35,19 @@ import no.hials.jiop.base.candidates.Candidate;
  *
  * @author Lars Ivar
  */
-public abstract class CandidateArrayContainer<E> extends CandidateContainer<E> {
+public class CandidateArrayContainer<E> extends CandidateContainer<E> {
 
-    private final Candidate<E>[] candidates;
+    private  Candidate<E>[] candidates;
 
-    public CandidateArrayContainer(int size, int candidateLength) {
-        super(size, candidateLength);
-        this.candidates = new Candidate[size()];
+    public CandidateArrayContainer(int size) {
+        super(size);
+        this.candidates = new Candidate[size];
     }
-
+    
     @Override
     public List<Candidate<E>> getCandidates() {
         List<Candidate<E>> list = new ArrayList<>(candidates.length);
-        for (Candidate<E> c : candidates) {
-            list.add(c);
-        }
+        list.addAll(Arrays.asList(candidates));
         return list;
     }
 
@@ -80,19 +78,15 @@ public abstract class CandidateArrayContainer<E> extends CandidateContainer<E> {
     }
 
     @Override
-    public void clearAndAddAll(List<Candidate<E>> candidates) {
-        if (candidates.size() != size()) {
-            throw new IllegalArgumentException();
-        }
-        for (int i = 0; i < size(); i++) {
-            set(i, candidates.get(i));
-        }
-    }
-
-    @Override
     public Iterator<Candidate<E>> iterator() {
         return new MyIterator();
     }
+
+    @Override
+    public void clearAndAddAll(List<Candidate<E>> candidates) {
+        this.candidates = candidates.toArray(new Candidate[candidates.size()]);
+    }
+
 
     private class MyIterator implements Iterator<Candidate<E>> {
 

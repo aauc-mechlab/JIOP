@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.base.candidates.encoding.BasicEncoding;
+import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
@@ -68,7 +68,7 @@ public abstract class AbstractEvaluator<E> {
         return evaluate(candidate.getVariables());
     }
 
-    public double evaluate(BasicEncoding<E> encoding) {
+    public double evaluate(Encoding<E> encoding) {
         return evaluate(encoding.getVariables());
     }
 

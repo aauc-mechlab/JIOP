@@ -32,7 +32,7 @@ import java.util.Arrays;
  *
  * @author LarsIvar
  */
-public class DoubleArrayEncoding implements BasicEncoding<double[]>{
+public class DoubleArrayEncoding implements Encoding<double[]>{
 
     private final double[] variables;
 
@@ -46,7 +46,7 @@ public class DoubleArrayEncoding implements BasicEncoding<double[]>{
     }
 
     @Override
-    public BasicEncoding<double[]> copy() {
+    public Encoding<double[]> copy() {
         return new DoubleArrayEncoding(variables.clone());
     }
 

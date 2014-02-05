@@ -25,7 +25,7 @@
  */
 package no.hials.jiop.base.candidates;
 
-import no.hials.jiop.base.candidates.encoding.BasicEncoding;
+import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
@@ -36,7 +36,7 @@ public class EvaluatedCandidate<E> extends Candidate<E>{
     private final int iterations;
     private final long time;
 
-    public EvaluatedCandidate(BasicEncoding<E> encoding, int iterations, long time,  double cost) {
+    public EvaluatedCandidate(Encoding<E> encoding, int iterations, long time,  double cost) {
         super(encoding.copy(), cost);
         this.iterations = iterations;
         this.time = time;

@@ -30,25 +30,25 @@ import java.util.Random;
 import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.MLMethod;
-import no.hials.jiop.base.candidates.encoding.BasicEncoding;
+import no.hials.jiop.base.candidates.encoding.Encoding;
+import no.hials.jiop.base.candidates.factories.CandidateFactory;
 
 /**
  *
  * @author LarsIvar
  */
-public abstract class DEEngine<E> extends MLMethod<E> {
+public class DE<E> extends MLMethod<E> {
 
-    private final double F, CR;
+    private final DifferentialCrossover<E> crossover;
     private final Random rng = new Random();
 
-    public DEEngine(double F, double CR, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
-        super(container, evaluator);
-        this.F = F;
-        this.CR = CR;
+    public DE(DifferentialCrossover<E> crossover, CandidateFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+        super(factory, container, evaluator);
+        this.crossover = crossover;
     }
-    
+
     @Override
-    protected void doIteration() {
+    public void internalIteration() {
         for (Candidate<E> c : getContainer()) {
             E p = c.getVariables();
             E p1, p2, p3;
@@ -65,9 +65,9 @@ public abstract class DEEngine<E> extends MLMethod<E> {
                 p3 = getContainer().get(rand).getVariables();
             } while (p3 == c && p3 == p1 && p3 == p2);
 
-            int R = rng.nextInt(getContainer().candidateLength());
-            BasicEncoding<E> differentiate = differentiate(R, F, CR, p, p1, p2, p3);
-            Candidate<E> sample = getContainer().createCandidate(differentiate);
+            int R = rng.nextInt();
+            Encoding<E> differentiate = crossover.crossover(R, p, p1, p2, p3);
+            Candidate<E> sample = getFactory().toCandidate(differentiate);
             if (sample.getCost() < c.getCost()) {
                 getContainer().set(getContainer().indexOf(c), sample);
                 if (sample.getCost() < getBestCandidate().getCost()) {
@@ -76,9 +76,10 @@ public abstract class DEEngine<E> extends MLMethod<E> {
             }
         }
     }
-    
-    
 
-    public abstract BasicEncoding<E> differentiate(int R, double F, double CR, E c, E c1, E c2, E c3);
+    @Override
+    public String getName() {
+        return "Differential Evolution";
+    }
 
 }

@@ -34,10 +34,12 @@ import no.hials.jiop.swarm.PSO;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import no.hials.jiop.base.MLMethod;
-import no.hials.jiop.base.candidates.containers.DoubleArrayCandidateArrayContainer;
-import no.hials.jiop.base.candidates.containers.DoubleArrayCandidateListContainer;
-import no.hials.jiop.base.candidates.containers.DoubleArrayParticleListContainer;
-import no.hials.jiop.evolutionary.DoubleArrayDE;
+import no.hials.jiop.base.candidates.containers.CandidateArrayContainer;
+import no.hials.jiop.base.candidates.containers.CandidateListContainer;
+import no.hials.jiop.base.candidates.factories.DoubleArrayCandidateFactory;
+import no.hials.jiop.base.candidates.factories.DoubleArrayParticleCandidateFactory;
+import no.hials.jiop.evolutionary.DE;
+import no.hials.jiop.evolutionary.DoubleArrayDifferentialCrossover;
 import no.hials.jiop.evolutionary.ga.DoubleArrayCrossover;
 import no.hials.jiop.evolutionary.ga.DoubleArrayMutation;
 import no.hials.jiop.evolutionary.ga.GA;
@@ -58,15 +60,15 @@ public class Main {
 
         System.out.println(Arrays.toString(desired));
 
-        MLMethod[] methods = new MLMethod[]{
-            new DoubleArrayDE(0.8, 0.9, new DoubleArrayCandidateListContainer(30, dim), new MyEvaluator()),
-            new PSO<>(0.1, 0.4, 2, new DoubleArrayParticleListContainer(40, dim), new MyEvaluator()),
-            new SA<>(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayCandidateListContainer(1, dim), new MyEvaluator(1)),
-            new GA<>(0.1f, 0.5f, 0.2f, new StochasticUniversalSampling<double[]>(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayCandidateArrayContainer(60, dim), new MyEvaluator())};
-//          
+        MLMethod<double[]>[] methods = new MLMethod[]{
+            new DE<>(new DoubleArrayDifferentialCrossover(0.8, 0.9), new DoubleArrayCandidateFactory(dim), new CandidateListContainer(30), new MyEvaluator()),
+            new PSO<>(0.9, 0.9, 0.9, new DoubleArrayParticleCandidateFactory(dim), new CandidateArrayContainer(30), new MyEvaluator()),
+            new SA<>(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayCandidateFactory(dim), new MyEvaluator()),
+            new GA<>(0.1f, 0.5f, 0.2f, new StochasticUniversalSampling<double[]>(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayCandidateFactory(dim), new CandidateArrayContainer(60), new MyEvaluator())};
+
         for (final MLMethod method : methods) {
             method.warmUp(250);
-            EvaluatedCandidate run = method.runFor(50l);
+            EvaluatedCandidate run = method.runFor(10l);
             System.out.println(run);
 
             final JFrame frame = new JFrame(method.getName());
