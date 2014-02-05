@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.candidates.Candidate;
 
 /**
@@ -38,11 +37,11 @@ import no.hials.jiop.base.candidates.Candidate;
  */
 public abstract class CandidateArrayContainer<E> extends CandidateContainer<E> {
 
-    private final Candidate[] candidates;
+    private final Candidate<E>[] candidates;
 
-    public CandidateArrayContainer(int size, int candidateLength, Evaluator<E> evaluator, boolean multiThreaded) {
-        super(size, candidateLength, evaluator, multiThreaded);
-        this.candidates = new Candidate[size];
+    public CandidateArrayContainer(int size, int candidateLength) {
+        super(size, candidateLength);
+        this.candidates = new Candidate[size()];
     }
 
     @Override

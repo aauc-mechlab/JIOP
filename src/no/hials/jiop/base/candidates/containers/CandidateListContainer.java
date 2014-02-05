@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import no.hials.jiop.base.Evaluator;
+import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.Candidate;
 
 /**
@@ -40,9 +40,9 @@ public abstract class CandidateListContainer<E> extends CandidateContainer<E> {
 
     private  List<Candidate<E>> candidates;
 
-    public CandidateListContainer(int size, int candidateLength, Evaluator<E> evaluator, boolean multiThreaded) {
-        super(size, candidateLength, evaluator, multiThreaded);
-        this.candidates = new ArrayList<>(size);
+    public CandidateListContainer(int size, int candidateLength) {
+        super(size, candidateLength);
+        this.candidates = new ArrayList<>(size());
     }
 
     @Override
@@ -51,7 +51,7 @@ public abstract class CandidateListContainer<E> extends CandidateContainer<E> {
     }
 
     @Override
-    public synchronized  void set(int index, Candidate<E> candidate) {
+    public  void set(int index, Candidate<E> candidate) {
         candidates.set(index, candidate);
     }
 

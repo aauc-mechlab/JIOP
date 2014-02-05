@@ -26,7 +26,6 @@
 
 package no.hials.jiop.base.candidates.containers;
 
-import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.candidates.encoding.BasicEncoding;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
 import no.hials.jiop.utils.ArrayUtil;
@@ -37,8 +36,8 @@ import no.hials.jiop.utils.ArrayUtil;
  */
 public class DoubleArrayCandidateArrayContainer extends CandidateArrayContainer<double[]>{
 
-    public DoubleArrayCandidateArrayContainer(int size, int candidateLength, Evaluator<double[]> evaluator, boolean multiThreaded) {
-        super(size, candidateLength, evaluator, multiThreaded);
+    public DoubleArrayCandidateArrayContainer(int size, int candidateLength) {
+        super(size, candidateLength);
     }
     
  @Override

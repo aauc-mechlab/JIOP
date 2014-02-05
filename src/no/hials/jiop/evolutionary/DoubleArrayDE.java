@@ -25,6 +25,7 @@
  */
 package no.hials.jiop.evolutionary;
 
+import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.utils.ArrayUtil;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.candidates.encoding.BasicEncoding;
@@ -36,8 +37,8 @@ import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
  */
 public class DoubleArrayDE extends DEEngine<double[]> {
 
-    public DoubleArrayDE(double F, double CR, CandidateContainer<double[]> container) {
-        super(F, CR, container);
+    public DoubleArrayDE(double F, double CR, CandidateContainer<double[]> container, AbstractEvaluator<double[]> evaluator) {
+        super(F, CR, container, evaluator);
     }
 
     @Override

@@ -27,6 +27,7 @@ package no.hials.jiop.evolutionary;
 
 import no.hials.jiop.base.candidates.Candidate;
 import java.util.Random;
+import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.encoding.BasicEncoding;
@@ -40,12 +41,12 @@ public abstract class DEEngine<E> extends MLMethod<E> {
     private final double F, CR;
     private final Random rng = new Random();
 
-    public DEEngine(double F, double CR, CandidateContainer<E> container) {
-        super(container);
+    public DEEngine(double F, double CR, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+        super(container, evaluator);
         this.F = F;
         this.CR = CR;
     }
-
+    
     @Override
     protected void doIteration() {
         for (Candidate<E> c : getContainer()) {
@@ -69,8 +70,8 @@ public abstract class DEEngine<E> extends MLMethod<E> {
             Candidate<E> sample = getContainer().createCandidate(differentiate);
             if (sample.getCost() < c.getCost()) {
                 getContainer().set(getContainer().indexOf(c), sample);
-                if (sample.getCost() < getContainer().getBestCandidate().getCost()) {
-                    getContainer().setBestCandidate(sample);
+                if (sample.getCost() < getBestCandidate().getCost()) {
+                    setBestCandidate(sample);
                 }
             }
         }

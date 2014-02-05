@@ -28,8 +28,8 @@ package no.hials.jiop;
 import no.hials.jiop.utils.ArrayUtil;
 import java.util.Arrays;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
-import no.hials.jiop.base.swing.MLHistoryPlot;
-import no.hials.jiop.base.Evaluator;
+import no.hials.jiop.base.MLHistory.swing.MLHistoryPlot;
+import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.swarm.PSO;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -50,37 +50,29 @@ import no.hials.jiop.physical.SA;
  * @author LarsIvar
  */
 public class Main {
-    
+
     public static final int dim = 5;
     public static double[] desired = ArrayUtil.randomD(dim);
-    
+
     public static void main(String[] args) throws InterruptedException {
-//        long t0 = System.currentTimeMillis();
-//        long t1 = System.nanoTime();
-//        Thread.sleep(20);
-//        System.out.println(System.currentTimeMillis()-t0);
-//        System.out.println((System.nanoTime() -t1)/1000000);
-        
+
         System.out.println(Arrays.toString(desired));
-        
+
         MLMethod[] methods = new MLMethod[]{
-            new DoubleArrayDE(0.8, 0.9, new DoubleArrayCandidateListContainer(30, dim, new MyEvaluator(), false)),
-            new PSO<>(0.1, 0.4, 2, new DoubleArrayParticleListContainer(40, dim, new MyEvaluator(), false)),
-            new SA<>(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayCandidateListContainer(1, dim, new MyEvaluator(), false)),
-            new GA(0.1f, 0.5f, 0.2f, new StochasticUniversalSampling<>(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayCandidateArrayContainer(60, dim, new MyEvaluator(), false))};
-//            new GA(20, 0.1f, 0.5f, 0.1f, dim, new StochasticUniversalSampling(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0.5), new DoubleArrayCandidateFactory(new MyEvaluator())),
-//            new GA(80, 0.1f, 0.5f, 0.2f, dim, new TournamentSelection<>(0.85), new DoubleArrayCrossover(), new DoubleArrayMutation(0.001, 1), new DoubleArrayCandidateFactory(new MyEvaluator()))};
-        
+            new DoubleArrayDE(0.8, 0.9, new DoubleArrayCandidateListContainer(30, dim), new MyEvaluator()),
+            new PSO<>(0.1, 0.4, 2, new DoubleArrayParticleListContainer(40, dim), new MyEvaluator()),
+            new SA<>(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayCandidateListContainer(1, dim), new MyEvaluator(1)),
+            new GA<>(0.1f, 0.5f, 0.2f, new StochasticUniversalSampling<double[]>(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayCandidateArrayContainer(60, dim), new MyEvaluator())};
+//          
         for (final MLMethod method : methods) {
-//            method.warmUp(250);
-            method.reset(true);
+            method.warmUp(250);
             EvaluatedCandidate run = method.runFor(50l);
             System.out.println(run);
-            
+
             final JFrame frame = new JFrame(method.getName());
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             SwingUtilities.invokeLater(new Runnable() {
-                
+
                 @Override
                 public void run() {
                     frame.getContentPane().add(new MLHistoryPlot(method));
@@ -90,12 +82,19 @@ public class Main {
             });
         }
     }
-    
-    static class MyEvaluator implements Evaluator<double[]> {
-        
+
+    static class MyEvaluator extends AbstractEvaluator<double[]> {
+
+        public MyEvaluator() {
+        }
+
+        public MyEvaluator(int numThreads) {
+            super(numThreads);
+        }
+
         @Override
         public double evaluate(double[] encoding) {
-            
+
             double cost = 0;
             int i = 0;
             for (double d : encoding) {
@@ -103,6 +102,6 @@ public class Main {
             }
             return cost;
         }
-        
+
     }
 }

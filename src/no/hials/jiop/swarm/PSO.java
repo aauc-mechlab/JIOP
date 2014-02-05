@@ -25,6 +25,7 @@
  */
 package no.hials.jiop.swarm;
 
+import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.MLMethod;
@@ -39,8 +40,8 @@ public class PSO<E> extends MLMethod<E> {
 
     private final double omega, c1, c2;
 
-    public PSO(double omega, double c1, double c2,  CandidateContainer<E> container) {
-        super(container);
+    public PSO(double omega, double c1, double c2, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+        super(container, evaluator);
         this.omega = omega;
         this.c1 = c1;
         this.c2 = c2;
@@ -49,26 +50,21 @@ public class PSO<E> extends MLMethod<E> {
     @Override
     protected void doIteration() {
         for (Candidate<E> c : getContainer()) {
-            ParticleEncoding<E> p = (ParticleEncoding) c.getEncoding();
-            p.update(omega, c1, c2, getContainer().getBestCandidate().getVariables());
-            
-//            double evaluate = evaluate(c.getVariables());
-//            c.setCost(evaluate);
-//            if (evaluate < p.getLocalBest().getCost()) {
-//                p.setLocalBest(c);
-//            }
-//            if (evaluate < getContainer().getBestCandidate().getCost()) {
-//                getContainer().setBestCandidate(c);
-//            }
+            ParticleEncoding<E> p = (ParticleEncoding<E>) c.getEncoding();
+            p.update(omega, c1, c2, getBestCandidate().getVariables());
+            double evaluate = evaluate(c.getVariables());
+            c.setCost(evaluate);
+            if (evaluate < p.getLocalBest().getCost()) {
+                p.setLocalBest(c);
+            }
+            if (evaluate < getBestCandidate().getCost()) {
+                setBestCandidate(c);
+            }
         }
-        getContainer().evaluateAll();
-        
     }
 
     @Override
     public String getName() {
         return "Particle Swarm Optimization";
     }
-
-
 }

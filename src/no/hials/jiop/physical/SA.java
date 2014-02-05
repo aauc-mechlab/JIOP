@@ -26,6 +26,7 @@
 package no.hials.jiop.physical;
 
 import java.util.List;
+import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.Candidate;
@@ -40,11 +41,10 @@ public class SA<E> extends MLMethod<E> {
     private final double startingTemperature;
     private final AnnealingSchedule schedule;
 
-    public SA(double startingTemperature, AnnealingSchedule schedule, CandidateContainer<E> container) {
-        super(container);
-        this.schedule = schedule;
+    public SA(double startingTemperature,  AnnealingSchedule schedule, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+        super(container, evaluator);
         this.startingTemperature = startingTemperature;
-        
+        this.schedule = schedule;
     }
 
     @Override
@@ -54,8 +54,8 @@ public class SA<E> extends MLMethod<E> {
         if (doAccept(getContainer().get(0), newSample)) {
             getContainer().set(0, newSample);
         }
-        if (newSample.getCost() < getContainer().getBestCandidate().getCost()) {
-            getContainer().setBestCandidate(newSample);
+        if (newSample.getCost() <getBestCandidate().getCost()) {
+            setBestCandidate(newSample);
         }
         temperature = schedule.cool(temperature);
     }
@@ -80,6 +80,5 @@ public class SA<E> extends MLMethod<E> {
     public String getName() {
         return "Simulated Annealing";
     }
-
 
 }

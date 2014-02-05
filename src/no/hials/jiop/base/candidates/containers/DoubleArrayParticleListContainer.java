@@ -26,7 +26,7 @@
 
 package no.hials.jiop.base.candidates.containers;
 
-import no.hials.jiop.base.Evaluator;
+import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.BasicEncoding;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
@@ -40,8 +40,8 @@ import no.hials.jiop.utils.ArrayUtil;
  */
 public class DoubleArrayParticleListContainer extends ParticleListContainer<double[]>{
 
-    public DoubleArrayParticleListContainer(int size, int candidateLength, Evaluator<double[]> evaluator, boolean multiThreaded) {
-        super(size, candidateLength, evaluator, multiThreaded);
+    public DoubleArrayParticleListContainer(int size, int candidateLength) {
+        super(size, candidateLength);
     }
 
      @Override

@@ -27,15 +27,7 @@ package no.hials.jiop.base.candidates.containers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import no.hials.jiop.base.Evaluator;
+import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.BasicEncoding;
 
@@ -44,32 +36,28 @@ import no.hials.jiop.base.candidates.encoding.BasicEncoding;
  * @author Lars Ivar
  */
 public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
-
-    private final int size;
-    private final int candidateLength;
-    private final Evaluator<E> evaluator;
     
-    private Candidate<E> bestCandidate;
+    private MLMethod<E> owner;
+    protected final int size, candidateLength;
 
-    protected ExecutorService pool;
-    protected ExecutorCompletionService completionService;
-
-    protected boolean multiThreaded = false;
-
-    public CandidateContainer(int size, int candidateLength, Evaluator<E> evaluator, boolean multiThreaded) {
+    public CandidateContainer(int size, int candidateLength) {
         this.size = size;
         this.candidateLength = candidateLength;
-        this.evaluator = evaluator;
-        if (multiThreaded) {
-            int availableProcessors = Runtime.getRuntime().availableProcessors();
-            if (availableProcessors > 1) {
-                this.pool = Executors.newFixedThreadPool(availableProcessors);
-                this.completionService = new ExecutorCompletionService<>(pool);
-                this.multiThreaded = multiThreaded;
-            }
-        }
     }
 
+    public CandidateContainer<E> setOwner(MLMethod<E> owner) {
+        this.owner = owner;
+        return this;
+    }
+    
+    public int size() {
+        return size;
+    }
+
+    public int candidateLength() {
+        return candidateLength;
+    }
+    
     public abstract BasicEncoding<E> randomEncoding(int length);
 
     public abstract BasicEncoding<E> wrapVariables(E original);
@@ -89,26 +77,11 @@ public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
     public abstract void clearAndAddAll(List<Candidate<E>> candidates);
 
     public void initialize() {
-        this.bestCandidate = null;
         List<Candidate<E>> candidates = new ArrayList<>(size);
-        if (multiThreaded) {
-            for (int i = 0; i < size; i++) {
-                completionService.submit(new CreateCandidates(null));
-            }
-            for (int i = 0; i < size; i++) {
-                try {
-                    candidates.add((Candidate<E>) completionService.take().get());
-                } catch (InterruptedException | ExecutionException ex) {
-                    Logger.getLogger(CandidateContainer.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        } else {
-            for (int i = 0; i < size; i++) {
-                candidates.add(generateRandomCandidate());
-            }
+        for (int i = 0; i < size; i++) {
+            candidates.add(generateRandomCandidate());
         }
         clearAndAddAll(candidates);
-        setBestCandidate(sort().get(0));
         evaluateAll();
     }
 
@@ -116,64 +89,20 @@ public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
         if (seed.size() > size) {
             throw new IllegalArgumentException("The number of seeds are greater than the preset container size");
         }
-        this.bestCandidate = null;
         List<Candidate<E>> candidates = new ArrayList<>(size);
         int i = 0;
-        if (multiThreaded) {
-            for (E e : seed) {
-                completionService.submit(new CreateCandidates(e));
-            }
-            for (E e : seed) {
-                try {
-                    candidates.add((Candidate<E>) completionService.take().get());
-                } catch (InterruptedException | ExecutionException ex) {
-                    Logger.getLogger(CandidateContainer.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            i = seed.size();
-            int j = i;
-            for (; i < size; i++) {
-                completionService.submit(new CreateCandidates(null));
-            }
-            for (; j < size; j++) {
-                try {
-                    candidates.add((Candidate<E>) completionService.take().get());
-                } catch (InterruptedException | ExecutionException ex) {
-                    Logger.getLogger(CandidateContainer.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        } else {
-            for (; i < seed.size(); i++) {
-                candidates.add(createCandidate(seed.get(i)));
-            }
-            for (; i < size; i++) {
-                candidates.add(generateRandomCandidate());
-            }
+        for (; i < seed.size(); i++) {
+            candidates.add(createCandidate(seed.get(i)));
+        }
+        for (; i < size; i++) {
+            candidates.add(generateRandomCandidate());
         }
         clearAndAddAll(candidates);
-        setBestCandidate(sort().get(0));
         evaluateAll();
     }
 
     public CandidateContainer<E> evaluateAll() {
-        if (multiThreaded) {
-            for (Candidate c : this) {
-                completionService.submit(new EvaluateCandidates(c));
-            }
-            for (Candidate c : this) {
-                try {
-                    Future<Candidate> take = completionService.take();
-                    take.get();
-                } catch (InterruptedException | ExecutionException ex) {
-                    Logger.getLogger(CandidateContainer.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        } else {
-            for (Candidate<E> c : this) {
-                c.setCost(evaluator.evaluate(c.getVariables()));
-            }
-        }
-        
+        owner.getEvaluator().evaluateAll(this);
         return this;
     }
 
@@ -185,30 +114,30 @@ public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
         return avg / size();
     }
 
-    public synchronized Candidate<E> getBestCandidate() {
-        return bestCandidate;
-    }
+//    public  Candidate<E> getBestCandidate() {
+//        return bestCandidate;
+//    }
 
-    public synchronized void setBestCandidate(Candidate<E> candidate) {
-        if (this.bestCandidate == null) {
-             this.bestCandidate = new Candidate<>(candidate);
-        } else if (candidate.getCost() < this.bestCandidate.getCost()) {
-            this.bestCandidate = new Candidate<>(candidate);
-        }
-    }
+//    public  void setBestCandidate(Candidate<E> candidate) {
+//        if (this.bestCandidate == null) {
+//            this.bestCandidate = new Candidate<>(candidate);
+//        } else if (candidate.getCost() < this.bestCandidate.getCost()) {
+//            this.bestCandidate = new Candidate<>(candidate);
+//        }
+//    }
 
     public double evaluate(E encoding) {
-        return evaluator.evaluate(encoding);
+        return owner.getEvaluator().evaluate(encoding);
     }
 
     public Candidate<E> generateRandomCandidate() {
-        BasicEncoding<E> random = randomEncoding(candidateLength);
-        return new Candidate<>(random, evaluator.evaluate(random.getVariables()));
+        BasicEncoding<E> random = randomEncoding(candidateLength());
+        return new Candidate<>(random, owner.getEvaluator().evaluate(random.getVariables()));
     }
 
     public Candidate<E> generateNeighborCandidate(Candidate<E> original) {
         BasicEncoding<E> neighbor = neighborEncoding(original.getVariables());
-        return new Candidate<>(neighbor, evaluator.evaluate(neighbor.getVariables()));
+        return new Candidate<>(neighbor, owner.getEvaluator().evaluate(neighbor.getVariables()));
     }
 
     public Candidate<E> createCandidate(BasicEncoding<E> encoding) {
@@ -220,13 +149,13 @@ public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
         return new Candidate<>(encoding, evaluate(encoding.getVariables()));
     }
 
-    public int candidateLength() {
-        return candidateLength;
-    }
-
-    public int size() {
-        return size;
-    }
+//    public int candidateLength() {
+//        return candidateLength;
+//    }
+//
+//    public int size() {
+//        return size;
+//    }
 
     @Override
     public String toString() {
@@ -234,43 +163,43 @@ public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
         int i = 0;
         for (Candidate c : this) {
             sb.append(c);
-            if (i++ != size - 1) {
+            if (i++ != size() - 1) {
                 sb.append('\n');
             }
         }
         return sb.toString();
     }
 
-    private class EvaluateCandidates implements Callable<Candidate> {
-
-        private final Candidate<E> candidate;
-
-        public EvaluateCandidates(Candidate<E> candidate) {
-            this.candidate = candidate;
-        }
-
-        @Override
-        public Candidate call() throws Exception {
-            candidate.setCost(evaluator.evaluate(candidate.getVariables()));
-            return candidate;
-        }
-    }
-
-    private class CreateCandidates implements Callable<Candidate> {
-
-        private final E elements;
-
-        public CreateCandidates(E elements) {
-            this.elements = elements;
-        }
-
-        @Override
-        public Candidate call() throws Exception {
-            if (elements == null) {
-                return createCandidate(randomEncoding(candidateLength));
-            } else {
-                return createCandidate(elements);
-            }
-        }
-    }
+//    private class EvaluateCandidates implements Callable<Candidate> {
+//
+//        private final Candidate<E> candidate;
+//
+//        public EvaluateCandidates(Candidate<E> candidate) {
+//            this.candidate = candidate;
+//        }
+//
+//        @Override
+//        public Candidate call() throws Exception {
+//            candidate.setCost(owner.getEvaluator().evaluate(candidate.getVariables()));
+//            return candidate;
+//        }
+//    }
+//
+//    private class CreateCandidates implements Callable<Candidate> {
+//
+//        private final E elements;
+//
+//        public CreateCandidates(E elements) {
+//            this.elements = elements;
+//        }
+//
+//        @Override
+//        public Candidate call() throws Exception {
+//            if (elements == null) {
+//                return createCandidate(randomEncoding(candidateLength()));
+//            } else {
+//                return createCandidate(elements);
+//            }
+//        }
+//    }
 }

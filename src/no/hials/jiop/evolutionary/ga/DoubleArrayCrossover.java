@@ -66,7 +66,7 @@ public class DoubleArrayCrossover extends AbstractCrossoverOperator<double[]> {
 
         double[] offspring1 = ArrayUtil.clamp(0, 1, ArrayUtil.plus(ArrayUtil.scale(ArrayUtil.minus(ma.getVariables(), pa.getVariables()), rng.nextDouble()), ma.getVariables()));
         double[] offspring2 = ArrayUtil.clamp(0, 1, ArrayUtil.plus(ArrayUtil.scale(ArrayUtil.minus(pa.getVariables(), ma.getVariables()), rng.nextDouble()), pa.getVariables()));
-        return new CandidatePair<>(new Candidate(new DoubleArrayEncoding(offspring1), Double.MAX_VALUE), new Candidate(new DoubleArrayEncoding(offspring2), Double.MAX_VALUE));
+        return new CandidatePair<>(new Candidate<>(new DoubleArrayEncoding(offspring1), Double.MAX_VALUE), new Candidate<>(new DoubleArrayEncoding(offspring2), Double.MAX_VALUE));
     }
 
 }

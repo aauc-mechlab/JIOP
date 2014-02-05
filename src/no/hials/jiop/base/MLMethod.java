@@ -25,6 +25,7 @@
  */
 package no.hials.jiop.base;
 
+import no.hials.jiop.base.MLHistory.MLHistory;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -35,6 +36,7 @@ import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
 
 /**
@@ -47,19 +49,23 @@ public abstract class MLMethod<E> {
     private final CandidateContainer<E> container;
     private final MLHistory history, avgHistory;
 
-    public MLMethod(CandidateContainer<E> container) {
-        this.history = new MLHistory();
-        this.avgHistory = container.size() > 1 ? new MLHistory() : null;
-        this.container = container;
+    private final AbstractEvaluator<E> evaluator;
 
+    private Candidate<E> bestCandidate;
+
+    public MLMethod(CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+        this.avgHistory = container.size() > 1 ? new MLHistory() : null;
+        this.history = new MLHistory();
+        this.evaluator = evaluator;
+        this.container = container.setOwner(this);
     }
 
     protected abstract void doIteration();
 
-
     public abstract String getName();
 
     public void warmUp(long millis) {
+        reset(true);
         runFor(millis);
         reset(true);
     }
@@ -86,7 +92,7 @@ public abstract class MLMethod<E> {
         do {
             iteration();
         } while (it++ < iterations);
-        return new EvaluatedCandidate<>(getContainer().getBestCandidate(), it, System.currentTimeMillis() - t0);
+        return new EvaluatedCandidate<>(getBestCandidate(), it, System.currentTimeMillis() - t0);
     }
 
     public EvaluatedCandidate<E> runFor(long time) {
@@ -96,10 +102,8 @@ public abstract class MLMethod<E> {
             iteration();
             it++;
         } while (System.currentTimeMillis() - t0 < time);
-        return new EvaluatedCandidate<>(getContainer().getBestCandidate(), it, System.currentTimeMillis() - t0);
+        return new EvaluatedCandidate<>(getBestCandidate(), it, System.currentTimeMillis() - t0);
     }
-
-
 
     public EvaluatedCandidate<E> runFor(double error) {
         int it = 0;
@@ -107,21 +111,22 @@ public abstract class MLMethod<E> {
         do {
             iteration();
             it++;
-        } while (getContainer().getBestCandidate().getCost() > error);
-        return new EvaluatedCandidate<>(getContainer().getBestCandidate(), it, System.currentTimeMillis() - t0);
+        } while (getBestCandidate().getCost() > error);
+        return new EvaluatedCandidate<>(getBestCandidate(), it, System.currentTimeMillis() - t0);
     }
 
     public void iteration() {
         long t0 = System.nanoTime();
         doIteration();
         long t = System.nanoTime() - t0;
-        history.add(getContainer().getBestCandidate().getCost(), t);
+        history.add(getBestCandidate().getCost(), t);
         if (container.size() > 1) {
             avgHistory.add(container.getAverage(), t);
         }
     }
 
     public void reset(boolean clearHistory) {
+        this.bestCandidate = null;
         if (clearHistory) {
             history.clear();
             if (avgHistory != null) {
@@ -129,9 +134,11 @@ public abstract class MLMethod<E> {
             }
         }
         container.initialize();
+        setBestCandidate(getContainer().evaluateAll().sort().get(0));
     }
 
     public void reset(List<E> seed, boolean clearHistory) {
+        this.bestCandidate = null;
         if (clearHistory) {
             history.clear();
             if (avgHistory != null) {
@@ -139,6 +146,23 @@ public abstract class MLMethod<E> {
             }
         }
         container.initialize(seed);
+        setBestCandidate(getContainer().evaluateAll().sort().get(0));
+    }
+
+    public Candidate<E> getBestCandidate() {
+        return bestCandidate;
+    }
+
+    public void setBestCandidate(Candidate<E> candidate) {
+        if (this.bestCandidate == null) {
+            this.bestCandidate = new Candidate<>(candidate);
+        } else if (candidate.getCost() < this.bestCandidate.getCost()) {
+            this.bestCandidate = new Candidate<>(candidate);
+        }
+    }
+
+    public AbstractEvaluator<E> getEvaluator() {
+        return evaluator;
     }
 
     public void dumpHistoryToFile(String dir, String fileName) {
