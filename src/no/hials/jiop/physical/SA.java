@@ -68,7 +68,6 @@ public class SA<E> extends MLMethod<E> {
     public void reset(List<E> initials, boolean clearHistory) {
         super.reset(initials, clearHistory);
         this.current = getFactory().toCandidate(initials.get(0));
-//        setBestCandidate(current);
         this.temperature = startingTemperature;
     }
 
@@ -76,7 +75,6 @@ public class SA<E> extends MLMethod<E> {
     public void reset(boolean clearHistory) {
         super.reset(clearHistory);
         this.current = getFactory().randomCandidate();
-//        setBestCandidate(current);
         this.temperature = startingTemperature;
     }
 

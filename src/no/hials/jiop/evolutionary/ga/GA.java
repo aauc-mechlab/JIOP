@@ -27,6 +27,9 @@ package no.hials.jiop.evolutionary.ga;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.MLMethod;
@@ -82,15 +85,29 @@ public class GA<E> extends MLMethod<E> {
             newpop.addAll(getFactory().randomCandidates(getContainer().size()-newpop.size()));
         }
         getContainer().clearAndAddAll(newpop);
-        getEvaluator().evaluateAll(getContainer());
-        setBestCandidate(getContainer().get(0));
+        for (final Candidate<E> c : getContainer()) {
+            getCompletionService().submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    c.setCost(getEvaluator().evaluate(c));
+                }
+            }, true);
+        }
+        for (final Candidate<E> c : getContainer()) {
+            try {
+                getCompletionService().take().get();
+            } catch (InterruptedException | ExecutionException ex) {
+                Logger.getLogger(GA.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        setBestCandidate(getContainer().sort().get(0));
     }
     
     private List<Candidate<E>> getElites() {
         List<Candidate<E>> elites = new ArrayList<>(numElites);
         for (int i = 0; i < numElites; i++) {
-            Candidate<E> c = new Candidate<>(getContainer().get(i));
-            elites.add(c);
+            elites.add(new Candidate<>(getContainer().get(i)));
         }
         return elites;
     }
@@ -99,5 +116,4 @@ public class GA<E> extends MLMethod<E> {
     public String getName() {
         return "Genetic Algorithm";
     }
-    
 }

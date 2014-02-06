@@ -86,6 +86,14 @@ public abstract class CandidateFactory<E> {
         return random;
     }
     
+    public List<Encoding<E>> randomEncodings(int size) {
+         List<Encoding<E>> random = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            random.add(randomEncoding());
+        }
+        return random;
+    }
+    
     public List<Candidate<E>> toCandidates(List<E> elements) {
         List<Candidate<E>> candidates = new ArrayList<>(elements.size());
         for (int i = 0; i < elements.size(); i++) {

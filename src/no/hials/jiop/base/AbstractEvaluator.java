@@ -41,27 +41,6 @@ import no.hials.jiop.base.candidates.encoding.Encoding;
  */
 public abstract class AbstractEvaluator<E> {
 
-    private final ExecutorService pool;
-    private final ExecutorCompletionService completionService;
-
-    private final boolean multiThreaded;
-
-    public AbstractEvaluator() {
-        this(1);
-    }
-
-    public AbstractEvaluator(int numThreads) {
-        if (numThreads == 1 | numThreads < 1) {
-            this.completionService = null;
-            this.multiThreaded = false;
-            this.pool = null;
-        } else {
-            this.multiThreaded = true;
-            this.pool = Executors.newFixedThreadPool(numThreads);
-            this.completionService = new ExecutorCompletionService(pool);
-        }
-    }
-
     public abstract double evaluate(E variables);
 
     public double evaluate(Candidate<E> candidate) {
@@ -73,37 +52,8 @@ public abstract class AbstractEvaluator<E> {
     }
 
     public void evaluateAll(Iterable<Candidate<E>> candidates) {
-        if (!multiThreaded) {
-            for (Candidate<E> candidate : candidates) {
-                candidate.setCost(evaluate(candidate));
-            }
-        } else {
-            for (Candidate<E> candidate : candidates) {
-                completionService.submit(new EvaluateCall(candidate), true);
-            }
-            for (Candidate<E> candidate : candidates) {
-                try {
-                    completionService.take().get();
-                } catch (InterruptedException | ExecutionException ex) {
-                    Logger.getLogger(AbstractEvaluator.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-    }
-
-    private class EvaluateCall implements Runnable {
-
-        private final Candidate<E> candidate;
-
-        public EvaluateCall(Candidate<E> candidate) {
-            this.candidate = candidate;
-        }
-
-        @Override
-        public void run() {
+        for (Candidate<E> candidate : candidates) {
             candidate.setCost(evaluate(candidate));
         }
-
     }
-
 }

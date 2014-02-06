@@ -53,7 +53,7 @@ import no.hials.jiop.physical.SA;
  */
 public class Main {
 
-    public static final int dim = 5;
+    public static final int dim = 500;
     public static double[] desired = ArrayUtil.randomD(dim);
 
     public static void main(String[] args) throws InterruptedException {
@@ -61,14 +61,14 @@ public class Main {
         System.out.println(Arrays.toString(desired));
 
         MLMethod<double[]>[] methods = new MLMethod[]{
-            new DE<>(new DoubleArrayDifferentialCrossover(0.8, 0.9), new DoubleArrayCandidateFactory(dim), new CandidateListContainer(30), new MyEvaluator()),
-            new PSO<>(0.9, 0.9, 0.9, new DoubleArrayParticleCandidateFactory(dim), new CandidateArrayContainer(30), new MyEvaluator()),
+            new DE<>(new DoubleArrayDifferentialCrossover(0.8, 0.9), new DoubleArrayCandidateFactory(dim), new CandidateArrayContainer(30), new MyEvaluator()),
+            new PSO<>(2, 0.9, 0.9, new DoubleArrayParticleCandidateFactory(dim), new CandidateArrayContainer(30), new MyEvaluator()),
             new SA<>(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayCandidateFactory(dim), new MyEvaluator()),
-            new GA<>(0.1f, 0.5f, 0.2f, new StochasticUniversalSampling<double[]>(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayCandidateFactory(dim), new CandidateArrayContainer(60), new MyEvaluator())};
+            new GA<>(0.1f, 0.5f, 0.2f, new StochasticUniversalSampling<double[]>(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayCandidateFactory(dim), new CandidateListContainer(60), new MyEvaluator())};
 
         for (final MLMethod method : methods) {
-            method.warmUp(250);
-            EvaluatedCandidate run = method.runFor(10l);
+            method.warmUp(1000);
+            EvaluatedCandidate run = method.runFor(1000l);
             System.out.println(run);
 
             final JFrame frame = new JFrame(method.getName());
@@ -86,13 +86,6 @@ public class Main {
     }
 
     static class MyEvaluator extends AbstractEvaluator<double[]> {
-
-        public MyEvaluator() {
-        }
-
-        public MyEvaluator(int numThreads) {
-            super(numThreads);
-        }
 
         @Override
         public double evaluate(double[] encoding) {

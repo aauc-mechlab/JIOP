@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.base.candidates.Candidate;
@@ -49,6 +51,7 @@ import no.hials.jiop.base.candidates.factories.CandidateFactory;
 public abstract class MLMethod<E> {
 
     private final Object mutex = new Object();
+    private final ExecutorCompletionService completionService = new ExecutorCompletionService(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()));
 
     private final CandidateFactory<E> factory;
     private final CandidateContainer<E> container;
@@ -65,6 +68,7 @@ public abstract class MLMethod<E> {
         this.factory = factory;
         this.container = container;
         this.factory.setOwner(this);
+
     }
 
     public MLMethod(CandidateFactory<E> factory, AbstractEvaluator<E> evaluator) {
@@ -80,8 +84,6 @@ public abstract class MLMethod<E> {
 
     public abstract String getName();
 
-    
-    
     public EvaluatedCandidate<E> runFor(int iterations) {
         int it = 0;
         long t0 = System.nanoTime();
@@ -148,33 +150,31 @@ public abstract class MLMethod<E> {
         if (container != null) {
             List<Candidate<E>> candidates = new ArrayList<>(getContainer().size());
             candidates.addAll(getFactory().toCandidates(seed));
-            candidates.addAll(getFactory().randomCandidates(getContainer().size()-candidates.size()));
+            candidates.addAll(getFactory().randomCandidates(getContainer().size() - candidates.size()));
             getContainer().clearAndAddAll(candidates);
             setBestCandidate(getContainer().sort().get(0));
         } else {
             setBestCandidate(getFactory().toCandidate(seed.get(0)));
         }
     }
-    
-     
 
     public Candidate<E> getBestCandidate() {
-//        synchronized (mutex) {
+        synchronized (mutex) {
             return new Candidate<>(bestCandidate);
-//        }
+        }
     }
 
     public void setBestCandidate(Candidate<E> candidate) {
-//        synchronized (mutex) {
+        synchronized (mutex) {
             if (this.bestCandidate == null) {
                 this.bestCandidate = new Candidate<>(candidate);
             } else if (candidate.getCost() < this.bestCandidate.getCost()) {
                 this.bestCandidate = new Candidate<>(candidate);
             }
-//        }
+        }
     }
-    
-     public void warmUp(long millis) {
+
+    public void warmUp(long millis) {
         reset(true);
         runFor(millis);
         reset(true);
@@ -198,10 +198,14 @@ public abstract class MLMethod<E> {
 
     public MLHistory getAvgHistory() {
         return avgHistory;
-    }    
+    }
 
     public AbstractEvaluator<E> getEvaluator() {
         return evaluator;
+    }
+
+    public ExecutorCompletionService getCompletionService() {
+        return completionService;
     }
 
     public void dumpHistoryToFile(String dir, String fileName) {
@@ -227,6 +231,5 @@ public abstract class MLMethod<E> {
         } catch (IOException ex) {
             Logger.getLogger(MLHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 }

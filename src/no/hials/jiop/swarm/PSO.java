@@ -25,6 +25,9 @@
  */
 package no.hials.jiop.swarm;
 
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.candidates.Candidate;
@@ -50,17 +53,29 @@ public class PSO<E> extends MLMethod<E> {
 
     @Override
     public void internalIteration() {
-        for (Candidate<E> c : getContainer().getCandidates()) {
-            ParticleEncoding<E> p = (ParticleEncoding<E>) c.getEncoding();
-            p.update(omega, c1, c2, getBestCandidate().getVariables());
-            double evaluate = getEvaluator().evaluate(c.getVariables());
-            c.setCost(evaluate);
-            if (evaluate < p.getLocalBest().getCost()) {
-                p.setLocalBest(new Candidate<>(c));
-            }
-            if (evaluate < getBestCandidate().getCost()) {
-                setBestCandidate(c);
-//                System.out.println(evaluate);
+        for (final Candidate<E> c : getContainer().getCandidates()) {
+            getCompletionService().submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    ParticleEncoding<E> p = (ParticleEncoding<E>) c.getEncoding();
+                    p.update(omega, c1, c2, getBestCandidate().getVariables());
+                    double evaluate = getEvaluator().evaluate(c.getVariables());
+                    c.setCost(evaluate);
+                    if (evaluate < p.getLocalBest().getCost()) {
+                        p.setLocalBest(new Candidate<>(c));
+                    }
+                    if (evaluate < getBestCandidate().getCost()) {
+                        setBestCandidate(c);
+                    }
+                }
+            }, true);
+        }
+        for (Candidate<E> c : getContainer()) {
+            try {
+                getCompletionService().take().get();
+            } catch (InterruptedException | ExecutionException ex) {
+                Logger.getLogger(PSO.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

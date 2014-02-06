@@ -27,11 +27,19 @@ package no.hials.jiop.evolutionary;
 
 import no.hials.jiop.base.candidates.Candidate;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.encoding.Encoding;
+import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
 import no.hials.jiop.base.candidates.factories.CandidateFactory;
+import no.hials.jiop.swarm.PSO;
 
 /**
  *
@@ -49,34 +57,48 @@ public class DE<E> extends MLMethod<E> {
 
     @Override
     public void internalIteration() {
-        for (Candidate<E> c : getContainer()) {
-            E p = c.getVariables();
-            E p1, p2, p3;
-            do {
-                int rand = rng.nextInt(getContainer().size());
-                p1 = getContainer().get(rand).getVariables();
-            } while (p1 == c);
-            do {
-                int rand = rng.nextInt(getContainer().size());
-                p2 = getContainer().get(rand).getVariables();
-            } while (p2 == c && p2 == p1);
-            do {
-                int rand = rng.nextInt(getContainer().size());
-                p3 = getContainer().get(rand).getVariables();
-            } while (p3 == c && p3 == p1 && p3 == p2);
 
-            int R = rng.nextInt();
-            Encoding<E> differentiate = crossover.crossover(R, p, p1, p2, p3);
-            Candidate<E> sample = getFactory().toCandidate(differentiate);
-            if (sample.getCost() < c.getCost()) {
-                getContainer().set(getContainer().indexOf(c), sample);
-                if (sample.getCost() < getBestCandidate().getCost()) {
-                    setBestCandidate(sample);
+        for (final Candidate<E> c : getContainer().getCandidates()) {
+            getCompletionService().submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    E p = c.getVariables();
+                    E p1, p2, p3;
+                    do {
+                        int rand = rng.nextInt(getContainer().size());
+                        p1 = getContainer().get(rand).getVariables();
+                    } while (p1 == c);
+                    do {
+                        int rand = rng.nextInt(getContainer().size());
+                        p2 = getContainer().get(rand).getVariables();
+                    } while (p2 == c && p2 == p1);
+                    do {
+                        int rand = rng.nextInt(getContainer().size());
+                        p3 = getContainer().get(rand).getVariables();
+                    } while (p3 == c && p3 == p1 && p3 == p2);
+
+                    int R = rng.nextInt();
+                    Encoding<E> differentiate = crossover.crossover(R, p, p1, p2, p3);
+                    Candidate<E> sample = getFactory().toCandidate(differentiate);
+                    if (sample.getCost() < c.getCost()) {
+                        getContainer().set(getContainer().indexOf(c), sample);
+                        if (sample.getCost() < getBestCandidate().getCost()) {
+                            setBestCandidate(sample);
+                        }
+                    }
                 }
+            }, true);
+        }
+        for (Candidate<E> c : getContainer()) {
+            try {
+                getCompletionService().take().get();
+            } catch (InterruptedException | ExecutionException ex) {
+                Logger.getLogger(DE.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
-
+    
     @Override
     public String getName() {
         return "Differential Evolution";
