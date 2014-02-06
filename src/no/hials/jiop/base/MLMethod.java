@@ -86,7 +86,7 @@ public abstract class MLMethod<E> {
 
     public EvaluatedCandidate<E> runFor(int iterations) {
         int it = 0;
-        long t0 = System.nanoTime();
+        long t0 = System.currentTimeMillis();
         do {
             iteration();
         } while (it++ < iterations);
@@ -105,7 +105,7 @@ public abstract class MLMethod<E> {
 
     public EvaluatedCandidate<E> runFor(double error) {
         int it = 0;
-        long t0 = System.nanoTime();
+        long t0 = System.currentTimeMillis();
         do {
             iteration();
             it++;
@@ -116,7 +116,7 @@ public abstract class MLMethod<E> {
     public void iteration() {
         long t0 = System.nanoTime();
         internalIteration();
-        long t = System.nanoTime() - t0;
+        double t = (double)(System.nanoTime() - t0)/1000000;
         history.add(getBestCandidate().getCost(), t);
         if (container != null) {
             avgHistory.add(container.getAverage(), t);
@@ -218,9 +218,9 @@ public abstract class MLMethod<E> {
                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dir + "//" + fileName)))) {
             for (int i = 0; i < history.size(); i++) {
                 if (avgHistory != null) {
-                    sb.append(history.getIterations()[i]).append("\t").append(history.getTimestampsL()[i]).append("\t").append(history.getCosts()[i]).append("\t").append(avgHistory.getCosts()[i]).append("\n");
+                    sb.append(history.getIterations()[i]).append("\t").append(history.getTimestampsD()[i]).append("\t").append(history.getCosts()[i]).append("\t").append(avgHistory.getCosts()[i]).append("\n");
                 } else {
-                    sb.append(history.getIterations()[i]).append("\t").append(history.getTimestampsL()[i]).append("\t").append(history.getCosts()[i]).append("\n");
+                    sb.append(history.getIterations()[i]).append("\t").append(history.getTimestampsD()[i]).append("\t").append(history.getCosts()[i]).append("\n");
                 }
 
             }

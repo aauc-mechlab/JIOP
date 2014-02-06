@@ -28,18 +28,13 @@ package no.hials.jiop.evolutionary;
 import no.hials.jiop.base.candidates.Candidate;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.MLMethod;
 import no.hials.jiop.base.candidates.encoding.Encoding;
-import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
 import no.hials.jiop.base.candidates.factories.CandidateFactory;
-import no.hials.jiop.swarm.PSO;
 
 /**
  *

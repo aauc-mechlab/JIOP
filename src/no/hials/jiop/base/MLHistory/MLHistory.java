@@ -34,10 +34,10 @@ import no.hials.jiop.base.MLHistory.MLHistory.MLHistoryPoint;
  */
 public class MLHistory extends ArrayList<MLHistoryPoint> {
     
-    private long tOffset = 0;
+    private double tOffset = 0;
     private int iteration = 0;
     
-    public void add (double cost, long timestamp) {
+    public void add (double cost, double timestamp) {
         add(new MLHistoryPoint(cost, iteration++, timestamp + tOffset));
         tOffset += timestamp;
     }
@@ -49,13 +49,13 @@ public class MLHistory extends ArrayList<MLHistoryPoint> {
         iteration = 0;
     }
 
-    public long[] getTimestampsL() {
-        long[] stamps = new long[size()];
-        for (int i = 0; i < size(); i++) {
-            stamps[i] = get(i).timestamp;
-        }
-        return stamps;
-    }
+//    public long[] getTimestampsL() {
+//        long[] stamps = new long[size()];
+//        for (int i = 0; i < size(); i++) {
+//            stamps[i] = get(i).timestamp;
+//        }
+//        return stamps;
+//    }
     
     public double[] getTimestampsD() {
         double[] stamps = new double[size()];
@@ -97,9 +97,9 @@ public class MLHistory extends ArrayList<MLHistoryPoint> {
 
     public final double cost;
     public final int iteration;
-    public final long timestamp;
+    public final double timestamp;
 
-        public MLHistoryPoint(double cost, int iteration, long timestamp) {
+        public MLHistoryPoint(double cost, int iteration, double timestamp) {
             this.cost = cost;
             this.iteration = iteration;
             this.timestamp = timestamp;
