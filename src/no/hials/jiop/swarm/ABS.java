@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,63 +25,71 @@
  */
 package no.hials.jiop.swarm;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.base.AbstractEvaluator;
-import no.hials.jiop.base.candidates.containers.CandidateContainer;
-import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.MLMethod;
-import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
+import no.hials.jiop.base.candidates.Candidate;
+import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.candidates.factories.CandidateFactory;
 
 /**
  *
  * @author LarsIvar
- * @param <E>
  */
-public class PSO<E> extends MLMethod<E> {
+public class ABS<E> extends MLMethod<E> {
 
-    private final double omega, c1, c2;
+    private final int numOutlookers;
 
-    public PSO(double omega, double c1, double c2, CandidateFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+    public ABS(int numOutlookers, CandidateFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
         super(factory, container, evaluator);
-        this.omega = omega;
-        this.c1 = c1;
-        this.c2 = c2;
+        this.numOutlookers = numOutlookers;
     }
 
     @Override
     public void internalIteration() {
-        for (final Candidate<E> c : getContainer()) {
+
+        List<Candidate<E>> bestCandidates = getContainer().sort().getBestCandidates(numOutlookers-1);
+        bestCandidates.add(getBestCandidate());
+        final List<Candidate<E>> newPop = Collections.synchronizedList(new ArrayList<Candidate<E>>(getContainer().size()));
+
+        for (final Candidate<E> c : bestCandidates) {
             getCompletionService().submit(new Runnable() {
 
                 @Override
                 public void run() {
-                    ParticleEncoding<E> p = (ParticleEncoding<E>) c.getEncoding();
-                    p.update(omega, c1, c2, getBestCandidate().getVariables());
-                    double evaluate = getEvaluator().evaluate(c.getVariables());
-                    c.setCost(evaluate);
-                    if (evaluate < p.getLocalBest().getCost()) {
-                        p.setLocalBest(new Candidate<>(c));
-                    }
-                    if (evaluate < getBestCandidate().getCost()) {
-                        setBestCandidate(c);
-                    }
+                    int neighborHoodSize = getContainer().size() / numOutlookers;
+                    List<Candidate<E>> neighborhood = new ArrayList<>();
+                    neighborhood.add(c);
+                    int remaining = neighborHoodSize - 1;
+                    List neighborCandidates = getFactory().neighborCandidates(c, getBestCandidate().getCost()/5, remaining);
+                    neighborhood.addAll(neighborCandidates);
+                    Collections.sort(neighborhood);
+                    Candidate<E> best = neighborhood.get(0);
+                    newPop.add(best);
+                    newPop.addAll(getFactory().randomCandidates(remaining));
                 }
             }, true);
         }
-        for (Candidate<E> c : getContainer()) {
+        for (final Candidate<E> c : bestCandidates) {
             try {
                 getCompletionService().take().get();
             } catch (InterruptedException | ExecutionException ex) {
-                Logger.getLogger(PSO.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ABS.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+        getContainer().clearAndAddAll(newPop);
+        setBestCandidate(getContainer().sort().get(0));
     }
 
     @Override
     public String getName() {
-        return "Particle Swarm Optimization";
+        return "Artificial Bee Colony";
     }
+
 }

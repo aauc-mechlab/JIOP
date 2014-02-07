@@ -50,7 +50,7 @@ public class SA<E> extends MLMethod<E> {
 
     @Override
     public void internalIteration() {
-        Candidate<E> newSample = getFactory().neighborCandidate(current);
+        Candidate<E> newSample = getFactory().neighborCandidate(current, 0.001);
         if (doAccept(current, newSample)) {
             current = newSample;
         }

@@ -51,8 +51,8 @@ public class DoubleArrayCandidateFactory extends CandidateFactory<double[]>{
     }
 
     @Override
-    public Encoding<double[]> neighborEncoding(double[] original) {
-        return new DoubleArrayEncoding(ArrayUtil.neighbor(original, 0.001));
+    protected Encoding<double[]> neighborEncoding(double[] original, double proximity) {
+         return new DoubleArrayEncoding(ArrayUtil.neighbor(original, proximity));
     }
     
 }

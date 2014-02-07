@@ -25,6 +25,7 @@
  */
 package no.hials.jiop.base.candidates.containers;
 
+import java.util.ArrayList;
 import java.util.List;
 import no.hials.jiop.base.candidates.Candidate;
 
@@ -33,18 +34,17 @@ import no.hials.jiop.base.candidates.Candidate;
  * @author Lars Ivar
  */
 public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
-    
+
     protected final int size;
-    
 
     public CandidateContainer(int size) {
         this.size = size;
     }
-    
-     public int size() {
+
+    public int size() {
         return size;
     }
-    
+
     public abstract List<Candidate<E>> getCandidates();
 
     public abstract CandidateContainer<E> sort();
@@ -63,6 +63,17 @@ public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
             avg += c.getCost();
         }
         return avg / size();
+    }
+
+    public List<Candidate<E>> getBestCandidates(int numBest) {
+        if (numBest > size) {
+            throw new IllegalArgumentException("");
+        }
+        List<Candidate<E>> elites = new ArrayList<>(numBest);
+        for (int i = 0; i < numBest; i++) {
+            elites.add(new Candidate<>(get(i)));
+        }
+        return elites;
     }
 
     @Override

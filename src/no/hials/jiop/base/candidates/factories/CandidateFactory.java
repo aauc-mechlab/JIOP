@@ -60,8 +60,8 @@ public abstract class CandidateFactory<E> {
         return new Candidate<>(random, owner.getEvaluator().evaluate(random.getVariables()));
     }
 
-    public Candidate<E> neighborCandidate(Candidate<E> original) {
-        Encoding<E> neighbor = neighborEncoding(original.getVariables());
+    public Candidate<E> neighborCandidate(Candidate<E> original, double proximity) {
+        Encoding<E> neighbor = neighborEncoding(original.getVariables(), proximity);
         return new Candidate<>(neighbor, owner.getEvaluator().evaluate(neighbor.getVariables()));
     }
 
@@ -69,9 +69,9 @@ public abstract class CandidateFactory<E> {
         return new Candidate<>(encoding, owner.getEvaluator().evaluate(encoding.getVariables()));
     }
 
-    public Candidate<E> toCandidate(E elements) {
-        Encoding<E> encoding = wrapVariables(elements);
-        return new Candidate<>(encoding, owner.getEvaluator().evaluate(elements));
+    public Candidate<E> toCandidate(E variables) {
+        Encoding<E> encoding = wrapVariables(variables);
+        return new Candidate<>(encoding, owner.getEvaluator().evaluate(variables));
     }
     
     public Encoding<E> randomEncoding() {
@@ -86,6 +86,14 @@ public abstract class CandidateFactory<E> {
         return random;
     }
     
+    public List<Candidate<E>> neighborCandidates(Candidate<E> original, double proximity, int size) {
+        List<Candidate<E>> neighbors = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            neighbors.add(neighborCandidate(original, proximity));
+        }
+        return neighbors;
+    }
+    
     public List<Encoding<E>> randomEncodings(int size) {
          List<Encoding<E>> random = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
@@ -94,10 +102,18 @@ public abstract class CandidateFactory<E> {
         return random;
     }
     
-    public List<Candidate<E>> toCandidates(List<E> elements) {
-        List<Candidate<E>> candidates = new ArrayList<>(elements.size());
-        for (int i = 0; i < elements.size(); i++) {
-            candidates.add(toCandidate(elements.get(i)));
+    public List<Encoding<E>> neighborEncoings(Candidate<E> original, double proximity, int size) {
+        List<Encoding<E>> neighbors = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            neighbors.add(neighborEncoding(original.getVariables(), proximity));
+        }
+        return neighbors;
+    }
+    
+    public List<Candidate<E>> toCandidates(List<E> variables) {
+        List<Candidate<E>> candidates = new ArrayList<>(variables.size());
+        for (int i = 0; i < variables.size(); i++) {
+            candidates.add(toCandidate(variables.get(i)));
         }
         return candidates;
     }
@@ -106,6 +122,6 @@ public abstract class CandidateFactory<E> {
 
     protected abstract Encoding<E> wrapVariables(E original);
 
-    protected abstract Encoding<E> neighborEncoding(E original);
+    protected abstract Encoding<E> neighborEncoding(E original, double proximity);
 
 }

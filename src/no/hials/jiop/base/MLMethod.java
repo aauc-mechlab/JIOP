@@ -34,7 +34,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -80,8 +82,9 @@ public abstract class MLMethod<E> {
         this.factory.setOwner(this);
     }
 
-    public abstract void internalIteration();
-
+    protected abstract void internalIteration();
+//    protected abstract void reset();
+    
     public abstract String getName();
 
     public EvaluatedCandidate<E> runFor(int iterations) {
@@ -132,7 +135,7 @@ public abstract class MLMethod<E> {
             }
         }
         if (container != null) {
-            getContainer().clearAndAddAll(getFactory().randomCandidates(getContainer().size()));
+            getContainer().clearAndAddAll(randomCandidates(getContainer().size()));
             setBestCandidate(getContainer().sort().get(0));
         } else {
             setBestCandidate(getFactory().randomCandidate());
@@ -149,8 +152,8 @@ public abstract class MLMethod<E> {
         }
         if (container != null) {
             List<Candidate<E>> candidates = new ArrayList<>(getContainer().size());
-            candidates.addAll(getFactory().toCandidates(seed));
-            candidates.addAll(getFactory().randomCandidates(getContainer().size() - candidates.size()));
+            candidates.addAll(toCandidates(seed));
+            candidates.addAll(randomCandidates(getContainer().size() - candidates.size()));
             getContainer().clearAndAddAll(candidates);
             setBestCandidate(getContainer().sort().get(0));
         } else {
@@ -178,6 +181,88 @@ public abstract class MLMethod<E> {
         reset(true);
         runFor(millis);
         reset(true);
+    }
+    
+    public List<Candidate<E>> randomCandidates(int size) {
+        final List<Candidate<E>> candidates = Collections.synchronizedList(new ArrayList<Candidate<E>>(size));
+        for (int i = 0; i < size; i++) {
+            getCompletionService().submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    candidates.add(getFactory().randomCandidate());
+                }
+            },true);
+        }
+        for (int i = 0; i < size; i++) {
+            try {
+                getCompletionService().take().get();
+            } catch (InterruptedException | ExecutionException ex) {
+                Logger.getLogger(MLMethod.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return candidates;
+    }
+    
+     public List<Candidate<E>> toCandidates(List<E> variables) {
+        final List<Candidate<E>> candidates = Collections.synchronizedList(new ArrayList<Candidate<E>>(variables.size()));
+        for (final E e : variables) {
+            getCompletionService().submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    candidates.add(getFactory().toCandidate(e));
+                }
+            },true);
+        }
+        for (int i = 0; i < variables.size(); i++) {
+            try {
+                getCompletionService().take().get();
+            } catch (InterruptedException | ExecutionException ex) {
+                Logger.getLogger(MLMethod.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return candidates;
+    }
+    
+    public List<Candidate<E>> neighborCandidates(final Candidate<E> original, final double proximity, int size) {
+        final List<Candidate<E>> candidates = Collections.synchronizedList(new ArrayList<Candidate<E>>(size));
+        for (int i = 0; i < size; i++) {
+            getCompletionService().submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    candidates.add(getFactory().neighborCandidate(original, proximity));
+                }
+            },true);
+        }
+        for (int i = 0; i < size; i++) {
+            try {
+                getCompletionService().take().get();
+            } catch (InterruptedException | ExecutionException ex) {
+                Logger.getLogger(MLMethod.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return candidates;
+    }
+    
+    public void evaluateAll(Iterable<Candidate<E>> candidates) {
+        for (final Candidate<E> c : candidates) {
+            getCompletionService().submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    c.setCost(getEvaluator().evaluate(c));
+                }
+            },true);
+        }
+        for (final Candidate<E> c : candidates) {
+            try {
+                getCompletionService().take().get();
+            } catch (InterruptedException | ExecutionException ex) {
+                Logger.getLogger(MLMethod.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     public CandidateFactory getFactory() {

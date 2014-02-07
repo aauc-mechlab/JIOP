@@ -28,6 +28,7 @@ package no.hials.jiop.base.candidates.factories;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayParticleEncoding;
+import no.hials.jiop.base.candidates.encoding.Encoding;
 import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
 import no.hials.jiop.utils.ArrayUtil;
 
@@ -53,9 +54,11 @@ public class DoubleArrayParticleCandidateFactory extends CandidateFactory<double
     }
 
     @Override
-    public ParticleEncoding<double[]> neighborEncoding(double[] original) {
-        double[] neighbor = ArrayUtil.neighbor(original, 0.001);
+    protected Encoding<double[]> neighborEncoding(double[] original, double proximity) {
+        double[] neighbor = ArrayUtil.neighbor(original, proximity);
         return new DoubleArrayParticleEncoding(neighbor, new Candidate<>(new DoubleArrayEncoding(neighbor), Double.MAX_VALUE));
     }
+
+  
 
 }

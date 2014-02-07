@@ -53,7 +53,7 @@ public class DE<E> extends MLMethod<E> {
     @Override
     public void internalIteration() {
 
-        for (final Candidate<E> c : getContainer().getCandidates()) {
+        for (final Candidate<E> c : getContainer()) {
             getCompletionService().submit(new Runnable() {
 
                 @Override

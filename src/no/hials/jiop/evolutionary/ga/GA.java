@@ -73,7 +73,7 @@ public class GA<E> extends MLMethod<E> {
     
     @Override
     public void internalIteration() {
-        List<Candidate<E>> elites = getElites();
+        List<Candidate<E>> elites = getContainer().getBestCandidates(numElites);
         final List<Candidate<E>> selected = selection.selectCandidates(getContainer().getCandidates(), numSelection);
         final List<Candidate<E>> offspring = crossover.createoffspring(selected, Math.round((getContainer().size() - numElites - numSelection) / 2));
         final List<Candidate<E>> newpop = new ArrayList<>(getContainer().size());
@@ -82,36 +82,13 @@ public class GA<E> extends MLMethod<E> {
         mutation.mutateCandidates(newpop, numMutations);
         newpop.addAll(elites);
         if (getContainer().size() > newpop.size()) {
-            newpop.addAll(getFactory().randomCandidates(getContainer().size()-newpop.size()));
+            newpop.addAll(randomCandidates(getContainer().size()-newpop.size()));
         }
         getContainer().clearAndAddAll(newpop);
-        for (final Candidate<E> c : getContainer()) {
-            getCompletionService().submit(new Runnable() {
-
-                @Override
-                public void run() {
-                    c.setCost(getEvaluator().evaluate(c));
-                }
-            }, true);
-        }
-        for (final Candidate<E> c : getContainer()) {
-            try {
-                getCompletionService().take().get();
-            } catch (InterruptedException | ExecutionException ex) {
-                Logger.getLogger(GA.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        evaluateAll(getContainer());
         setBestCandidate(getContainer().sort().get(0));
     }
-    
-    private List<Candidate<E>> getElites() {
-        List<Candidate<E>> elites = new ArrayList<>(numElites);
-        for (int i = 0; i < numElites; i++) {
-            elites.add(new Candidate<>(getContainer().get(i)));
-        }
-        return elites;
-    }
-    
+
     @Override
     public String getName() {
         return "Genetic Algorithm";
