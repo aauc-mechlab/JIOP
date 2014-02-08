@@ -28,61 +28,52 @@ package no.hials.jiop.swarm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import no.hials.jiop.base.AbstractEvaluator;
-import no.hials.jiop.base.MLMethod;
+import no.hials.jiop.base.PopulationBasedMLAlgorithm;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
-import no.hials.jiop.base.candidates.factories.CandidateFactory;
+import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
  *
  * @author LarsIvar
  */
-public class ABS<E> extends MLMethod<E> {
+public class ABS<E> extends PopulationBasedMLAlgorithm<E> {
 
     private final int numOutlookers;
 
-    public ABS(int numOutlookers, CandidateFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+    public ABS(int numOutlookers, EncodingFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
         super(factory, container, evaluator);
         this.numOutlookers = numOutlookers;
     }
 
     @Override
     public void internalIteration() {
-
-        List<Candidate<E>> bestCandidates = getContainer().sort().getBestCandidates(numOutlookers-1);
+         final List<Runnable> jobs = new ArrayList<>(getContainer().size());
+        final List<Candidate<E>> bestCandidates = getContainer().sort().getBestCandidates(numOutlookers-1);
         bestCandidates.add(getBestCandidate());
         final List<Candidate<E>> newPop = Collections.synchronizedList(new ArrayList<Candidate<E>>(getContainer().size()));
 
         for (final Candidate<E> c : bestCandidates) {
-            getCompletionService().submit(new Runnable() {
+            jobs.add(new Runnable() {
 
                 @Override
                 public void run() {
-                    int neighborHoodSize = getContainer().size() / numOutlookers;
-                    List<Candidate<E>> neighborhood = new ArrayList<>();
+                    int neighborHoodSize = getContainer().size() / (numOutlookers);
+                    List<Candidate<E>> neighborhood = new ArrayList<>(neighborHoodSize);
                     neighborhood.add(c);
-                    int remaining = neighborHoodSize - 1;
-                    List neighborCandidates = getFactory().neighborCandidates(c, getBestCandidate().getCost()/5, remaining);
-                    neighborhood.addAll(neighborCandidates);
+                    int remaining = neighborHoodSize-1;
+                    List<Candidate<E>> neighbors = getCandidateFactory().getNeighborCandidateList(c, getBestCandidate().getCost()/5, remaining);
+                    neighborhood.addAll(neighbors);
                     Collections.sort(neighborhood);
                     Candidate<E> best = neighborhood.get(0);
                     newPop.add(best);
-                    newPop.addAll(getFactory().randomCandidates(remaining));
+                    List<Candidate<E>> randoms = getCandidateFactory().getRandomCandidateList(remaining);
+                    newPop.addAll(randoms);
                 }
-            }, true);
+            });
         }
-        for (final Candidate<E> c : bestCandidates) {
-            try {
-                getCompletionService().take().get();
-            } catch (InterruptedException | ExecutionException ex) {
-                Logger.getLogger(ABS.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
+        submitJobs(jobs);
         getContainer().clearAndAddAll(newPop);
         setBestCandidate(getContainer().sort().get(0));
     }

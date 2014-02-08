@@ -27,30 +27,31 @@ package no.hials.jiop.physical;
 
 import java.util.List;
 import no.hials.jiop.base.AbstractEvaluator;
-import no.hials.jiop.base.MLMethod;
+import no.hials.jiop.base.MLAlgorithm;
 import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.base.candidates.factories.CandidateFactory;
+import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
  *
  * @author LarsIvar
  */
-public class SA<E> extends MLMethod<E> {
+public class SA<E> extends MLAlgorithm<E> {
 
-    private double temperature;
-    private final double startingTemperature;
     private final AnnealingSchedule schedule;
+    private final double startingTemperature;
+    private double temperature;
+
     private Candidate<E> current;
 
-    public SA(double startingTemperature, AnnealingSchedule schedule, CandidateFactory<E> factory, AbstractEvaluator<E> evaluator) {
+    public SA(double startingTemperature, AnnealingSchedule schedule, EncodingFactory<E> factory, AbstractEvaluator<E> evaluator) {
         super(factory, evaluator);
-        this.startingTemperature = startingTemperature;
         this.schedule = schedule;
+        this.startingTemperature = startingTemperature;
     }
 
     @Override
     public void internalIteration() {
-        Candidate<E> newSample = getFactory().neighborCandidate(current, 0.001);
+        Candidate<E> newSample = getCandidateFactory().getNeighborCandidate(current, getBestCandidate().getCost()/5);
         if (doAccept(current, newSample)) {
             current = newSample;
         }
@@ -67,14 +68,14 @@ public class SA<E> extends MLMethod<E> {
     @Override
     public void reset(List<E> initials, boolean clearHistory) {
         super.reset(initials, clearHistory);
-        this.current = getFactory().toCandidate(initials.get(0));
+        this.current = getCandidateFactory().toCandidate(initials.get(0));
         this.temperature = startingTemperature;
     }
 
     @Override
     public void reset(boolean clearHistory) {
         super.reset(clearHistory);
-        this.current = getFactory().randomCandidate();
+        this.current = getCandidateFactory().getRandomCandidate();
         this.temperature = startingTemperature;
     }
 

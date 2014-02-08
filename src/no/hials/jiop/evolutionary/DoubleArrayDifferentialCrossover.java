@@ -25,9 +25,7 @@
  */
 package no.hials.jiop.evolutionary;
 
-import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.utils.ArrayUtil;
-import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.candidates.encoding.Encoding;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
 

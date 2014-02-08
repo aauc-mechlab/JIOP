@@ -81,7 +81,7 @@ public class DoubleArrayParticleEncoding extends DoubleArrayEncoding implements 
             double li = getLocalBest().getVariables()[i];
             double pi = getVariables()[i];
             double gi = globalBest[i];
-            double vel = (omega * vi) + ((r1 * c1 * (li - pi)) + (r2 * c2 * (gi - pi)));
+            double vel = (omega * vi) + ((rng.nextDouble() * c1 * (li - pi)) + (rng.nextDouble() * c2 * (gi - pi)));
 
             if (vel < -0.1) {
                 vel = -0.1;

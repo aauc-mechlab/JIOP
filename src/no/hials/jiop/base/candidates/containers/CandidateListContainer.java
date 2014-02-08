@@ -72,6 +72,9 @@ public class CandidateListContainer<E> extends CandidateContainer<E> {
 
     @Override
     public void clearAndAddAll(List<Candidate<E>> candidates) {
+        if (candidates.size() != size) {
+            throw new IllegalArgumentException("Expected " +size + " candidates! Was: " + candidates.size());
+        }
         this.candidates = candidates;
     }
 

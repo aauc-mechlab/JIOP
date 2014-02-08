@@ -28,16 +28,15 @@ package no.hials.jiop;
 import no.hials.jiop.utils.ArrayUtil;
 import java.util.Arrays;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
-import no.hials.jiop.base.MLHistory.swing.MLHistoryPlot;
 import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.swarm.PSO;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import no.hials.jiop.base.MLMethod;
+import no.hials.jiop.base.MLAlgorithm;
 import no.hials.jiop.base.candidates.containers.CandidateArrayContainer;
 import no.hials.jiop.base.candidates.containers.CandidateListContainer;
-import no.hials.jiop.base.candidates.factories.DoubleArrayCandidateFactory;
-import no.hials.jiop.base.candidates.factories.DoubleArrayParticleCandidateFactory;
+import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayEncodingFactory;
+import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayParticleEncodingFactory;
 import no.hials.jiop.evolutionary.DE;
 import no.hials.jiop.evolutionary.DoubleArrayDifferentialCrossover;
 import no.hials.jiop.evolutionary.ga.DoubleArrayCrossover;
@@ -54,23 +53,23 @@ import no.hials.jiop.swarm.ABS;
  */
 public class Main {
 
-    public static final int dim = 10;
+    public static final int dim = 5;
     public static double[] desired = ArrayUtil.randomD(dim);
 
     public static void main(String[] args) throws InterruptedException {
 
         System.out.println(Arrays.toString(desired));
 
-        MLMethod<double[]>[] methods = new MLMethod[]{
-            new DE<>(new DoubleArrayDifferentialCrossover(0.8, 0.9), new DoubleArrayCandidateFactory(dim), new CandidateListContainer(30), new MyEvaluator()),
-            new PSO<>(2, 0.9, 0.9, new DoubleArrayParticleCandidateFactory(dim), new CandidateArrayContainer(30), new MyEvaluator()),
-            new SA<>(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayCandidateFactory(dim), new MyEvaluator()),
-            new GA<>(0.1f, 0.5f, 0.2f, new StochasticUniversalSampling<double[]>(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayCandidateFactory(dim), new CandidateListContainer(60), new MyEvaluator()),
-            new ABS(6, new DoubleArrayCandidateFactory(dim), new CandidateListContainer<>(60), new MyEvaluator())};
+        MLAlgorithm<double[]>[] methods = new MLAlgorithm[]{
+            new DE<>(new DoubleArrayDifferentialCrossover(0.8, 0.9), new DoubleArrayEncodingFactory(dim), new CandidateArrayContainer(30), new MyEvaluator()),
+            new PSO<>(2, 0.9, 0.9, new DoubleArrayParticleEncodingFactory(dim), new CandidateArrayContainer(30), new MyEvaluator()),
+            new SA<>(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayEncodingFactory(dim), new MyEvaluator()),
+            new GA<>(0.1f, 0.5f, 0.2f, new StochasticUniversalSampling<double[]>(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayEncodingFactory(dim), new CandidateListContainer(60), new MyEvaluator()),
+            new ABS(6, new DoubleArrayEncodingFactory(dim), new CandidateListContainer<>(60), new MyEvaluator())};
 
-        for (final MLMethod method : methods) {
+        for (final MLAlgorithm method : methods) {
             method.warmUp(1000);
-            EvaluatedCandidate run = method.runFor(100l);
+            EvaluatedCandidate run = method.runFor(10l);
             System.out.println(run);
 
             final JFrame frame = new JFrame(method.getName());
@@ -79,7 +78,7 @@ public class Main {
 
                 @Override
                 public void run() {
-                    frame.getContentPane().add(new MLHistoryPlot(method));
+                    frame.getContentPane().add(method.getPlot());
                     frame.setVisible(true);
                     frame.setSize(500, 500);
                 }
@@ -101,4 +100,6 @@ public class Main {
         }
 
     }
+    
+   
 }

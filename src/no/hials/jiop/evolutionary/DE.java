@@ -25,36 +25,35 @@
  */
 package no.hials.jiop.evolutionary;
 
+import java.util.ArrayList;
+import java.util.List;
 import no.hials.jiop.base.candidates.Candidate;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
-import no.hials.jiop.base.MLMethod;
+import no.hials.jiop.base.PopulationBasedMLAlgorithm;
 import no.hials.jiop.base.candidates.encoding.Encoding;
-import no.hials.jiop.base.candidates.factories.CandidateFactory;
+import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
  *
  * @author LarsIvar
  */
-public class DE<E> extends MLMethod<E> {
+public class DE<E> extends PopulationBasedMLAlgorithm<E> {
 
-    private final DifferentialCrossover<E> crossover;
     private final Random rng = new Random();
-
-    public DE(DifferentialCrossover<E> crossover, CandidateFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+    private final DifferentialCrossover<E> crossover;
+    
+    public DE(DifferentialCrossover<E> crossover, EncodingFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
         super(factory, container, evaluator);
         this.crossover = crossover;
     }
-
+    
     @Override
     public void internalIteration() {
-
+        final List<Runnable> jobs = new ArrayList<>(getContainer().size());
         for (final Candidate<E> c : getContainer()) {
-            getCompletionService().submit(new Runnable() {
+            jobs.add(new Runnable() {
 
                 @Override
                 public void run() {
@@ -75,23 +74,17 @@ public class DE<E> extends MLMethod<E> {
 
                     int R = rng.nextInt();
                     Encoding<E> differentiate = crossover.crossover(R, p, p1, p2, p3);
-                    Candidate<E> sample = getFactory().toCandidate(differentiate);
+                    Candidate<E> sample = getCandidateFactory().toCandidate(differentiate);
                     if (sample.getCost() < c.getCost()) {
                         getContainer().set(getContainer().indexOf(c), sample);
-                        if (sample.getCost() < getBestCandidate().getCost()) {
+//                        if (sample.getCost() < getBestCandidate().getCost()) {
                             setBestCandidate(sample);
-                        }
+//                        }
                     }
                 }
-            }, true);
+            });
         }
-        for (Candidate<E> c : getContainer()) {
-            try {
-                getCompletionService().take().get();
-            } catch (InterruptedException | ExecutionException ex) {
-                Logger.getLogger(DE.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        submitJobs(jobs);
     }
     
     @Override

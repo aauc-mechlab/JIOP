@@ -34,8 +34,6 @@ import no.hials.jiop.base.candidates.encoding.Encoding;
  */
 public abstract class DifferentialCrossover<E> {
 
-    private final Random rng = new Random();
-
     private final double F, CR;
 
     public DifferentialCrossover(double F, double CR) {

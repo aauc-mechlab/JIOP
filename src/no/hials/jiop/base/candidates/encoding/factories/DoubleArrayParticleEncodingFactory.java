@@ -23,40 +23,39 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.candidates.factories;
+package no.hials.jiop.base.candidates.encoding.factories;
 
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayParticleEncoding;
 import no.hials.jiop.base.candidates.encoding.Encoding;
-import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
 import no.hials.jiop.utils.ArrayUtil;
 
 /**
  *
  * @author Lars Ivar
  */
-public class DoubleArrayParticleCandidateFactory extends CandidateFactory<double[]> {
+public class DoubleArrayParticleEncodingFactory extends EncodingFactory<double[]> {
 
-    public DoubleArrayParticleCandidateFactory(int encodingLength) {
+    public DoubleArrayParticleEncodingFactory(int encodingLength) {
         super(encodingLength);
     }
 
     @Override
-    public ParticleEncoding<double[]> randomEncoding(int length) {
+    protected Encoding<double[]> getRandomEncoding(int length) {
         double[] rand = ArrayUtil.randomD(length);
         return new DoubleArrayParticleEncoding(rand, new Candidate<>(new DoubleArrayEncoding(rand), Double.MAX_VALUE));
     }
 
     @Override
-    public ParticleEncoding<double[]> wrapVariables(double[] original) {
-        return new DoubleArrayParticleEncoding(original, new Candidate<>(new DoubleArrayEncoding(original), Double.MAX_VALUE));
+    public Encoding<double[]> getNeighborEncoding(double[] variables, double change) {
+        double[] neighbor = ArrayUtil.neighbor(variables, change);
+        return new DoubleArrayParticleEncoding(neighbor, new Candidate<>(new DoubleArrayEncoding(neighbor), Double.MAX_VALUE));
     }
 
     @Override
-    protected Encoding<double[]> neighborEncoding(double[] original, double proximity) {
-        double[] neighbor = ArrayUtil.neighbor(original, proximity);
-        return new DoubleArrayParticleEncoding(neighbor, new Candidate<>(new DoubleArrayEncoding(neighbor), Double.MAX_VALUE));
+    public Encoding<double[]> getWrapVariables(double[] variables) {
+       return new DoubleArrayParticleEncoding(variables, new Candidate<>(new DoubleArrayEncoding(variables), Double.MAX_VALUE));
     }
 
   

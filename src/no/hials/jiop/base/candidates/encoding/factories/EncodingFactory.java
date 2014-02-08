@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Lars Ivar
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,35 +24,43 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop.base.candidates.factories;
+package no.hials.jiop.base.candidates.encoding.factories;
 
-import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
+import java.util.ArrayList;
+import java.util.List;
 import no.hials.jiop.base.candidates.encoding.Encoding;
-import no.hials.jiop.utils.ArrayUtil;
+import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
- * @author Lars Ivar
+ * @author LarsIvar
  */
-public class DoubleArrayCandidateFactory extends CandidateFactory<double[]>{
+public abstract class EncodingFactory<E> {
+    
+    private final int encodingLength;
 
-    public DoubleArrayCandidateFactory(int encodingLength) {
-        super(encodingLength);
+    public EncodingFactory(int encodingLength) {
+        this.encodingLength = encodingLength;
     }
 
-    @Override
-    public Encoding<double[]> randomEncoding(int length) {
-        return new DoubleArrayEncoding(ArrayUtil.randomD(length));
-    }
-
-    @Override
-    public Encoding<double[]> wrapVariables(double[] original) {
-        return new DoubleArrayEncoding(original);
-    }
-
-    @Override
-    protected Encoding<double[]> neighborEncoding(double[] original, double proximity) {
-         return new DoubleArrayEncoding(ArrayUtil.neighbor(original, proximity));
+    public int getEncodingLength() {
+        return encodingLength;
     }
     
+    public  Encoding<E> getRandomEncoding() {
+        return getRandomEncoding(encodingLength);
+    }
+    
+    protected abstract Encoding<E> getRandomEncoding(int length);
+    public abstract Encoding<E> getNeighborEncoding(E variables, double change);
+    public abstract Encoding<E> getWrapVariables(E variables);
+    
+    
+    public List<Encoding<E>> getRandomEncodingList(int size) {
+         List<Encoding<E>> random = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            random.add(getRandomEncoding());
+        }
+        return random;
+    }
 }

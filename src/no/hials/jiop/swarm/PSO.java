@@ -25,26 +25,28 @@
  */
 package no.hials.jiop.swarm;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.base.MLMethod;
+import no.hials.jiop.base.PopulationBasedMLAlgorithm;
 import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
-import no.hials.jiop.base.candidates.factories.CandidateFactory;
+import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
  *
  * @author LarsIvar
  * @param <E>
  */
-public class PSO<E> extends MLMethod<E> {
+public class PSO<E> extends PopulationBasedMLAlgorithm<E> {
 
     private final double omega, c1, c2;
 
-    public PSO(double omega, double c1, double c2, CandidateFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+    public PSO(double omega, double c1, double c2, EncodingFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
         super(factory, container, evaluator);
         this.omega = omega;
         this.c1 = c1;
@@ -53,8 +55,9 @@ public class PSO<E> extends MLMethod<E> {
 
     @Override
     public void internalIteration() {
+         final List<Runnable> jobs = new ArrayList<>(getContainer().size());
         for (final Candidate<E> c : getContainer()) {
-            getCompletionService().submit(new Runnable() {
+           jobs.add(new Runnable() {
 
                 @Override
                 public void run() {
@@ -69,15 +72,9 @@ public class PSO<E> extends MLMethod<E> {
                         setBestCandidate(c);
                     }
                 }
-            }, true);
+            });
         }
-        for (Candidate<E> c : getContainer()) {
-            try {
-                getCompletionService().take().get();
-            } catch (InterruptedException | ExecutionException ex) {
-                Logger.getLogger(PSO.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        submitJobs(jobs);
     }
 
     @Override

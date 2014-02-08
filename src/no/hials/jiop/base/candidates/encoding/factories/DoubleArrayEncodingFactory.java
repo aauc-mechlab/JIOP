@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, Lars Ivar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,36 +23,38 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.MLHistory.swing;
 
-import java.awt.Color;
-import no.hials.jiop.base.MLMethod;
-import org.math.plot.Plot2DPanel;
+package no.hials.jiop.base.candidates.encoding.factories;
+
+import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
+import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
+import no.hials.jiop.base.candidates.encoding.Encoding;
+import no.hials.jiop.base.candidates.encoding.Encoding;
+import no.hials.jiop.utils.ArrayUtil;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar
  */
-public class MLHistoryPlot extends Plot2DPanel {
+public class DoubleArrayEncodingFactory extends EncodingFactory<double[]>{
 
-    public MLHistoryPlot(MLMethod method) {
-        addLegend("INVISIBLE");
-        if (method.getAvgHistory() != null) {
-            addLinePlot("", method.getHistory().getTimestampsD(), method.getHistory().getCosts());
-            addLinePlot("", method.getAvgHistory().getTimestampsD(), method.getAvgHistory().getCosts());
-        } else {
-            addLinePlot("", method.getHistory().getTimestampsD(), method.getHistory().getCosts());
-        }
+    public DoubleArrayEncodingFactory(int encodingLength) {
+        super(encodingLength);
+    }
+
+    @Override
+    protected Encoding<double[]> getRandomEncoding(int length) {
+        return new DoubleArrayEncoding(ArrayUtil.randomD(length));
+    }
+
+    @Override
+    public Encoding<double[]> getNeighborEncoding(double[] variables, double changeRate) {
+         return new DoubleArrayEncoding(ArrayUtil.neighbor(variables, changeRate));
+    }
+
+    @Override
+    public Encoding<double[]> getWrapVariables(double[] variables) {
+        return new DoubleArrayEncoding(variables);
     }
     
-     public MLHistoryPlot(MLMethod method, Color ... c) {
-        addLegend("INVISIBLE");
-       if (method.getAvgHistory() != null) {
-            addLinePlot("", c[0], method.getHistory().getTimestampsD(), method.getHistory().getCosts());
-            addLinePlot("", c[1], method.getAvgHistory().getTimestampsD(), method.getAvgHistory().getCosts());
-        } else {
-            addLinePlot("", c[0], method.getHistory().getTimestampsD(), method.getHistory().getCosts());
-        }
-        
-    }
 }

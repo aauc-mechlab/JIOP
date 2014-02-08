@@ -57,7 +57,7 @@ public class MLHistory extends ArrayList<MLHistoryPoint> {
 //        return stamps;
 //    }
     
-    public double[] getTimestampsD() {
+    public double[] getTimestamps() {
         double[] stamps = new double[size()];
         for (int i = 0; i < size(); i++) {
             stamps[i] = get(i).timestamp;
