@@ -49,14 +49,16 @@ public class DoubleArrayEncoding implements Encoding<double[]>{
     public Encoding<double[]> copy() {
         return new DoubleArrayEncoding(variables.clone());
     }
+    
+    
+    @Override
+    public int size() {
+        return variables.length;
+    } 
 
     @Override
     public String toString() {
         return "DoubleArrayEncoding{" + "elements=" + Arrays.toString(variables) + '}';
     }
 
-    @Override
-    public int size() {
-        return variables.length;
-    } 
 }

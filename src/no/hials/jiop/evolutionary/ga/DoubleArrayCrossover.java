@@ -39,29 +39,29 @@ public class DoubleArrayCrossover extends AbstractCrossoverOperator<double[]> {
 
     @Override
     public CandidatePair<double[]> mate(Candidate<double[]> ma, Candidate<double[]> pa, Random rng) {
-//        double[] offspring1 = ArrayUtil.newInstance(ma.getVariables());
-//        double[] offspring2 = ArrayUtil.newInstance(pa.getVariables());
-//
-//        int alpha = rng.nextInt(ma.getVariables().length);
-//        double beta = rng.nextDouble();
-//
-//        offspring1[alpha] = ma.getVariables()[alpha] - beta * ma.getVariables()[alpha] + beta * pa.getVariables()[alpha];
-//        offspring2[alpha] = pa.getVariables()[alpha] + beta * ma.getVariables()[alpha] - beta * pa.getVariables()[alpha];
-//
-//        if (alpha == offspring1.length) {
-//            for (int i = offspring1.length-1; i >= 0; i--) {
-//                offspring1[i] = pa.getVariables()[i];
-//                offspring2[i] = ma.getVariables()[i];
-//            }
-//        } else {
-//            for (int i = alpha + 1; i < offspring1.length; i++) {
-//                offspring1[i] = pa.getVariables()[i];
-//                offspring2[i] = ma.getVariables()[i];
-//            }
-//        }
+        double[] offspring1 = ArrayUtil.newInstance(ma.getVariables());
+        double[] offspring2 = ArrayUtil.newInstance(pa.getVariables());
 
-        double[] offspring1 = ArrayUtil.clamp(0, 1, ArrayUtil.plus(ArrayUtil.scale(ArrayUtil.minus(ma.getVariables(), pa.getVariables()), rng.nextDouble()), ma.getVariables()));
-        double[] offspring2 = ArrayUtil.clamp(0, 1, ArrayUtil.plus(ArrayUtil.scale(ArrayUtil.minus(pa.getVariables(), ma.getVariables()), rng.nextDouble()), pa.getVariables()));
+        int alpha = rng.nextInt(ma.getVariables().length);
+        double beta = rng.nextDouble();
+
+        offspring1[alpha] = ma.getVariables()[alpha] - beta * ma.getVariables()[alpha] + beta * pa.getVariables()[alpha];
+        offspring2[alpha] = pa.getVariables()[alpha] + beta * ma.getVariables()[alpha] - beta * pa.getVariables()[alpha];
+
+        if (alpha == offspring1.length) {
+            for (int i = offspring1.length-1; i >= 0; i--) {
+                offspring1[i] = pa.getVariables()[i];
+                offspring2[i] = ma.getVariables()[i];
+            }
+        } else {
+            for (int i = alpha + 1; i < offspring1.length; i++) {
+                offspring1[i] = pa.getVariables()[i];
+                offspring2[i] = ma.getVariables()[i];
+            }
+        }
+
+//        double[] offspring1 = ArrayUtil.clamp(0, 1, ArrayUtil.plus(ArrayUtil.scale(ArrayUtil.minus(ma.getVariables(), pa.getVariables()), rng.nextDouble()), ma.getVariables()));
+//        double[] offspring2 = ArrayUtil.clamp(0, 1, ArrayUtil.plus(ArrayUtil.scale(ArrayUtil.minus(pa.getVariables(), ma.getVariables()), rng.nextDouble()), pa.getVariables()));
         return new CandidatePair<>(new Candidate<>(new DoubleArrayEncoding(offspring1), Double.MAX_VALUE), new Candidate<>(new DoubleArrayEncoding(offspring2), Double.MAX_VALUE));
     }
 

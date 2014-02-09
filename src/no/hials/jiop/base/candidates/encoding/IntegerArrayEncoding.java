@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,40 +23,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.evolutionary.ga;
+package no.hials.jiop.base.candidates.encoding;
 
-import java.util.List;
-import java.util.Random;
-import java.util.TreeSet;
-import no.hials.jiop.base.candidates.Candidate;
+import java.util.Arrays;
 
 /**
  *
  * @author LarsIvar
- * @param <E>
  */
-public abstract class AbstractMutatationOperator<E> implements MutationOperator<E> {
+public class IntegerArrayEncoding implements Encoding<int[]> {
 
-    private final Random rng = new Random();
+    private final int[] variables;
 
-    @Override
-    public void mutateCandidates(List<Candidate<E>> candidates, int numMutations) {
-//        System.out.println(candidates.size() + " " + numMutations);
-        TreeSet<Integer> rows = new TreeSet<>();
-        for (int i = 0; i < numMutations; i++) {
-            int row;
-            do {
-                row = rng.nextInt(candidates.size());
-            } while (rows.contains(row));
-            rows.add(row);
-        }
-        for (int i = 0; i < numMutations; i++) {
-            Candidate<E> get = candidates.get(rows.pollFirst());
-            int c = rng.nextInt(get.getEncoding().size());
-            mutate(get, c);
-
-        }
+    public IntegerArrayEncoding(int[] variables) {
+        this.variables = variables;
     }
 
-    public abstract void mutate(Candidate<E> chromosome, int geneIndex);
+    @Override
+    public int[] getVariables() {
+        return variables;
+    }
+
+    @Override
+    public Encoding<int[]> copy() {
+        return new IntegerArrayEncoding(variables.clone());
+    }
+
+    @Override
+    public int size() {
+        return variables.length;
+    }
+
+    @Override
+    public String toString() {
+        return "IntgerArrayEncoding{" + "elements=" + Arrays.toString(variables) + '}';
+    }
+
 }

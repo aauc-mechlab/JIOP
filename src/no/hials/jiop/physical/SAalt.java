@@ -23,8 +23,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package no.hials.jiop.physical;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import no.hials.jiop.base.AbstractEvaluator;
 import no.hials.jiop.base.MLAlgorithm;
@@ -35,7 +38,8 @@ import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
  *
  * @author LarsIvar
  */
-public class SA<E> extends MLAlgorithm<E> {
+public class SAalt<E> extends MLAlgorithm<E>{
+    
 
     private final AnnealingSchedule schedule;
     private final double startingTemperature;
@@ -43,7 +47,7 @@ public class SA<E> extends MLAlgorithm<E> {
 
     private Candidate<E> current;
 
-    public SA(double startingTemperature, AnnealingSchedule schedule, EncodingFactory<E> factory, AbstractEvaluator<E> evaluator) {
+    public SAalt(double startingTemperature, AnnealingSchedule schedule, EncodingFactory<E> factory, AbstractEvaluator<E> evaluator) {
         super(factory, evaluator);
         this.schedule = schedule;
         this.startingTemperature = startingTemperature;
@@ -51,7 +55,9 @@ public class SA<E> extends MLAlgorithm<E> {
 
     @Override
     public void internalIteration() {
-        Candidate<E> newSample = getCandidateFactory().getNeighborCandidate(current, 0.01);
+        List<Candidate<E>> neighborCandidateList = getCandidateFactory().getNeighborCandidateList(current, getBestCandidate().getCost()/10, 50);
+        Collections.sort(neighborCandidateList);
+        Candidate<E> newSample = neighborCandidateList.get(0);
         if (doAccept(current, newSample)) {
             current = newSample;
         }
@@ -83,5 +89,4 @@ public class SA<E> extends MLAlgorithm<E> {
     public String getName() {
         return "Simulated Annealing";
     }
-
 }

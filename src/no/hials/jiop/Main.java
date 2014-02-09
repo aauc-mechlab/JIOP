@@ -45,6 +45,7 @@ import no.hials.jiop.evolutionary.ga.GA;
 import no.hials.jiop.evolutionary.ga.selection.StochasticUniversalSampling;
 import no.hials.jiop.physical.GeometricAnnealingSchedule;
 import no.hials.jiop.physical.SA;
+import no.hials.jiop.physical.SAalt;
 import no.hials.jiop.swarm.ABS;
 
 /**
@@ -64,6 +65,7 @@ public class Main {
             new DE<>(new DoubleArrayDifferentialCrossover(0.8, 0.9), new DoubleArrayEncodingFactory(dim), new CandidateArrayContainer(30), new MyEvaluator()),
             new PSO<>(2, 0.9, 0.9, new DoubleArrayParticleEncodingFactory(dim), new CandidateArrayContainer(30), new MyEvaluator()),
             new SA<>(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayEncodingFactory(dim), new MyEvaluator()),
+            new SAalt(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayEncodingFactory(dim), new MyEvaluator()),
             new GA<>(0.1f, 0.5f, 0.2f, new StochasticUniversalSampling<double[]>(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayEncodingFactory(dim), new CandidateListContainer(60), new MyEvaluator()),
             new ABS(6, new DoubleArrayEncodingFactory(dim), new CandidateListContainer<>(60), new MyEvaluator())};
 

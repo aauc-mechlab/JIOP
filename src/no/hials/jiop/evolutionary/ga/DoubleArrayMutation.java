@@ -48,7 +48,7 @@ public class DoubleArrayMutation extends AbstractMutatationOperator<double[]> {
         } else {
             double mutation;
             do {
-                mutation = elements[geneIndex] + Math.random() * Math.abs(change + change) - change;
+                mutation = elements[geneIndex] + Math.random() * Math.abs(change - (-change)) + (-change);
             } while (mutation > 1 | 0 > mutation);
             elements[geneIndex] = mutation;
         }

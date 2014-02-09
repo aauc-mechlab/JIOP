@@ -67,7 +67,9 @@ public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
 
     public List<Candidate<E>> getBestCandidates(int numBest) {
         if (numBest > size) {
-            throw new IllegalArgumentException("");
+            return null;
+        } else if (numBest < 0) {
+            return null;
         }
         List<Candidate<E>> elites = new ArrayList<>(numBest);
         for (int i = 0; i < numBest; i++) {

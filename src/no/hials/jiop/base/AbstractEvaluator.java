@@ -25,12 +25,6 @@
  */
 package no.hials.jiop.base;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.Encoding;
 

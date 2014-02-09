@@ -52,7 +52,8 @@ public class CandidateFactory<E> {
     public CandidateFactory(EncodingFactory<E> encodingFactory, AbstractEvaluator<E> evaluator) {
         this.evaluator = evaluator;
         this.encodingFactory = encodingFactory;
-        this.pool = Executors.newCachedThreadPool();
+        this.pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+//        this.pool = Executors.newCachedThreadPool();
     }
 
     public Candidate<E> getRandomCandidate() {

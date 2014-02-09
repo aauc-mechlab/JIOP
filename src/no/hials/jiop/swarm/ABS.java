@@ -49,8 +49,8 @@ public class ABS<E> extends PopulationBasedMLAlgorithm<E> {
 
     @Override
     public void internalIteration() {
-         final List<Runnable> jobs = new ArrayList<>(getContainer().size());
-        final List<Candidate<E>> bestCandidates = getContainer().sort().getBestCandidates(numOutlookers-1);
+        final List<Runnable> jobs = new ArrayList<>(getContainer().size());
+        final List<Candidate<E>> bestCandidates = getContainer().sort().getBestCandidates(numOutlookers - 1);
         bestCandidates.add(getBestCandidate());
         final List<Candidate<E>> newPop = Collections.synchronizedList(new ArrayList<Candidate<E>>(getContainer().size()));
 
@@ -62,8 +62,8 @@ public class ABS<E> extends PopulationBasedMLAlgorithm<E> {
                     int neighborHoodSize = getContainer().size() / (numOutlookers);
                     List<Candidate<E>> neighborhood = new ArrayList<>(neighborHoodSize);
                     neighborhood.add(c);
-                    int remaining = neighborHoodSize-1;
-                    List<Candidate<E>> neighbors = getCandidateFactory().getNeighborCandidateList(c, getBestCandidate().getCost()/5, remaining);
+                    int remaining = neighborHoodSize - 1;
+                    List<Candidate<E>> neighbors = getCandidateFactory().getNeighborCandidateList(c, getBestCandidate().getCost() / 10, remaining);
                     neighborhood.addAll(neighbors);
                     Collections.sort(neighborhood);
                     Candidate<E> best = neighborhood.get(0);

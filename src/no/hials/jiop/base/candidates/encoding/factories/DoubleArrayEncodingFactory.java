@@ -27,8 +27,6 @@
 package no.hials.jiop.base.candidates.encoding.factories;
 
 import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
-import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
-import no.hials.jiop.base.candidates.encoding.Encoding;
 import no.hials.jiop.base.candidates.encoding.Encoding;
 import no.hials.jiop.utils.ArrayUtil;
 
@@ -49,7 +47,7 @@ public class DoubleArrayEncodingFactory extends EncodingFactory<double[]>{
 
     @Override
     public Encoding<double[]> getNeighborEncoding(double[] variables, double changeRate) {
-         return new DoubleArrayEncoding(ArrayUtil.neighbor(variables, changeRate));
+         return new DoubleArrayEncoding(ArrayUtil.clamp(0, 1, ArrayUtil.neighbor(variables, changeRate)));
     }
 
     @Override

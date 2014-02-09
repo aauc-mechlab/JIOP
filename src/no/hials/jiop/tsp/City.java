@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,40 +23,33 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.evolutionary.ga;
 
-import java.util.List;
-import java.util.Random;
-import java.util.TreeSet;
-import no.hials.jiop.base.candidates.Candidate;
+package no.hials.jiop.tsp;
 
 /**
  *
  * @author LarsIvar
- * @param <E>
  */
-public abstract class AbstractMutatationOperator<E> implements MutationOperator<E> {
+public class City {
+    public final int x,y;
 
-    private final Random rng = new Random();
-
-    @Override
-    public void mutateCandidates(List<Candidate<E>> candidates, int numMutations) {
-//        System.out.println(candidates.size() + " " + numMutations);
-        TreeSet<Integer> rows = new TreeSet<>();
-        for (int i = 0; i < numMutations; i++) {
-            int row;
-            do {
-                row = rng.nextInt(candidates.size());
-            } while (rows.contains(row));
-            rows.add(row);
-        }
-        for (int i = 0; i < numMutations; i++) {
-            Candidate<E> get = candidates.get(rows.pollFirst());
-            int c = rng.nextInt(get.getEncoding().size());
-            mutate(get, c);
-
-        }
+    public City(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+    
+    public int dist(City other) {
+        return City.dist(this, other);
+    }
+    
+    public static int dist(City c1, City c2) {
+        return (int) Math.sqrt(Math.pow(c1.x-c2.x, 2) + Math.pow(c1.y, c2.y));
     }
 
-    public abstract void mutate(Candidate<E> chromosome, int geneIndex);
+    @Override
+    public String toString() {
+        return "City{" + "x=" + x + ", y=" + y + '}';
+    }
+    
+    
 }

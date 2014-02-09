@@ -72,8 +72,7 @@ public class GA<E> extends PopulationBasedMLAlgorithm<E> {
 
     @Override
     public void internalIteration() {
-        final List<Candidate<E>> elites = getContainer().getBestCandidates(numElites-1);
-        elites.add(getBestCandidate());
+        final List<Candidate<E>> elites = getContainer().getBestCandidates(numElites);
         final List<Candidate<E>> selected = selection.selectCandidates(getContainer().getCandidates(), numSelection);
         final List<Candidate<E>> offspring = crossover.createoffspring(selected, Math.round((getContainer().size() - numElites - numSelection) / 2));
         final List<Candidate<E>> newpop = new ArrayList<>(getContainer().size());
@@ -81,6 +80,7 @@ public class GA<E> extends PopulationBasedMLAlgorithm<E> {
         newpop.addAll(offspring);
         mutation.mutateCandidates(newpop, numMutations);
         newpop.addAll(elites);
+        
         if (getContainer().size() > newpop.size()) {
             newpop.addAll(getCandidateFactory().getRandomCandidateList(getContainer().size() - newpop.size()));
         }
