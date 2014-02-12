@@ -51,12 +51,12 @@ public class DE<E> extends PopulationBasedMLAlgorithm<E> {
     
     @Override
     public void internalIteration() {
-//        final List<Runnable> jobs = new ArrayList<>(getContainer().size());
+        final List<Runnable> jobs = new ArrayList<>(getContainer().size());
         for (final Candidate<E> c : getContainer()) {
-//            jobs.add(new Runnable() {
-//
-//                @Override
-//                public void run() {
+            jobs.add(new Runnable() {
+
+                @Override
+                public void run() {
                     E p = c.getVariables();
                     E p1, p2, p3;
                     do {
@@ -81,10 +81,10 @@ public class DE<E> extends PopulationBasedMLAlgorithm<E> {
                             setBestCandidate(sample);
 //                        }
                     }
-//                }
-//            });
+                }
+            });
         }
-//        submitJobs(jobs);
+        submitJobs(jobs);
     }
     
     @Override

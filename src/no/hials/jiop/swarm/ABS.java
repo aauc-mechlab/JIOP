@@ -49,16 +49,16 @@ public class ABS<E> extends PopulationBasedMLAlgorithm<E> {
 
     @Override
     public void internalIteration() {
-        final List<Runnable> jobs = new ArrayList<>(getContainer().size());
+//        final List<Runnable> jobs = new ArrayList<>(getContainer().size());
         final List<Candidate<E>> bestCandidates = getContainer().sort().getBestCandidates(numOutlookers - 1);
         bestCandidates.add(getBestCandidate());
         final List<Candidate<E>> newPop = Collections.synchronizedList(new ArrayList<Candidate<E>>(getContainer().size()));
 
         for (final Candidate<E> c : bestCandidates) {
-            jobs.add(new Runnable() {
-
-                @Override
-                public void run() {
+//            jobs.add(new Runnable() {
+//
+//                @Override
+//                public void run() {
                     int neighborHoodSize = getContainer().size() / (numOutlookers);
                     List<Candidate<E>> neighborhood = new ArrayList<>(neighborHoodSize);
                     neighborhood.add(c);
@@ -71,9 +71,9 @@ public class ABS<E> extends PopulationBasedMLAlgorithm<E> {
                     List<Candidate<E>> randoms = getCandidateFactory().getRandomCandidateList(remaining);
                     newPop.addAll(randoms);
                 }
-            });
-        }
-        submitJobs(jobs);
+//            });
+//        }
+//        submitJobs(jobs);
         getContainer().clearAndAddAll(newPop);
         setBestCandidate(getContainer().sort().get(0));
     }

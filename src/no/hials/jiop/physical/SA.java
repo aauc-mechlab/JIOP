@@ -51,7 +51,11 @@ public class SA<E> extends MLAlgorithm<E> {
 
     @Override
     public void internalIteration() {
-        Candidate<E> newSample = getCandidateFactory().getNeighborCandidate(current, 0.01);
+//        double prox = getBestCandidate().getCost();
+//        if (prox > 0.01) {
+//            prox = 0.01;
+//        }
+        Candidate<E> newSample = getCandidateFactory().getNeighborCandidate(current, 0.005);
         if (doAccept(current, newSample)) {
             current = newSample;
         }
