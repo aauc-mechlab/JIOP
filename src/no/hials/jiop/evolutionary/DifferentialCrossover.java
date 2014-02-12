@@ -25,12 +25,11 @@
  */
 package no.hials.jiop.evolutionary;
 
-import java.util.Random;
 import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
- * @author Lars Ivar
+ * @author Lars Ivar Hatledal
  */
 public abstract class DifferentialCrossover<E> {
 

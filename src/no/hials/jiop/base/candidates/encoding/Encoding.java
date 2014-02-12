@@ -28,7 +28,7 @@ package no.hials.jiop.base.candidates.encoding;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public interface Encoding<E> {
     

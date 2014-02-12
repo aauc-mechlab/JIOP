@@ -30,7 +30,7 @@ import java.util.Arrays;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class DoubleArrayEncoding implements Encoding<double[]>{
 

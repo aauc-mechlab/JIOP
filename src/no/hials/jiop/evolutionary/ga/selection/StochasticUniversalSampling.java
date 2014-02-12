@@ -33,7 +33,7 @@ import no.hials.jiop.evolutionary.ga.SelectionOperator;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class StochasticUniversalSampling<E> implements SelectionOperator<E> {
     

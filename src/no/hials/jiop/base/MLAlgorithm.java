@@ -48,22 +48,21 @@ import org.math.plot.Plot2DPanel;
 
 /**
  *
- * @author LarsIvar
- * @param <E>
+ * @author Lars Ivar Hatledal
  */
 public abstract class MLAlgorithm<E> {
 
     private final Object mutex = new Object();
     private final ExecutorService pool;
 
-    private final AbstractEvaluator<E> evaluator;
+    private final Evaluator<E> evaluator;
     private final CandidateFactory<E> candidateFactory;
     private final EncodingFactory<E> encodingFactory;
     protected final MLHistory history;
 
     private Candidate<E> bestCandidate;
 
-    public MLAlgorithm(EncodingFactory<E> encodingFactory, AbstractEvaluator<E> evaluator) {
+    public MLAlgorithm(EncodingFactory<E> encodingFactory, Evaluator<E> evaluator) {
         this.history = new MLHistory();
         this.encodingFactory = encodingFactory;
         this.evaluator = evaluator;
@@ -185,7 +184,7 @@ public abstract class MLAlgorithm<E> {
         return history;
     }
 
-    public AbstractEvaluator<E> getEvaluator() {
+    public Evaluator<E> getEvaluator() {
         return evaluator;
     }
 

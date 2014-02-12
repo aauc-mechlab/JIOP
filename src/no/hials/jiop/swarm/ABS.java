@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, LarsIvar
+ * Copyright (c) 2014, Aalesund University College 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@ package no.hials.jiop.swarm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import no.hials.jiop.base.AbstractEvaluator;
+import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.PopulationBasedMLAlgorithm;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
@@ -36,13 +36,13 @@ import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class ABS<E> extends PopulationBasedMLAlgorithm<E> {
 
     private final int numOutlookers;
 
-    public ABS(int numOutlookers, EncodingFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+    public ABS(int numOutlookers, EncodingFactory<E> factory, CandidateContainer<E> container, Evaluator<E> evaluator) {
         super(factory, container, evaluator);
         this.numOutlookers = numOutlookers;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Lars Ivar
+ * Copyright (c) 2014, Aalesund University College 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@ import no.hials.jiop.utils.ArrayUtil;
 
 /**
  *
- * @author Lars Ivar
+ * @author Lars Ivar Hatledal
  */
 public class DoubleArrayParticleEncodingFactory extends EncodingFactory<double[]> {
 

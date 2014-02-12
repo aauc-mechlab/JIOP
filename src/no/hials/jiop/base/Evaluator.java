@@ -23,18 +23,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package no.hials.jiop.base;
 
-package no.hials.jiop.exceptions;
+import no.hials.jiop.base.candidates.Candidate;
+import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
-public class NoAverageException extends RuntimeException{
+public abstract class Evaluator<E> {
 
-    public NoAverageException(String message) {
-        super(message);
+    public abstract double evaluate(E variables);
+
+    public double evaluate(Candidate<E> candidate) {
+        return evaluate(candidate.getVariables());
     }
-    
-    
+
+    public double evaluate(Encoding<E> encoding) {
+        return evaluate(encoding.getVariables());
+    }
+
+    public void evaluateAll(Iterable<Candidate<E>> candidates) {
+        for (Candidate<E> candidate : candidates) {
+            candidate.setCost(evaluate(candidate));
+        }
+    }
 }

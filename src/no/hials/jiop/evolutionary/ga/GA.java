@@ -27,18 +27,15 @@ package no.hials.jiop.evolutionary.ga;
 
 import java.util.ArrayList;
 import java.util.List;
-import no.hials.jiop.base.AbstractEvaluator;
+import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.PopulationBasedMLAlgorithm;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
- * //
  *
- *
- * @author LarsIvar
- * @param <E>
+ * @author Lars Ivar Hatledal
  */
 public class GA<E> extends PopulationBasedMLAlgorithm<E> {
 
@@ -50,7 +47,7 @@ public class GA<E> extends PopulationBasedMLAlgorithm<E> {
     private final int numSelection;
     private final int numMutations;
 
-    public GA(int numElites, int numSelection, int numMutations, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, EncodingFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+    public GA(int numElites, int numSelection, int numMutations, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, EncodingFactory<E> factory, CandidateContainer<E> container, Evaluator<E> evaluator) {
         super(factory, container, evaluator);
         this.selection = selection;
         this.crossover = crossover;
@@ -60,7 +57,7 @@ public class GA<E> extends PopulationBasedMLAlgorithm<E> {
         this.numMutations = numMutations;
     }
 
-    public GA(float elitism, float keep, float mutrate, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, EncodingFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+    public GA(float elitism, float keep, float mutrate, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, EncodingFactory<E> factory, CandidateContainer<E> container, Evaluator<E> evaluator) {
         super(factory, container, evaluator);
         this.selection = selection;
         this.crossover = crossover;

@@ -30,7 +30,7 @@ import no.hials.jiop.base.MLHistory.MLHistory.MLHistoryPoint;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class MLHistory extends ArrayList<MLHistoryPoint> {
     

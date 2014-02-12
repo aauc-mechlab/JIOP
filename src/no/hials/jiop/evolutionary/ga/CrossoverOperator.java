@@ -31,7 +31,7 @@ import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public interface CrossoverOperator<E> {
     

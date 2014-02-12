@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  *
- * @author Lars Ivar Hatledal @ Aalesund University College
+ * @author Lars Ivar Hatledal
  */
 public class ArrayUtil {
 

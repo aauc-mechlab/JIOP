@@ -33,7 +33,7 @@ import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public abstract class AbstractCrossoverOperator<E> implements CrossoverOperator<E> {
 

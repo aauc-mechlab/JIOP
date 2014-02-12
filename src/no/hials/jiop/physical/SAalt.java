@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, LarsIvar
+ * Copyright (c) 2014, Aalesund University College 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,16 +27,15 @@
 package no.hials.jiop.physical;
 
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import no.hials.jiop.base.AbstractEvaluator;
+import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.MLAlgorithm;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class SAalt<E> extends MLAlgorithm<E>{
     
@@ -47,7 +46,7 @@ public class SAalt<E> extends MLAlgorithm<E>{
 
     private Candidate<E> current;
 
-    public SAalt(double startingTemperature, AnnealingSchedule schedule, EncodingFactory<E> factory, AbstractEvaluator<E> evaluator) {
+    public SAalt(double startingTemperature, AnnealingSchedule schedule, EncodingFactory<E> factory, Evaluator<E> evaluator) {
         super(factory, evaluator);
         this.schedule = schedule;
         this.startingTemperature = startingTemperature;

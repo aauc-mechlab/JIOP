@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, LarsIvar
+ * Copyright (c) 2014, Aalesund University College 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,17 +23,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
 package no.hials.jiop.base.candidates.encoding.factories;
 
 import java.util.ArrayList;
 import java.util.List;
 import no.hials.jiop.base.candidates.encoding.Encoding;
-import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public abstract class EncodingFactory<E> {
     

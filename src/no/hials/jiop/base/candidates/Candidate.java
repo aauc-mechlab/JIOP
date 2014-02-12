@@ -29,8 +29,7 @@ import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
- * @author LarsIvar
- * @param <E>
+ * @author Lars Ivar Hatledal
  */
 public class Candidate<E> implements Comparable<Candidate<E>>{
 

@@ -33,8 +33,7 @@ import no.hials.jiop.evolutionary.ga.SelectionOperator;
 
 /**
  *
- * @author LarsIvar
- * @param <E>
+ * @author Lars Ivar Hatledal
  */
 public class TournamentSelection<E> implements SelectionOperator<E> {
 

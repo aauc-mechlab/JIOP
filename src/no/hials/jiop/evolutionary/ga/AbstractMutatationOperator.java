@@ -32,8 +32,7 @@ import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
- * @author LarsIvar
- * @param <E>
+ * @author Lars Ivar Hatledal
  */
 public abstract class AbstractMutatationOperator<E> implements MutationOperator<E> {
 

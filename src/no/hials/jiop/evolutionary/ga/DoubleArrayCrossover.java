@@ -33,7 +33,7 @@ import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class DoubleArrayCrossover extends AbstractCrossoverOperator<double[]> {
 

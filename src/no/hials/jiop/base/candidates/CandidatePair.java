@@ -31,7 +31,7 @@ import java.util.List;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class CandidatePair<E> {
     

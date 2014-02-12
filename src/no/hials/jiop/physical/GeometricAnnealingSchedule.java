@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, LarsIvar
+ * Copyright (c) 2014, Aalesund University College 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@ package no.hials.jiop.physical;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class GeometricAnnealingSchedule implements AnnealingSchedule{
     private final double k;

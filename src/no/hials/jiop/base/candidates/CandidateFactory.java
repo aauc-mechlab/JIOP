@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Lars Ivar
+ * Copyright (c) 2014, Aalesund University College 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,21 +35,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.hials.jiop.base.AbstractEvaluator;
+import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.MLAlgorithm;
 import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
- * @author Lars Ivar
+ * @author Lars Ivar Hatledal
  */
 public class CandidateFactory<E> {
 
     private final ExecutorService pool;
-    private final AbstractEvaluator<E> evaluator;
+    private final Evaluator<E> evaluator;
     private final EncodingFactory<E> encodingFactory;
 
-    public CandidateFactory(EncodingFactory<E> encodingFactory, AbstractEvaluator<E> evaluator) {
+    public CandidateFactory(EncodingFactory<E> encodingFactory, Evaluator<E> evaluator) {
         this.evaluator = evaluator;
         this.encodingFactory = encodingFactory;
         this.pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());

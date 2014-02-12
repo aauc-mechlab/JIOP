@@ -28,7 +28,7 @@ package no.hials.jiop;
 import no.hials.jiop.utils.ArrayUtil;
 import java.util.Arrays;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
-import no.hials.jiop.base.AbstractEvaluator;
+import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.swarm.PSO;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -50,7 +50,7 @@ import no.hials.jiop.swarm.ABS;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class Main {
 
@@ -88,7 +88,7 @@ public class Main {
         }
     }
 
-    static class MyEvaluator extends AbstractEvaluator<double[]> {
+    static class MyEvaluator extends Evaluator<double[]> {
 
         @Override
         public double evaluate(double[] encoding) {

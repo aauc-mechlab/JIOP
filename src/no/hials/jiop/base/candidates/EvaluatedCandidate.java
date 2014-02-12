@@ -29,7 +29,7 @@ import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class EvaluatedCandidate<E> extends Candidate<E>{
 

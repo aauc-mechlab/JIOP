@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import no.hials.jiop.base.candidates.Candidate;
 import java.util.Random;
-import no.hials.jiop.base.AbstractEvaluator;
+import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.PopulationBasedMLAlgorithm;
 import no.hials.jiop.base.candidates.encoding.Encoding;
@@ -37,14 +37,14 @@ import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class DE<E> extends PopulationBasedMLAlgorithm<E> {
 
     private final Random rng = new Random();
     private final DifferentialCrossover<E> crossover;
     
-    public DE(DifferentialCrossover<E> crossover, EncodingFactory<E> factory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+    public DE(DifferentialCrossover<E> crossover, EncodingFactory<E> factory, CandidateContainer<E> container, Evaluator<E> evaluator) {
         super(factory, container, evaluator);
         this.crossover = crossover;
     }

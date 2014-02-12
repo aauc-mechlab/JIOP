@@ -25,14 +25,13 @@
  */
 package no.hials.jiop.base.candidates.encoding;
 
-import java.util.Arrays;
 import java.util.Random;
 import no.hials.jiop.utils.ArrayUtil;
 import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class DoubleArrayParticleEncoding extends DoubleArrayEncoding implements ParticleEncoding<double[]> {
 

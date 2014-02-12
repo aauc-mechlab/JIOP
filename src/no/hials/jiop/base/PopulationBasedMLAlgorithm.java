@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, LarsIvar
+ * Copyright (c) 2014, Aalesund University College 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,14 +43,14 @@ import org.math.plot.Plot2DPanel;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public abstract class PopulationBasedMLAlgorithm<E> extends MLAlgorithm<E> {
 
     private final MLHistory avgHistory = new MLHistory();
     private final CandidateContainer<E> container;
 
-    public PopulationBasedMLAlgorithm(EncodingFactory<E> encodingFactory, CandidateContainer<E> container, AbstractEvaluator<E> evaluator) {
+    public PopulationBasedMLAlgorithm(EncodingFactory<E> encodingFactory, CandidateContainer<E> container, Evaluator<E> evaluator) {
         super(encodingFactory, evaluator);
         this.container = container;
     }

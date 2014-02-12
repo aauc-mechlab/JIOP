@@ -30,7 +30,7 @@ import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public interface ParticleEncoding<E> extends Encoding<E>{
     
