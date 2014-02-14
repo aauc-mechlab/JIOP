@@ -23,7 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.physical;
+package no.hials.jiop.base.algorithms.physical;
 
 import java.util.List;
 import no.hials.jiop.base.Evaluator;

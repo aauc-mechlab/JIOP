@@ -23,13 +23,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.evolutionary.ga.selection;
+package no.hials.jiop.base.algorithms.evolutionary.ga.selection;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.evolutionary.ga.SelectionOperator;
+import no.hials.jiop.base.algorithms.evolutionary.ga.SelectionOperator;
 
 /**
  *

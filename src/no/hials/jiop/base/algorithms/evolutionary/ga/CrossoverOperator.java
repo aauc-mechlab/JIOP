@@ -24,7 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop.evolutionary.ga;
+package no.hials.jiop.base.algorithms.evolutionary.ga;
 
 import java.util.List;
 import no.hials.jiop.base.candidates.Candidate;

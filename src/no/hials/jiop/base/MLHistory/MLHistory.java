@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import no.hials.jiop.base.MLHistory.MLHistory.MLHistoryPoint;
 
 /**
- *
+ * Class to store the performance history of an algorithm
  * @author Lars Ivar Hatledal
  */
 public class MLHistory extends ArrayList<MLHistoryPoint> {
@@ -37,6 +37,11 @@ public class MLHistory extends ArrayList<MLHistoryPoint> {
     private double tOffset = 0;
     private int iteration = 0;
     
+    /**
+     * Adds a new element to the list
+     * @param cost the cost
+     * @param timestamp the time it took to get the solution
+     */
     public void add (double cost, double timestamp) {
         add(new MLHistoryPoint(cost, iteration++, timestamp + tOffset));
         tOffset += timestamp;
@@ -48,14 +53,6 @@ public class MLHistory extends ArrayList<MLHistoryPoint> {
         tOffset  = 0;
         iteration = 0;
     }
-
-//    public long[] getTimestampsL() {
-//        long[] stamps = new long[size()];
-//        for (int i = 0; i < size(); i++) {
-//            stamps[i] = get(i).timestamp;
-//        }
-//        return stamps;
-//    }
     
     public double[] getTimestamps() {
         double[] stamps = new double[size()];

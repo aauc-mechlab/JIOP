@@ -42,7 +42,7 @@ import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 import org.math.plot.Plot2DPanel;
 
 /**
- *
+ * Extention of MLAlgorithm with support for populationBased algorithms
  * @author Lars Ivar Hatledal
  */
 public abstract class PopulationBasedMLAlgorithm<E> extends MLAlgorithm<E> {
@@ -94,11 +94,18 @@ public abstract class PopulationBasedMLAlgorithm<E> extends MLAlgorithm<E> {
         return plot;
     }
     
-    
+    /**
+     * Getter for the candidate container
+     * @return the candidate container
+     */
     public CandidateContainer<E> getContainer() {
         return container;
     }
 
+    /**
+     * Getter for the average MLHistory
+     * @return the average MLHistory
+     */
     public MLHistory getAvgHistory() {
         return avgHistory;
     }

@@ -29,22 +29,22 @@ import no.hials.jiop.utils.ArrayUtil;
 import java.util.Arrays;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
 import no.hials.jiop.base.Evaluator;
-import no.hials.jiop.swarm.PSO;
+import no.hials.jiop.base.algorithms.swarm.PSO;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import no.hials.jiop.base.MLAlgorithm;
 import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayEncodingFactory;
 import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayParticleEncodingFactory;
-import no.hials.jiop.evolutionary.DE;
-import no.hials.jiop.evolutionary.DoubleArrayDifferentialCrossover;
-import no.hials.jiop.evolutionary.ga.DoubleArrayCrossover;
-import no.hials.jiop.evolutionary.ga.DoubleArrayMutation;
-import no.hials.jiop.evolutionary.ga.GA;
-import no.hials.jiop.evolutionary.ga.selection.StochasticUniversalSampling;
-import no.hials.jiop.physical.GeometricAnnealingSchedule;
-import no.hials.jiop.physical.SA;
-import no.hials.jiop.physical.SAalt;
-import no.hials.jiop.swarm.ABS;
+import no.hials.jiop.base.algorithms.evolutionary.DE;
+import no.hials.jiop.base.algorithms.evolutionary.DoubleArrayDifferentialCrossover;
+import no.hials.jiop.base.algorithms.evolutionary.ga.DoubleArrayCrossover;
+import no.hials.jiop.base.algorithms.evolutionary.ga.DoubleArrayMutation;
+import no.hials.jiop.base.algorithms.evolutionary.ga.GA;
+import no.hials.jiop.base.algorithms.evolutionary.ga.selection.StochasticUniversalSampling;
+import no.hials.jiop.base.algorithms.physical.GeometricAnnealingSchedule;
+import no.hials.jiop.base.algorithms.physical.SA;
+import no.hials.jiop.base.algorithms.physical.SAalt;
+import no.hials.jiop.base.algorithms.swarm.ABS;
 
 /**
  *

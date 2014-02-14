@@ -24,7 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop.physical;
+package no.hials.jiop.base.algorithms.physical;
 
 import java.util.Collections;
 import java.util.List;
