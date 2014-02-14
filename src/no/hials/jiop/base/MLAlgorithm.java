@@ -47,6 +47,7 @@ import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 import org.math.plot.Plot2DPanel;
 
 /**
+ * Base class for all JIOP algorithms
  *
  * @author Lars Ivar Hatledal
  */
@@ -62,6 +63,15 @@ public abstract class MLAlgorithm<E> {
 
     private Candidate<E> bestCandidate;
 
+    /**
+     * Initializes the MLAlgorithm
+     *
+     * @param encodingFactory the EncodingFactory in charge of creating new
+     * Encodings
+     * @param evaluator the Evaluator in charge of evaluation
+     * @see Evaluator
+     * @see EncodingFactory
+     */
     public MLAlgorithm(EncodingFactory<E> encodingFactory, Evaluator<E> evaluator) {
         this.history = new MLHistory();
         this.encodingFactory = encodingFactory;
@@ -70,10 +80,25 @@ public abstract class MLAlgorithm<E> {
         this.pool = Executors.newCachedThreadPool();
     }
 
+    /**
+     * The general contract of this method is that implementations does a single
+     * optimization run. No while loops etc. This is handles by the base class.
+     */
     protected abstract void internalIteration();
 
+    /**
+     * Implementations should return the name of the algorithm
+     *
+     * @return the name of the algorithm
+     */
     public abstract String getName();
 
+    /**
+     * Runs the algorithm for the specified number of iterations
+     *
+     * @param iterations the number of iterations to run
+     * @return the result
+     */
     public EvaluatedCandidate<E> runFor(int iterations) {
         int it = 0;
         long t0 = System.currentTimeMillis();
@@ -83,6 +108,12 @@ public abstract class MLAlgorithm<E> {
         return new EvaluatedCandidate<>(getBestCandidate(), it, System.currentTimeMillis() - t0);
     }
 
+    /**
+     * Runs the algorithm for the specified amount of time
+     *
+     * @param time how long the algorithm should run (measured in milliseconds)
+     * @return the result
+     */
     public EvaluatedCandidate<E> runFor(long time) {
         int it = 0;
         long t0 = System.currentTimeMillis();
@@ -93,16 +124,29 @@ public abstract class MLAlgorithm<E> {
         return new EvaluatedCandidate<>(getBestCandidate(), it, System.currentTimeMillis() - t0);
     }
 
-    public EvaluatedCandidate<E> runFor(double error) {
+    /**
+     * Runs the algorithm as long as the error is above the threshold (or the
+     * timeout kicks in)
+     *
+     * @param error the error threshold
+     * @param timeOut how long we allow the algorithm to run before returning
+     * @return the result
+     */
+    public EvaluatedCandidate<E> runFor(double error, long timeOut) {
         int it = 0;
         long t0 = System.currentTimeMillis();
         do {
             iteration();
             it++;
-        } while (getBestCandidate().getCost() > error);
+        } while (getBestCandidate().getCost() > error & (System.currentTimeMillis() - t0) < timeOut);
         return new EvaluatedCandidate<>(getBestCandidate(), it, System.currentTimeMillis() - t0);
     }
 
+    /**
+     * Does a single iteration of the algorithm
+     *
+     * @return the result
+     */
     public double iteration() {
         long t0 = System.nanoTime();
         internalIteration();
@@ -111,6 +155,11 @@ public abstract class MLAlgorithm<E> {
         return t;
     }
 
+    /**
+     * Clears the algorithm
+     *
+     * @param clearHistory whether or not the history should be cleared as well
+     */
     public void reset(boolean clearHistory) {
         this.bestCandidate = null;
         if (clearHistory) {
@@ -119,6 +168,11 @@ public abstract class MLAlgorithm<E> {
         setBestCandidate(getCandidateFactory().getRandomCandidate());
     }
 
+    /**
+     *
+     * @param seed
+     * @param clearHistory
+     */
     public void reset(List<E> seed, boolean clearHistory) {
         this.bestCandidate = null;
         if (clearHistory) {
@@ -127,12 +181,22 @@ public abstract class MLAlgorithm<E> {
         setBestCandidate(getCandidateFactory().toCandidate(seed.get(0)));
     }
 
+    /**
+     * Getter for the best candidate (synchronized action)
+     *
+     * @return the best candidate
+     */
     public Candidate<E> getBestCandidate() {
         synchronized (mutex) {
             return new Candidate<>(bestCandidate);
         }
     }
 
+    /**
+     * Sets the best candidate (synchronized action)
+     *
+     * @param candidate the new best candidate
+     */
     public void setBestCandidate(Candidate<E> candidate) {
         synchronized (mutex) {
             if (this.bestCandidate == null) {
@@ -143,9 +207,15 @@ public abstract class MLAlgorithm<E> {
         }
     }
 
+    /**
+     * Evaluates and updates all the supplied candidates (multi-threaded
+     * operation)
+     *
+     * @param candidates the candidates to evaluate
+     */
     public void evaluateAll(Iterable<Candidate<E>> candidates) {
         List<Runnable> jobs = new LinkedList<>();
-        
+
         for (final Candidate<E> c : candidates) {
             jobs.add(new Runnable() {
 
@@ -159,6 +229,11 @@ public abstract class MLAlgorithm<E> {
         submitJobs(jobs);
     }
 
+    /**
+     * Get a plot showing the data from the MLHistory
+     *
+     * @return a JPanel instance with the plot
+     */
     public Plot2DPanel getPlot() {
         Plot2DPanel plot = new Plot2DPanel();
         plot.addLegend("INVISIBLE");
@@ -166,28 +241,59 @@ public abstract class MLAlgorithm<E> {
         return plot;
     }
 
+    /**
+     * Warms up the JVM by running the algorithm for the specified time. The algorithm is reset before and after.
+     * @param millis how long we run the algorithm
+     */
     public void warmUp(long millis) {
         reset(true);
         runFor(millis);
         reset(true);
     }
 
+    /**
+     * Getter for the canidateFactory
+     *
+     * @return the CandidateFactory used by this instance
+     * @see CandidateFactory
+     */
     public CandidateFactory getCandidateFactory() {
         return candidateFactory;
     }
 
+    /**
+     * Getter for the encodingFactory
+     *
+     * @return the EncodingFactory used by this instance
+     * @see EncodingFactory
+     */
     public EncodingFactory<E> getEncodingFactory() {
         return encodingFactory;
     }
 
+    /**
+     * Getter for the
+     *
+     * @return
+     */
     public MLHistory getHistory() {
         return history;
     }
 
+    /**
+     * Getter for the evaluator
+     *
+     * @return the Evaluator used by this instance
+     */
     public Evaluator<E> getEvaluator() {
         return evaluator;
     }
 
+    /**
+     * Uses a thread pool to finish all jobs
+     *
+     * @param runnables jobs that can be multi-threaded
+     */
     public void submitJobs(final List<Runnable> runnables) {
         final ExecutorCompletionService completionService = new ExecutorCompletionService(pool);
         for (Runnable job : runnables) {
@@ -202,6 +308,13 @@ public abstract class MLAlgorithm<E> {
         }
     }
 
+    /**
+     * Writes the MLHistory data to file. If the directory does not exist, a new
+     * one will be created.
+     *
+     * @param dir the directory
+     * @param fileName the name of the file
+     */
     public void dumpHistoryToFile(String dir, String fileName) {
         File file = new File(dir);
         if (!file.exists()) {

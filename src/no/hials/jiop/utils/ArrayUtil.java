@@ -232,18 +232,6 @@ public class ArrayUtil {
         return array;
     }
 
-//    public static double[] merge(double[] ... arrays ) {
-//        
-//        for (int i = 0; i < arrays.length; i++) {
-//            
-//        }
-//        
-//        
-//        float[] array = new float[arr1.length + arr2.length];
-//        System.arraycopy(arr1, 0, array, 0, arr1.length);
-//        System.arraycopy(arr2, 0, array, arr1.length, arr2.length);
-//        return array;
-//    }
     public static double[] toDoubleArray(List<Double> list) {
         double[] array = new double[list.size()];
         for (int i = 0; i < array.length; i++) {
@@ -309,4 +297,89 @@ public class ArrayUtil {
         }
         return sb.toString();
     }
+
+    public double max(double... values) {
+        double max = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (i == 0) {
+                max = values[i];
+            } else {
+                if (values[i] > max) {
+                    max = values[i];
+                }
+            }
+        }
+        return max;
+    }
+
+    public float max(float... values) {
+        float max = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (i == 0) {
+                max = values[i];
+            } else {
+                if (values[i] > max) {
+                    max = values[i];
+                }
+            }
+        }
+        return max;
+    }
+
+    public int max(int... values) {
+        int max = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (i == 0) {
+                max = values[i];
+            } else {
+                if (values[i] > max) {
+                    max = values[i];
+                }
+            }
+        }
+        return max;
+    }
+
+    public double min(double... values) {
+        double min = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (i == 0) {
+                min = values[i];
+            } else {
+                if (values[i] < min) {
+                    min = values[i];
+                }
+            }
+        }
+        return min;
+    }
+
+    public float min(float... values) {
+        float min = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (i == 0) {
+                min = values[i];
+            } else {
+                if (values[i] < min) {
+                    min = values[i];
+                }
+            }
+        }
+        return min;
+    }
+
+    public int min(int... values) {
+        int min = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (i == 0) {
+                min = values[i];
+            } else {
+                if (values[i] < min) {
+                    min = values[i];
+                }
+            }
+        }
+        return min;
+    }
+
 }

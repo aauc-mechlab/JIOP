@@ -49,13 +49,13 @@ public class TournamentSelection<E> implements SelectionOperator<E> {
     public List<Candidate<E>> selectCandidates(List<Candidate<E>> candidates, int numSelections) {
 
         List<Candidate<E>> selectedCandidates = new ArrayList<>(numSelections);
-//        List<Candidate<E>> selectionPool = new ArrayList<>(candidates);
+        List<Candidate<E>> selectionPool = new ArrayList<>(candidates);
 
         for (int i = 0; i < numSelections; i++) {
             Candidate<E> c1, c2;
             do {
-                c1 = candidates.get(rng.nextInt(candidates.size()));
-                c2 = candidates.get(rng.nextInt(candidates.size()));
+                c1 = candidates.get(rng.nextInt(selectionPool.size()));
+                c2 = candidates.get(rng.nextInt(selectionPool.size()));
             } while (c1 == c2);
 
             Candidate<E> winner;
@@ -64,7 +64,7 @@ public class TournamentSelection<E> implements SelectionOperator<E> {
             } else {
                 winner = c1.getCost() < c2.getCost() ? c2 : c1;
             }
-//            selectionPool.remove(winner);
+            selectionPool.remove(winner);
             selectedCandidates.add(new Candidate<>(winner));
         }
         return selectedCandidates;

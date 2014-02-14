@@ -28,7 +28,6 @@ package no.hials.jiop.evolutionary.ga;
 import java.util.ArrayList;
 import java.util.List;
 import no.hials.jiop.base.Evaluator;
-import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.PopulationBasedMLAlgorithm;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
@@ -47,8 +46,8 @@ public class GA<E> extends PopulationBasedMLAlgorithm<E> {
     private final int numSelection;
     private final int numMutations;
 
-    public GA(int numElites, int numSelection, int numMutations, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, EncodingFactory<E> factory, CandidateContainer<E> container, Evaluator<E> evaluator) {
-        super(factory, container, evaluator);
+    public GA(int size, int numElites, int numSelection, int numMutations, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, EncodingFactory<E> factory,  Evaluator<E> evaluator) {
+        super(size, factory, evaluator);
         this.selection = selection;
         this.crossover = crossover;
         this.mutation = mutation;
@@ -57,21 +56,21 @@ public class GA<E> extends PopulationBasedMLAlgorithm<E> {
         this.numMutations = numMutations;
     }
 
-    public GA(float elitism, float keep, float mutrate, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, EncodingFactory<E> factory, CandidateContainer<E> container, Evaluator<E> evaluator) {
-        super(factory, container, evaluator);
+    public GA(int size, float elitism, float keep, float mutrate, SelectionOperator<E> selection, CrossoverOperator<E> crossover, MutationOperator<E> mutation, EncodingFactory<E> factory,  Evaluator<E> evaluator) {
+        super(size, factory, evaluator);
         this.selection = selection;
         this.crossover = crossover;
         this.mutation = mutation;
-        this.numElites = Math.round(getContainer().size() * elitism);
-        this.numSelection = Math.round(getContainer().size() * keep);
-        this.numMutations = Math.round((getContainer().size() - numElites) * mutrate);
+        this.numElites = Math.round(size * elitism);
+        this.numSelection = Math.round(size * keep);
+        this.numMutations = Math.round((size - numElites) * mutrate);
     }
 
     @Override
     public void internalIteration() {
         final List<Candidate<E>> elites = getContainer().getBestCandidates(numElites-1);
         elites.add(getBestCandidate());
-        final List<Candidate<E>> selected = selection.selectCandidates(getContainer().getCandidates(), numSelection);
+        final List<Candidate<E>> selected = selection.selectCandidates(getContainer(), numSelection);
         final List<Candidate<E>> offspring = crossover.createoffspring(selected, Math.round((getContainer().size() - numElites - numSelection) / 2));
         final List<Candidate<E>> newpop = new ArrayList<>(getContainer().size());
         newpop.addAll(selected);

@@ -23,9 +23,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.candidates.containers;
+package no.hials.jiop.base.candidates;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import no.hials.jiop.base.candidates.Candidate;
 
@@ -33,29 +34,21 @@ import no.hials.jiop.base.candidates.Candidate;
  *
  * @author Lars Ivar Hatledal
  */
-public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
-
-    protected final int size;
+public class CandidateContainer<E> extends ArrayList<Candidate<E>>{
 
     public CandidateContainer(int size) {
-        this.size = size;
+       super(size);
     }
 
-    public int size() {
-        return size;
+    public  CandidateContainer<E> sort() {
+        Collections.sort(this);
+        return this;
     }
 
-    public abstract List<Candidate<E>> getCandidates();
-
-    public abstract CandidateContainer<E> sort();
-
-    public abstract Candidate<E> get(int i);
-
-    public abstract void set(int index, Candidate<E> candidate);
-
-    public abstract int indexOf(Candidate<E> candidate);
-
-    public abstract void clearAndAddAll(List<Candidate<E>> candidates);
+    public void clearAndAddAll(List<Candidate<E>> candidates) {
+        this.clear();
+        this.addAll(candidates);
+    }
 
     public double getAverage() {
         double avg = 0;
@@ -66,10 +59,10 @@ public abstract class CandidateContainer<E> implements Iterable<Candidate<E>> {
     }
 
     public List<Candidate<E>> getBestCandidates(int numBest) {
-        if (numBest > size) {
-            return null;
-        } else if (numBest < 0) {
-            return null;
+        if (numBest > size()) {
+            throw new IllegalArgumentException("The number of best candidates are greater than the current number of candidates! Desired: " + numBest + ", Available: " + size());
+        } else if (numBest <= 0) {
+            throw new IllegalArgumentException("The number of best candidates are less or equal to 0!");
         }
         List<Candidate<E>> elites = new ArrayList<>(numBest);
         for (int i = 0; i < numBest; i++) {

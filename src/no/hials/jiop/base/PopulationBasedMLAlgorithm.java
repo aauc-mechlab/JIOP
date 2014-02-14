@@ -37,7 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.base.MLHistory.MLHistory;
 import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.base.candidates.containers.CandidateContainer;
+import no.hials.jiop.base.candidates.CandidateContainer;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 import org.math.plot.Plot2DPanel;
 
@@ -49,10 +49,12 @@ public abstract class PopulationBasedMLAlgorithm<E> extends MLAlgorithm<E> {
 
     private final MLHistory avgHistory = new MLHistory();
     private final CandidateContainer<E> container;
+    protected final int preferredSize;
 
-    public PopulationBasedMLAlgorithm(EncodingFactory<E> encodingFactory, CandidateContainer<E> container, Evaluator<E> evaluator) {
+    public PopulationBasedMLAlgorithm(int size, EncodingFactory<E> encodingFactory, Evaluator<E> evaluator) {
         super(encodingFactory, evaluator);
-        this.container = container;
+        this.preferredSize = size;
+        this.container = new CandidateContainer<>(size);
     }
 
     @Override
@@ -61,9 +63,9 @@ public abstract class PopulationBasedMLAlgorithm<E> extends MLAlgorithm<E> {
         if (clearHistory) {
             avgHistory.clear();
         }
-        List<Candidate<E>> candidates = new ArrayList<>(getContainer().size());
+        List<Candidate<E>> candidates = new ArrayList<>(preferredSize);
         candidates.addAll(getCandidateFactory().toCandidateList(candidates));
-        candidates.addAll(getCandidateFactory().getRandomCandidateList(getContainer().size() - candidates.size()));
+        candidates.addAll(getCandidateFactory().getRandomCandidateList(preferredSize - candidates.size()));
         getContainer().clearAndAddAll(candidates);
         setBestCandidate(getContainer().sort().get(0));
     }
@@ -74,7 +76,7 @@ public abstract class PopulationBasedMLAlgorithm<E> extends MLAlgorithm<E> {
         if (clearHistory) {
             avgHistory.clear();
         }
-        container.clearAndAddAll(getCandidateFactory().getRandomCandidateList(getContainer().size()));
+        container.clearAndAddAll(getCandidateFactory().getRandomCandidateList(preferredSize));
         setBestCandidate(getContainer().sort().get(0));
     }
 

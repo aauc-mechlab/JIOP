@@ -29,21 +29,26 @@ import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
- *
+ * Base class for evaluators
  * @author Lars Ivar Hatledal
  */
 public abstract class Evaluator<E> {
-
+    
+    /**
+     * Implementations should evaluate the variables and return a cost
+     * @param variables the variables to evaluate
+     * @return the cost of the variables
+     */
     public abstract double evaluate(E variables);
 
     public double evaluate(Candidate<E> candidate) {
         return evaluate(candidate.getVariables());
     }
 
-    public double evaluate(Encoding<E> encoding) {
-        return evaluate(encoding.getVariables());
-    }
-
+    /**
+     * Evaluates all candidates
+     * @param candidates the candidates to evaluate
+     */
     public void evaluateAll(Iterable<Candidate<E>> candidates) {
         for (Candidate<E> candidate : candidates) {
             candidate.setCost(evaluate(candidate));

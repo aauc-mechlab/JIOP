@@ -41,18 +41,17 @@ public abstract class AbstractCrossoverOperator<E> implements CrossoverOperator<
 
     @Override
     public List<Candidate<E>> createoffspring(List<Candidate<E>> candidates, int numMatings) {
-
-//        List<Candidate<E>> matingPool = new ArrayList<>(candidates);
         List<Candidate<E>> offspring = new ArrayList<>(numMatings);
-        
+        List<Candidate<E>> matingPool = new ArrayList<>(candidates);
+
         for (int i = 0; i < numMatings; i++) {
             Candidate<E> c1, c2;
             do {
-                c1 = candidates.get(rng.nextInt(candidates.size()));
-                c2 = candidates.get(rng.nextInt(candidates.size()));
+                c1 = candidates.get(rng.nextInt(matingPool.size()));
+                c2 = candidates.get(rng.nextInt(matingPool.size()));
             } while (c1 == c2);
-//            matingPool.remove(c1);
-//            matingPool.remove(c2);
+            matingPool.remove(c1);
+            matingPool.remove(c2);
 
             offspring.addAll(mate(c1, c2, rng).asList());
         }

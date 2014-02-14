@@ -28,7 +28,6 @@ package no.hials.jiop.swarm;
 import java.util.ArrayList;
 import java.util.List;
 import no.hials.jiop.base.Evaluator;
-import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.PopulationBasedMLAlgorithm;
 import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
@@ -42,8 +41,8 @@ public class PSO<E> extends PopulationBasedMLAlgorithm<E> {
 
     private final double omega, c1, c2;
 
-    public PSO(double omega, double c1, double c2, EncodingFactory<E> factory, CandidateContainer<E> container, Evaluator<E> evaluator) {
-        super(factory, container, evaluator);
+    public PSO(int size, double omega, double c1, double c2, EncodingFactory<E> factory, Evaluator<E> evaluator) {
+        super(size, factory, evaluator);
         this.omega = omega;
         this.c1 = c1;
         this.c2 = c2;

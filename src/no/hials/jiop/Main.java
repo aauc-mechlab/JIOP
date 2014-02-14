@@ -33,8 +33,6 @@ import no.hials.jiop.swarm.PSO;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import no.hials.jiop.base.MLAlgorithm;
-import no.hials.jiop.base.candidates.containers.CandidateArrayContainer;
-import no.hials.jiop.base.candidates.containers.CandidateListContainer;
 import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayEncodingFactory;
 import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayParticleEncodingFactory;
 import no.hials.jiop.evolutionary.DE;
@@ -62,16 +60,16 @@ public class Main {
         System.out.println(Arrays.toString(desired));
 
         MLAlgorithm<double[]>[] methods = new MLAlgorithm[]{
-            new DE<>(new DoubleArrayDifferentialCrossover(0.8, 0.9), new DoubleArrayEncodingFactory(dim), new CandidateArrayContainer(30), new MyEvaluator()),
-            new PSO<>(2, 0.9, 0.9, new DoubleArrayParticleEncodingFactory(dim), new CandidateArrayContainer(30), new MyEvaluator()),
+            new DE<>(30, new DoubleArrayDifferentialCrossover(0.8, 0.9), new DoubleArrayEncodingFactory(dim), new MyEvaluator()),
+            new PSO<>(30, 2, 0.9, 0.9, new DoubleArrayParticleEncodingFactory(dim), new MyEvaluator()),
             new SA<>(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayEncodingFactory(dim), new MyEvaluator()),
             new SAalt(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayEncodingFactory(dim), new MyEvaluator()),
-            new GA<>(0.1f, 0.5f, 0.2f, new StochasticUniversalSampling<double[]>(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayEncodingFactory(dim), new CandidateListContainer(60), new MyEvaluator()),
-            new ABS(6, new DoubleArrayEncodingFactory(dim), new CandidateListContainer<>(60), new MyEvaluator())};
+            new GA<>(80, 0.1f, 0.5f, 0.2f, new StochasticUniversalSampling(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayEncodingFactory(dim), new MyEvaluator()),
+            new ABS(60, 6, new DoubleArrayEncodingFactory(dim), new MyEvaluator())};
 
         for (final MLAlgorithm method : methods) {
             method.warmUp(1000);
-            EvaluatedCandidate run = method.runFor(10l);
+            EvaluatedCandidate run = method.runFor(0.0000000001, 1000);
             System.out.println(run);
 
             final JFrame frame = new JFrame(method.getName());

@@ -31,7 +31,6 @@ import java.util.List;
 import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.PopulationBasedMLAlgorithm;
 import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.base.candidates.containers.CandidateContainer;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
@@ -42,23 +41,23 @@ public class ABS<E> extends PopulationBasedMLAlgorithm<E> {
 
     private final int numOutlookers;
 
-    public ABS(int numOutlookers, EncodingFactory<E> factory, CandidateContainer<E> container, Evaluator<E> evaluator) {
-        super(factory, container, evaluator);
+    public ABS(int size, int numOutlookers, EncodingFactory<E> factory, Evaluator<E> evaluator) {
+        super(size, factory, evaluator);
         this.numOutlookers = numOutlookers;
     }
 
     @Override
     public void internalIteration() {
-//        final List<Runnable> jobs = new ArrayList<>(getContainer().size());
+        final List<Runnable> jobs = new ArrayList<>(getContainer().size());
         final List<Candidate<E>> bestCandidates = getContainer().sort().getBestCandidates(numOutlookers - 1);
         bestCandidates.add(getBestCandidate());
         final List<Candidate<E>> newPop = Collections.synchronizedList(new ArrayList<Candidate<E>>(getContainer().size()));
 
         for (final Candidate<E> c : bestCandidates) {
-//            jobs.add(new Runnable() {
-//
-//                @Override
-//                public void run() {
+            jobs.add(new Runnable() {
+
+                @Override
+                public void run() {
                     int neighborHoodSize = getContainer().size() / (numOutlookers);
                     List<Candidate<E>> neighborhood = new ArrayList<>(neighborHoodSize);
                     neighborhood.add(c);
@@ -71,9 +70,9 @@ public class ABS<E> extends PopulationBasedMLAlgorithm<E> {
                     List<Candidate<E>> randoms = getCandidateFactory().getRandomCandidateList(remaining);
                     newPop.addAll(randoms);
                 }
-//            });
-//        }
-//        submitJobs(jobs);
+            });
+        }
+        submitJobs(jobs);
         getContainer().clearAndAddAll(newPop);
         setBestCandidate(getContainer().sort().get(0));
     }
