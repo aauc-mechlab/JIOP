@@ -56,7 +56,7 @@ public abstract class MLAlgorithm<E> {
     private final Object mutex = new Object();
     private final ExecutorService pool;
 
-    private final Evaluator<E> evaluator;
+    private Evaluator<E> evaluator;
     private final CandidateFactory<E> candidateFactory;
     private final EncodingFactory<E> encodingFactory;
     protected final MLHistory history;
@@ -288,6 +288,17 @@ public abstract class MLAlgorithm<E> {
     public Evaluator<E> getEvaluator() {
         return evaluator;
     }
+
+    /**
+     * Sets the evaluator
+     * @param evaluator the new evaluator to be used
+     */
+    public void setEvaluator(Evaluator<E> evaluator) {
+        this.evaluator = evaluator;
+        this.candidateFactory.setEvaluator(evaluator);
+    }
+    
+    
 
     /**
      * Uses a thread pool to finish all jobs

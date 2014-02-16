@@ -46,7 +46,7 @@ import no.hials.jiop.base.candidates.encoding.Encoding;
 public class CandidateFactory<E> {
 
     private final ExecutorService pool;
-    private final Evaluator<E> evaluator;
+    private Evaluator<E> evaluator;
     private final EncodingFactory<E> encodingFactory;
 
     public CandidateFactory(EncodingFactory<E> encodingFactory, Evaluator<E> evaluator) {
@@ -142,4 +142,10 @@ public class CandidateFactory<E> {
         }
         return candidates;
     }
+
+    public void setEvaluator(Evaluator<E> evaluator) {
+        this.evaluator = evaluator;
+    }
+    
+    
 }

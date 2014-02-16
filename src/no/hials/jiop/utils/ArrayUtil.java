@@ -164,6 +164,28 @@ public class ArrayUtil {
         }
         return array;
     }
+    
+     public static double[] mult(double[] arr1, double[] arr2) {
+        if (arr1.length != arr2.length) {
+            throw new IllegalArgumentException("Lengths does not match! " + arr1.length + " .vs " + arr2.length);
+        }
+        double[] array = new double[arr1.length];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = arr1[i] * arr2[i];
+        }
+        return array;
+    }
+
+    public static float[] mult(float[] arr1, float[] arr2) {
+        if (arr1.length != arr2.length) {
+            throw new IllegalArgumentException("Lengths does not match! " + arr1.length + " .vs " + arr2.length);
+        }
+        float[] array = new float[arr1.length];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = arr1[i] * arr2[i];
+        }
+        return array;
+    }
 
     public static double[] plus(double[] arr1, double[] arr2) {
         if (arr1.length != arr2.length) {
