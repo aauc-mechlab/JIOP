@@ -23,7 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.algorithms.swarm;
+package no.hials.jiop.base.algorithms.swarm.pso;
 
 import java.util.ArrayList;
 import java.util.List;

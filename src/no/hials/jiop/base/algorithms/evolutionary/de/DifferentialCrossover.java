@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, Lars Ivar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,17 +23,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package no.hials.jiop.base.algorithms.evolutionary.de;
 
-package no.hials.jiop.base.algorithms.evolutionary.ga;
-
-import java.util.List;
-import no.hials.jiop.base.candidates.Candidate;
+import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
-public interface SelectionOperator<E> {
-    
-    public List<Candidate<E>> selectCandidates(List<Candidate<E>> candidates, int numSelections);
+public abstract class DifferentialCrossover<E> {
+
+    private final double F, CR;
+
+    public DifferentialCrossover(double F, double CR) {
+        this.F = F;
+        this.CR = CR;
+    }
+
+    public Encoding<E> crossover(int R, E c, E c1, E c2, E c3) {
+        return crossover(R, F, CR, c, c1, c2, c3);
+    }
+
+    protected abstract Encoding<E> crossover(int R, double F, double CR, E c, E c1, E c2, E c3);
+
 }

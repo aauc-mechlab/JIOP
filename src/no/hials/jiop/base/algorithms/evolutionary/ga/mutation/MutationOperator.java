@@ -23,35 +23,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.algorithms.evolutionary.ga;
 
+package no.hials.jiop.base.algorithms.evolutionary.ga.mutation;
+
+import java.util.List;
 import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
-public class DoubleArrayMutation extends AbstractMutatationOperator<double[]> {
-
-    private final double change, r;
-
-    public DoubleArrayMutation(double change, double r) {
-        this.change = change;
-        this.r = r;
-    }
-
-    @Override
-    public void mutate(Candidate<double[]> chromosome, int geneIndex) {
-        double[] elements = chromosome.getVariables();
-        if (r >= Math.random()) {
-            elements[geneIndex] = Math.random();
-        } else {
-            double mutation;
-            do {
-                mutation = elements[geneIndex] + Math.random() * Math.abs(change - (-change)) + (-change);
-            } while (mutation > 1 | 0 > mutation);
-            elements[geneIndex] = mutation;
-        }
-    }
-
+public interface MutationOperator<E> {
+    
+    public void mutateCandidates(List<Candidate<E>> candidates, int numMutations);
 }

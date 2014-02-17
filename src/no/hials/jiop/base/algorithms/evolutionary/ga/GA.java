@@ -25,6 +25,9 @@
  */
 package no.hials.jiop.base.algorithms.evolutionary.ga;
 
+import no.hials.jiop.base.algorithms.evolutionary.ga.mutation.MutationOperator;
+import no.hials.jiop.base.algorithms.evolutionary.ga.selection.SelectionOperator;
+import no.hials.jiop.base.algorithms.evolutionary.ga.crossover.CrossoverOperator;
 import java.util.ArrayList;
 import java.util.List;
 import no.hials.jiop.base.Evaluator;

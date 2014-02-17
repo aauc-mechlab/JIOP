@@ -23,40 +23,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.algorithms.evolutionary.ga;
+package no.hials.jiop.base.algorithms.evolutionary.ga.mutation;
 
-import no.hials.jiop.base.candidates.CandidatePair;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
-public abstract class AbstractCrossoverOperator<E> implements CrossoverOperator<E> {
+public class DoubleArrayMutation extends AbstractMutatationOperator<double[]> {
 
-    private final Random rng = new Random();
+    private final double change, r;
 
-    @Override
-    public List<Candidate<E>> createoffspring(List<Candidate<E>> candidates, int numMatings) {
-        List<Candidate<E>> offspring = new ArrayList<>(numMatings);
-        List<Candidate<E>> matingPool = new ArrayList<>(candidates);
-
-        for (int i = 0; i < numMatings; i++) {
-            Candidate<E> c1, c2;
-            do {
-                c1 = candidates.get(rng.nextInt(matingPool.size()));
-                c2 = candidates.get(rng.nextInt(matingPool.size()));
-            } while (c1 == c2);
-            matingPool.remove(c1);
-            matingPool.remove(c2);
-
-            offspring.addAll(mate(c1, c2, rng).asList());
-        }
-        return offspring;
+    public DoubleArrayMutation(double change, double r) {
+        this.change = change;
+        this.r = r;
     }
 
-    public abstract CandidatePair<E> mate(Candidate<E> ma, Candidate<E> pa, Random rng);
+    @Override
+    public void mutate(Candidate<double[]> chromosome, int geneIndex) {
+        double[] elements = chromosome.getVariables();
+        if (r >= Math.random()) {
+            elements[geneIndex] = Math.random();
+        } else {
+            double mutation;
+            do {
+                mutation = elements[geneIndex] + Math.random() * Math.abs(change - (-change)) + (-change);
+            } while (mutation > 1 | 0 > mutation);
+            elements[geneIndex] = mutation;
+        }
+    }
+
 }

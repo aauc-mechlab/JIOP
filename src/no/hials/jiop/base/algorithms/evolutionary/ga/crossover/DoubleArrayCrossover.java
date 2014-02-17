@@ -23,7 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.algorithms.evolutionary.ga;
+package no.hials.jiop.base.algorithms.evolutionary.ga.crossover;
 
 import no.hials.jiop.base.candidates.CandidatePair;
 import java.util.Random;

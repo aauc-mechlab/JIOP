@@ -23,50 +23,39 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.algorithms.evolutionary.ga.selection;
+package no.hials.jiop.base.algorithms.evolutionary.ga.mutation;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.TreeSet;
 import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
-public class TournamentSelection<E> implements SelectionOperator<E> {
+public abstract class AbstractMutatationOperator<E> implements MutationOperator<E> {
 
     private final Random rng = new Random();
 
-    private final double k;
-
-    public TournamentSelection(double k) {
-        this.k = k;
-    }
-
     @Override
-    public List<Candidate<E>> selectCandidates(List<Candidate<E>> candidates, int numSelections) {
-
-        List<Candidate<E>> selectedCandidates = new ArrayList<>(numSelections);
-        List<Candidate<E>> selectionPool = new ArrayList<>(candidates);
-
-        for (int i = 0; i < numSelections; i++) {
-            Candidate<E> c1, c2;
+    public void mutateCandidates(List<Candidate<E>> candidates, int numMutations) {
+//        System.out.println(candidates.size() + " " + numMutations);
+        TreeSet<Integer> rows = new TreeSet<>();
+        for (int i = 0; i < numMutations; i++) {
+            int row;
             do {
-                c1 = candidates.get(rng.nextInt(selectionPool.size()));
-                c2 = candidates.get(rng.nextInt(selectionPool.size()));
-            } while (c1 == c2);
-
-            Candidate<E> winner;
-            if (k >= rng.nextDouble()) {
-                winner = c1.getCost() < c2.getCost() ? c1 : c2;
-            } else {
-                winner = c1.getCost() < c2.getCost() ? c2 : c1;
-            }
-            selectionPool.remove(winner);
-            selectedCandidates.add(new Candidate<>(winner));
+                row = rng.nextInt(candidates.size());
+            } while (rows.contains(row));
+            rows.add(row);
         }
-        return selectedCandidates;
+        for (int i = 0; i < numMutations; i++) {
+            Candidate<E> get = candidates.get(rows.pollFirst());
+            int c = rng.nextInt(get.getEncoding().size());
+            mutate(get, c);
+
+        }
     }
 
+    public abstract void mutate(Candidate<E> chromosome, int geneIndex);
 }

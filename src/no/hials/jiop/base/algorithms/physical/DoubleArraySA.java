@@ -23,27 +23,20 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.algorithms.evolutionary;
 
-import no.hials.jiop.base.candidates.encoding.Encoding;
+package no.hials.jiop.base.algorithms.physical;
+
+import no.hials.jiop.base.Evaluator;
+import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayEncodingFactory;
 
 /**
  *
- * @author Lars Ivar Hatledal
+ * @author Lars Ivar
  */
-public abstract class DifferentialCrossover<E> {
+public class DoubleArraySA extends SA<double[]> {
 
-    private final double F, CR;
-
-    public DifferentialCrossover(double F, double CR) {
-        this.F = F;
-        this.CR = CR;
+    public DoubleArraySA(double startingTemperature, int dim, AnnealingSchedule schedule,  Evaluator<double[]> evaluator) {
+        super(startingTemperature, schedule, new DoubleArrayEncodingFactory(dim), evaluator);
     }
-
-    public Encoding<E> crossover(int R, E c, E c1, E c2, E c3) {
-        return crossover(R, F, CR, c, c1, c2, c3);
-    }
-
-    protected abstract Encoding<E> crossover(int R, double F, double CR, E c, E c1, E c2, E c3);
-
+    
 }

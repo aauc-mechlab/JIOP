@@ -23,7 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.algorithms.evolutionary;
+package no.hials.jiop.base.algorithms.evolutionary.de;
 
 import java.util.ArrayList;
 import java.util.List;

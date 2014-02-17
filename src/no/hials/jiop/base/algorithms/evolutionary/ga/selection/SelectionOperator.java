@@ -23,34 +23,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.algorithms.evolutionary;
 
-import no.hials.jiop.utils.ArrayUtil;
-import no.hials.jiop.base.candidates.encoding.Encoding;
-import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
+package no.hials.jiop.base.algorithms.evolutionary.ga.selection;
+
+import java.util.List;
+import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
-public class DoubleArrayDifferentialCrossover extends DifferentialCrossover<double[]> {
-
-    public DoubleArrayDifferentialCrossover(double F, double CR) {
-        super(F, CR);
-    }
-
-    @Override
-    protected Encoding<double[]> crossover(int R, double F, double CR, double[] c, double[] c1, double[] c2, double[] c3) {
-        double[] array = new double[c.length];
-        for (int i = 0; i < array.length; i++) {
-            if ((Math.random() < CR) || (i == R)) {
-                array[i] = c1[i] + F * (c2[i] - c3[i]);
-            } else {
-                array[i] = c[i];
-            }
-        }
-
-        return new DoubleArrayEncoding(ArrayUtil.clamp(0, 1, array));
-    }
-
+public interface SelectionOperator<E> {
+    
+    public List<Candidate<E>> selectCandidates(List<Candidate<E>> candidates, int numSelections);
 }

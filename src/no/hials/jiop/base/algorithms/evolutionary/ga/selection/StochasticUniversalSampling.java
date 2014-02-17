@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.base.algorithms.evolutionary.ga.SelectionOperator;
 
 /**
  *

@@ -23,39 +23,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.algorithms.evolutionary.ga;
+package no.hials.jiop.base.algorithms.evolutionary.ga.crossover;
 
+import no.hials.jiop.base.candidates.CandidatePair;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.TreeSet;
 import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
-public abstract class AbstractMutatationOperator<E> implements MutationOperator<E> {
+public abstract class AbstractCrossoverOperator<E> implements CrossoverOperator<E> {
 
     private final Random rng = new Random();
 
     @Override
-    public void mutateCandidates(List<Candidate<E>> candidates, int numMutations) {
-//        System.out.println(candidates.size() + " " + numMutations);
-        TreeSet<Integer> rows = new TreeSet<>();
-        for (int i = 0; i < numMutations; i++) {
-            int row;
-            do {
-                row = rng.nextInt(candidates.size());
-            } while (rows.contains(row));
-            rows.add(row);
-        }
-        for (int i = 0; i < numMutations; i++) {
-            Candidate<E> get = candidates.get(rows.pollFirst());
-            int c = rng.nextInt(get.getEncoding().size());
-            mutate(get, c);
+    public List<Candidate<E>> createoffspring(List<Candidate<E>> candidates, int numMatings) {
+        List<Candidate<E>> offspring = new ArrayList<>(numMatings);
+        List<Candidate<E>> matingPool = new ArrayList<>(candidates);
 
+        for (int i = 0; i < numMatings; i++) {
+            Candidate<E> c1, c2;
+            do {
+                c1 = candidates.get(rng.nextInt(matingPool.size()));
+                c2 = candidates.get(rng.nextInt(matingPool.size()));
+            } while (c1 == c2);
+            matingPool.remove(c1);
+            matingPool.remove(c2);
+
+            offspring.addAll(mate(c1, c2, rng).asList());
         }
+        return offspring;
     }
 
-    public abstract void mutate(Candidate<E> chromosome, int geneIndex);
+    public abstract CandidatePair<E> mate(Candidate<E> ma, Candidate<E> pa, Random rng);
 }

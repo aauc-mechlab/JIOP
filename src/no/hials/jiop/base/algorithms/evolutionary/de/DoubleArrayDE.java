@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, Lars Ivar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,16 +24,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop.base.algorithms.evolutionary.ga;
+package no.hials.jiop.base.algorithms.evolutionary.de;
 
-import java.util.List;
-import no.hials.jiop.base.candidates.Candidate;
+import no.hials.jiop.base.Evaluator;
+import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayEncodingFactory;
 
 /**
  *
- * @author Lars Ivar Hatledal
+ * @author Lars Ivar
  */
-public interface CrossoverOperator<E> {
+public class DoubleArrayDE extends DE<double[]>{
+
+    public DoubleArrayDE(int size, double F, double CR, int dim, Evaluator<double[]> evaluator) {
+        super(size, new DoubleArrayDifferentialCrossover(F, CR), new DoubleArrayEncodingFactory(dim), evaluator);
+    }
     
-    public List<Candidate<E>> createoffspring(List<Candidate<E>> candidates, int numMatings);
 }

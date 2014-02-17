@@ -23,50 +23,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.base.algorithms.evolutionary.ga.selection;
+package no.hials.jiop.base.algorithms.evolutionary.de;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import no.hials.jiop.base.candidates.Candidate;
+import no.hials.jiop.utils.ArrayUtil;
+import no.hials.jiop.base.candidates.encoding.Encoding;
+import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
-public class TournamentSelection<E> implements SelectionOperator<E> {
+public class DoubleArrayDifferentialCrossover extends DifferentialCrossover<double[]> {
 
-    private final Random rng = new Random();
-
-    private final double k;
-
-    public TournamentSelection(double k) {
-        this.k = k;
+    public DoubleArrayDifferentialCrossover(double F, double CR) {
+        super(F, CR);
     }
 
     @Override
-    public List<Candidate<E>> selectCandidates(List<Candidate<E>> candidates, int numSelections) {
-
-        List<Candidate<E>> selectedCandidates = new ArrayList<>(numSelections);
-        List<Candidate<E>> selectionPool = new ArrayList<>(candidates);
-
-        for (int i = 0; i < numSelections; i++) {
-            Candidate<E> c1, c2;
-            do {
-                c1 = candidates.get(rng.nextInt(selectionPool.size()));
-                c2 = candidates.get(rng.nextInt(selectionPool.size()));
-            } while (c1 == c2);
-
-            Candidate<E> winner;
-            if (k >= rng.nextDouble()) {
-                winner = c1.getCost() < c2.getCost() ? c1 : c2;
+    protected Encoding<double[]> crossover(int R, double F, double CR, double[] c, double[] c1, double[] c2, double[] c3) {
+        double[] array = new double[c.length];
+        for (int i = 0; i < array.length; i++) {
+            if ((Math.random() < CR) || (i == R)) {
+                array[i] = c1[i] + F * (c2[i] - c3[i]);
             } else {
-                winner = c1.getCost() < c2.getCost() ? c2 : c1;
+                array[i] = c[i];
             }
-            selectionPool.remove(winner);
-            selectedCandidates.add(new Candidate<>(winner));
         }
-        return selectedCandidates;
+
+        return new DoubleArrayEncoding(ArrayUtil.clamp(0, 1, array));
     }
 
 }
