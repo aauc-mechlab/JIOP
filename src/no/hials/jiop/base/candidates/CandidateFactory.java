@@ -71,7 +71,7 @@ public class CandidateFactory<E> {
     }
 
     public Candidate<E> toCandidate(E variables) {
-        Encoding<E> encoding = encodingFactory.getWrapVariables(variables);
+        Encoding<E> encoding = encodingFactory.wrapVariables(variables);
         return new Candidate<>(encoding, evaluator.evaluate(variables));
     }
 

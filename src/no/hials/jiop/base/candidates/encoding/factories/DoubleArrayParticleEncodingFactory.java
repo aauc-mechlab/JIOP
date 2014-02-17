@@ -28,36 +28,33 @@ package no.hials.jiop.base.candidates.encoding.factories;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayParticleEncoding;
-import no.hials.jiop.base.candidates.encoding.Encoding;
+import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
 import no.hials.jiop.utils.ArrayUtil;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
-public class DoubleArrayParticleEncodingFactory extends EncodingFactory<double[]> {
+public class DoubleArrayParticleEncodingFactory extends ParticleEncodingFactory<double[]> {
 
     public DoubleArrayParticleEncodingFactory(int encodingLength) {
         super(encodingLength);
     }
 
     @Override
-    protected Encoding<double[]> getRandomEncoding(int length) {
+    protected ParticleEncoding<double[]> getRandomEncoding(int length) {
         double[] rand = ArrayUtil.randomD(length);
         return new DoubleArrayParticleEncoding(rand, new Candidate<>(new DoubleArrayEncoding(rand), Double.MAX_VALUE));
     }
 
     @Override
-    public Encoding<double[]> getNeighborEncoding(double[] variables, double change) {
+    public ParticleEncoding<double[]> getNeighborEncoding(double[] variables, double change) {
         double[] neighbor = ArrayUtil.neighbor(variables, change);
         return new DoubleArrayParticleEncoding(neighbor, new Candidate<>(new DoubleArrayEncoding(neighbor), Double.MAX_VALUE));
     }
 
     @Override
-    public Encoding<double[]> getWrapVariables(double[] variables) {
+    public ParticleEncoding<double[]> wrapVariables(double[] variables) {
        return new DoubleArrayParticleEncoding(variables, new Candidate<>(new DoubleArrayEncoding(variables), Double.MAX_VALUE));
     }
-
-  
-
 }

@@ -31,7 +31,7 @@ import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.PopulationBasedMLAlgorithm;
 import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
-import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
+import no.hials.jiop.base.candidates.encoding.factories.ParticleEncodingFactory;
 
 /**
  *
@@ -41,7 +41,7 @@ public class PSO<E> extends PopulationBasedMLAlgorithm<E> {
 
     private final double omega, c1, c2;
 
-    public PSO(int size, double omega, double c1, double c2, EncodingFactory<E> factory, Evaluator<E> evaluator) {
+    public PSO(int size, double omega, double c1, double c2, ParticleEncodingFactory<E> factory, Evaluator<E> evaluator) {
         super(size, factory, evaluator);
         this.omega = omega;
         this.c1 = c1;

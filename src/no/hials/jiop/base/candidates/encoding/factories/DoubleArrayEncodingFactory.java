@@ -51,7 +51,7 @@ public class DoubleArrayEncodingFactory extends EncodingFactory<double[]>{
     }
 
     @Override
-    public Encoding<double[]> getWrapVariables(double[] variables) {
+    public Encoding<double[]> wrapVariables(double[] variables) {
         return new DoubleArrayEncoding(variables);
     }
     

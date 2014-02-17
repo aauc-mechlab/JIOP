@@ -35,7 +35,7 @@ import no.hials.jiop.base.candidates.encoding.Encoding;
  */
 public abstract class EncodingFactory<E> {
     
-    private final int encodingLength;
+    protected final int encodingLength;
 
     public EncodingFactory(int encodingLength) {
         this.encodingLength = encodingLength;
@@ -51,7 +51,7 @@ public abstract class EncodingFactory<E> {
     
     protected abstract Encoding<E> getRandomEncoding(int length);
     public abstract Encoding<E> getNeighborEncoding(E variables, double change);
-    public abstract Encoding<E> getWrapVariables(E variables);
+    public abstract Encoding<E> wrapVariables(E variables);
     
     
     public List<Encoding<E>> getRandomEncodingList(int size) {

@@ -23,20 +23,43 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package no.hials.jiop.base.candidates.encoding.factories;
 
-package no.hials.jiop.base.algorithms.swarm.pso;
-
-import no.hials.jiop.base.Evaluator;
-import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayParticleEncodingFactory;
+import java.util.ArrayList;
+import java.util.List;
+import no.hials.jiop.base.candidates.encoding.Encoding;
+import no.hials.jiop.base.candidates.encoding.ParticleEncoding;
 
 /**
  *
  * @author Lars Ivar
  */
-public class DoubleArrayPSO extends PSO<double[]>{
+public abstract class ParticleEncodingFactory<E> extends EncodingFactory<E> {
 
-    public DoubleArrayPSO(int size, double omega, double c1, double c2, int dim, Evaluator<double[]> evaluator) {
-        super(size, omega, c1, c2, new DoubleArrayParticleEncodingFactory(dim), evaluator);
+    public ParticleEncodingFactory(int encodingLength) {
+        super(encodingLength);
     }
-    
+
+    @Override
+    public List<Encoding<E>> getRandomEncodingList(int size) {
+        List<Encoding<E>> random = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            random.add(getRandomEncoding());
+        }
+        return random;
+    }
+
+    @Override
+    public abstract ParticleEncoding<E> wrapVariables(E variables);
+
+    @Override
+    public abstract ParticleEncoding<E> getNeighborEncoding(E variables, double change);
+
+    @Override
+    protected abstract ParticleEncoding<E> getRandomEncoding(int length);
+
+    @Override
+    public ParticleEncoding<E> getRandomEncoding() {
+        return getRandomEncoding(encodingLength);
+    }
 }
