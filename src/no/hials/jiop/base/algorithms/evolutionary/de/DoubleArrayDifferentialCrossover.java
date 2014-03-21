@@ -25,6 +25,7 @@
  */
 package no.hials.jiop.base.algorithms.evolutionary.de;
 
+import java.util.Random;
 import no.hials.jiop.utils.ArrayUtil;
 import no.hials.jiop.base.candidates.encoding.Encoding;
 import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
@@ -35,12 +36,15 @@ import no.hials.jiop.base.candidates.encoding.DoubleArrayEncoding;
  */
 public class DoubleArrayDifferentialCrossover extends DifferentialCrossover<double[]> {
 
+    private final Random rng = new Random();
+    
     public DoubleArrayDifferentialCrossover(double F, double CR) {
         super(F, CR);
     }
 
     @Override
-    protected Encoding<double[]> crossover(int R, double F, double CR, double[] c, double[] c1, double[] c2, double[] c3) {
+    protected Encoding<double[]> crossover(double F, double CR, double[] c, double[] c1, double[] c2, double[] c3) {
+        int R = rng.nextInt(c.length);
         double[] array = new double[c.length];
         for (int i = 0; i < array.length; i++) {
             if ((Math.random() < CR) || (i == R)) {

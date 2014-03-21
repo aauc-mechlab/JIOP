@@ -23,7 +23,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
 package no.hials.jiop.base.algorithms.physical;
 
 import java.util.Collections;
@@ -37,8 +36,7 @@ import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
  *
  * @author Lars Ivar Hatledal
  */
-public class SAalt<E> extends MLAlgorithm<E>{
-    
+public class SAalt<E> extends MLAlgorithm<E> {
 
     private final AnnealingSchedule schedule;
     private final double startingTemperature;
@@ -54,7 +52,7 @@ public class SAalt<E> extends MLAlgorithm<E>{
 
     @Override
     public void internalIteration() {
-        List<Candidate<E>> neighborCandidateList = getCandidateFactory().getNeighborCandidateList(current, getBestCandidate().getCost()/10, 50);
+        List<Candidate<E>> neighborCandidateList = getCandidateFactory().getNeighborCandidateList(current, getBestCandidate().getCost() / 10, 50);
         Collections.sort(neighborCandidateList);
         Candidate<E> newSample = neighborCandidateList.get(0);
         if (doAccept(current, newSample)) {
@@ -71,15 +69,15 @@ public class SAalt<E> extends MLAlgorithm<E>{
     }
 
     @Override
-    public void reset(List<E> initials, boolean clearHistory) {
-        super.reset(initials, clearHistory);
+    public void reset(List<E> initials) {
+        super.reset(initials);
         this.current = getCandidateFactory().toCandidate(initials.get(0));
         this.temperature = startingTemperature;
     }
 
     @Override
-    public void reset(boolean clearHistory) {
-        super.reset(clearHistory);
+    public void reset() {
+        super.reset();
         this.current = getCandidateFactory().getRandomCandidate();
         this.temperature = startingTemperature;
     }

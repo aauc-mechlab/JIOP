@@ -68,20 +68,18 @@ public class Main {
             new ABS(60, 6, new DoubleArrayEncodingFactory(dim), new MyEvaluator())};
 
         for (final MLAlgorithm method : methods) {
+            
             method.warmUp(1000);
+            method.doTrackHistory(true);
             EvaluatedCandidate run = method.runFor(0.0000000001, 1000);
             System.out.println(run);
 
             final JFrame frame = new JFrame(method.getName());
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    frame.getContentPane().add(method.getPlot());
-                    frame.setVisible(true);
-                    frame.setSize(500, 500);
-                }
+            SwingUtilities.invokeLater(() -> {
+                frame.getContentPane().add(method.getPlot());
+                frame.setVisible(true);
+                frame.setSize(500, 500);
             });
         }
     }

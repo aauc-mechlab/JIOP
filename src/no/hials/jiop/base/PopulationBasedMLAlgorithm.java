@@ -43,7 +43,9 @@ import org.math.plot.Plot2DPanel;
 
 /**
  * Extention of MLAlgorithm with support for populationBased algorithms
+ *
  * @author Lars Ivar Hatledal
+ * @param <E> the type
  */
 public abstract class PopulationBasedMLAlgorithm<E> extends MLAlgorithm<E> {
 
@@ -58,11 +60,8 @@ public abstract class PopulationBasedMLAlgorithm<E> extends MLAlgorithm<E> {
     }
 
     @Override
-    public void reset(List<E> seed, boolean clearHistory) {
-        super.reset(seed, clearHistory);
-        if (clearHistory) {
-            avgHistory.clear();
-        }
+    public void reset(List<E> seed) {
+        super.reset(seed);
         List<Candidate<E>> candidates = new ArrayList<>(preferredSize);
         candidates.addAll(getCandidateFactory().toCandidateList(candidates));
         candidates.addAll(getCandidateFactory().getRandomCandidateList(preferredSize - candidates.size()));
@@ -71,31 +70,37 @@ public abstract class PopulationBasedMLAlgorithm<E> extends MLAlgorithm<E> {
     }
 
     @Override
-    public void reset(boolean clearHistory) {
-        super.reset(clearHistory);
-        if (clearHistory) {
-            avgHistory.clear();
-        }
+    public void reset() {
+        super.reset();
         container.clearAndAddAll(getCandidateFactory().getRandomCandidateList(preferredSize));
         setBestCandidate(getContainer().sort().get(0));
     }
 
     @Override
+    public void clearHistory() {
+        super.clearHistory();
+        avgHistory.clear();
+    }
+
+    @Override
     public double iteration() {
         double t = super.iteration();
-        avgHistory.add(container.getAverage(), t);
+        if (trackHistory) {
+            avgHistory.add(container.getAverage(), t);
+        }
         return t;
     }
-    
+
     @Override
     public Plot2DPanel getPlot() {
         Plot2DPanel plot = super.getPlot();
         plot.addLinePlot("", getAvgHistory().getTimestamps(), getAvgHistory().getCosts());
         return plot;
     }
-    
+
     /**
      * Getter for the candidate container
+     *
      * @return the candidate container
      */
     public CandidateContainer<E> getContainer() {
@@ -104,6 +109,7 @@ public abstract class PopulationBasedMLAlgorithm<E> extends MLAlgorithm<E> {
 
     /**
      * Getter for the average MLHistory
+     *
      * @return the average MLHistory
      */
     public MLHistory getAvgHistory() {

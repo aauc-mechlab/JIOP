@@ -35,6 +35,10 @@ import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayEncodingFacto
  */
 public class DoubleArraySA extends SA<double[]> {
 
+    public DoubleArraySA(double startingTemperature, int dim,  Evaluator<double[]> evaluator) {
+        super(startingTemperature, new GeometricAnnealingSchedule(0.85), new DoubleArrayEncodingFactory(dim), evaluator);
+    }
+    
     public DoubleArraySA(double startingTemperature, int dim, AnnealingSchedule schedule,  Evaluator<double[]> evaluator) {
         super(startingTemperature, schedule, new DoubleArrayEncodingFactory(dim), evaluator);
     }

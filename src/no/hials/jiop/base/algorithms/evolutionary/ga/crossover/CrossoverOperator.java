@@ -30,8 +30,9 @@ import java.util.List;
 import no.hials.jiop.base.candidates.Candidate;
 
 /**
- *
+ * Crossover interface
  * @author Lars Ivar Hatledal
+ * @param <E> The type
  */
 public interface CrossoverOperator<E> {
     

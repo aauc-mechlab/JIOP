@@ -35,57 +35,53 @@ import no.hials.jiop.base.candidates.encoding.Encoding;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
+ * A Differential Evolution implementation
  *
  * @author Lars Ivar Hatledal
+ * @param <E> the type
  */
 public class DE<E> extends PopulationBasedMLAlgorithm<E> {
 
     private final Random rng = new Random();
     private final DifferentialCrossover<E> crossover;
-    
-    public DE(int size, DifferentialCrossover<E> crossover, EncodingFactory<E> factory,  Evaluator<E> evaluator) {
+
+    public DE(int size, DifferentialCrossover<E> crossover, EncodingFactory<E> factory, Evaluator<E> evaluator) {
         super(size, factory, evaluator);
         this.crossover = crossover;
     }
-    
+
     @Override
     public void internalIteration() {
         final List<Runnable> jobs = new ArrayList<>(getContainer().size());
         for (final Candidate<E> c : getContainer()) {
-            jobs.add(new Runnable() {
-
-                @Override
-                public void run() {
-                    E p = c.getVariables();
-                    E p1, p2, p3;
-                    do {
-                        int rand = rng.nextInt(getContainer().size());
-                        p1 = getContainer().get(rand).getVariables();
-                    } while (p1 == c);
-                    do {
-                        int rand = rng.nextInt(getContainer().size());
-                        p2 = getContainer().get(rand).getVariables();
-                    } while (p2 == c && p2 == p1);
-                    do {
-                        int rand = rng.nextInt(getContainer().size());
-                        p3 = getContainer().get(rand).getVariables();
-                    } while (p3 == c && p3 == p1 && p3 == p2);
-
-                    int R = rng.nextInt();
-                    Encoding<E> differentiate = crossover.crossover(R, p, p1, p2, p3);
-                    Candidate<E> sample = getCandidateFactory().toCandidate(differentiate);
-                    if (sample.getCost() < c.getCost()) {
-                        getContainer().set(getContainer().indexOf(c), sample);
-//                        if (sample.getCost() < getBestCandidate().getCost()) {
-                            setBestCandidate(sample);
-//                        }
-                    }
-                }
+            jobs.add((Runnable) () -> {
+            E p = c.getVariables();
+            E p1, p2, p3;
+            do {
+                int rand = rng.nextInt(getContainer().size());
+                p1 = getContainer().get(rand).getVariables();
+            } while (p1 == c);
+            do {
+                int rand = rng.nextInt(getContainer().size());
+                p2 = getContainer().get(rand).getVariables();
+            } while (p2 == c && p2 == p1);
+            do {
+                int rand = rng.nextInt(getContainer().size());
+                p3 = getContainer().get(rand).getVariables();
+            } while (p3 == c && p3 == p1 && p3 == p2);
+            Encoding<E> differentiate = crossover.crossover(p, p1, p2, p3);
+            Candidate<E> sample = getCandidateFactory().toCandidate(differentiate);
+            if (sample.getCost() < c.getCost()) {
+                getContainer().set(getContainer().indexOf(c), sample);
+//                if (sample.getCost() < getBestCandidate().getCost()) {
+                    setBestCandidate(sample);
+//                }
+            }
             });
         }
         submitJobs(jobs);
     }
-    
+
     @Override
     public String getName() {
         return "Differential Evolution";

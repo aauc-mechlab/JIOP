@@ -26,7 +26,6 @@
 package no.hials.jiop.base;
 
 import no.hials.jiop.base.candidates.Candidate;
-import no.hials.jiop.base.candidates.encoding.Encoding;
 
 /**
  * Base class for evaluators

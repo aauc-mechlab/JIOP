@@ -32,8 +32,9 @@ import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
- *
+ * A Simulated Annealing impelmenetation
  * @author Lars Ivar Hatledal
+ * @param <E> the type
  */
 public class SA<E> extends MLAlgorithm<E> {
 
@@ -43,6 +44,11 @@ public class SA<E> extends MLAlgorithm<E> {
 
     private Candidate<E> current;
 
+
+    public SA(double startingTemperature, EncodingFactory<E> factory, Evaluator<E> evaluator) {
+        this(startingTemperature, new GeometricAnnealingSchedule(0.85), factory, evaluator);
+    }
+    
     public SA(double startingTemperature, AnnealingSchedule schedule, EncodingFactory<E> factory, Evaluator<E> evaluator) {
         super(factory, evaluator);
         this.schedule = schedule;
@@ -51,10 +57,6 @@ public class SA<E> extends MLAlgorithm<E> {
 
     @Override
     public void internalIteration() {
-//        double prox = getBestCandidate().getCost();
-//        if (prox > 0.01) {
-//            prox = 0.01;
-//        }
         Candidate<E> newSample = getCandidateFactory().getNeighborCandidate(current, 0.005);
         if (doAccept(current, newSample)) {
             current = newSample;
@@ -65,20 +67,26 @@ public class SA<E> extends MLAlgorithm<E> {
         temperature = schedule.cool(temperature);
     }
 
+    /**
+     * Should we accept the new solution based on the Metropolis criteria?
+     * @param current the current solution
+     * @param newSample the new solution
+     * @return wheter or not the new solution should be accepted
+     */
     private boolean doAccept(Candidate<E> current, Candidate<E> newSample) {
         return newSample.getCost() < current.getCost() | Math.exp(-(newSample.getCost() - current.getCost()) / temperature) > Math.random();
     }
 
     @Override
-    public void reset(List<E> initials, boolean clearHistory) {
-        super.reset(initials, clearHistory);
+    public void reset(List<E> initials) {
+        super.reset(initials);
         this.current = getCandidateFactory().toCandidate(initials.get(0));
         this.temperature = startingTemperature;
     }
 
     @Override
-    public void reset(boolean clearHistory) {
-        super.reset(clearHistory);
+    public void reset() {
+        super.reset();
         this.current = getCandidateFactory().getRandomCandidate();
         this.temperature = startingTemperature;
     }

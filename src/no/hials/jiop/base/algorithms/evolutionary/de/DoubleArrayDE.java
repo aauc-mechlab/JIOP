@@ -30,7 +30,7 @@ import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayEncodingFactory;
 
 /**
- *
+ * A double array DE implementation
  * @author Lars Ivar
  */
 public class DoubleArrayDE extends DE<double[]>{

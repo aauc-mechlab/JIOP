@@ -28,28 +28,44 @@ package no.hials.jiop.base.candidates;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import no.hials.jiop.base.candidates.Candidate;
 
 /**
  *
  * @author Lars Ivar Hatledal
+ * @param <E> the type
  */
 public class CandidateContainer<E> extends ArrayList<Candidate<E>>{
 
+    /**
+     * Initiliazes the list
+     * @param size the size to initialize to
+     */
     public CandidateContainer(int size) {
        super(size);
     }
 
-    public  CandidateContainer<E> sort() {
+    /**
+     * Performs a Collections.sort()
+     * @return this
+     */
+    public CandidateContainer<E> sort() {
         Collections.sort(this);
         return this;
     }
 
+    /**
+     * Clears all candidates and inserts the new one
+     * @param candidates the candidates to insert into the cleared list
+     */
     public void clearAndAddAll(List<Candidate<E>> candidates) {
         this.clear();
         this.addAll(candidates);
     }
 
+    /**
+     * Getter for the average cost in this list
+     * @return the average cost
+     */
     public double getAverage() {
         double avg = 0;
         for (Candidate<E> c : this) {
@@ -58,16 +74,20 @@ public class CandidateContainer<E> extends ArrayList<Candidate<E>>{
         return avg / size();
     }
 
+    /**
+     * Getter for the best candidates in this list
+     * @param numBest the number of candidates to get
+     * @return the best candidates
+     */
     public List<Candidate<E>> getBestCandidates(int numBest) {
         if (numBest > size()) {
             throw new IllegalArgumentException("The number of best candidates are greater than the current number of candidates! Desired: " + numBest + ", Available: " + size());
         } else if (numBest <= 0) {
             throw new IllegalArgumentException("The number of best candidates are less or equal to 0!");
         }
-        List<Candidate<E>> elites = new ArrayList<>(numBest);
-        for (int i = 0; i < numBest; i++) {
-            elites.add(new Candidate<>(get(i)));
-        }
+        List<Candidate<E>> elites = new ArrayList<>(this);
+        Collections.sort(elites);
+        elites.subList(numBest, elites.size()).clear();
         return elites;
     }
 

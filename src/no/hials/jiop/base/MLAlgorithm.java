@@ -61,6 +61,7 @@ public abstract class MLAlgorithm<E> {
     private final EncodingFactory<E> encodingFactory;
     protected final MLHistory history;
 
+    protected boolean trackHistory = false;
     private Candidate<E> bestCandidate;
 
     /**
@@ -145,39 +146,59 @@ public abstract class MLAlgorithm<E> {
     /**
      * Does a single iteration of the algorithm
      *
-     * @return the result
+     * @return the time it took to do the iteration
      */
     public double iteration() {
         long t0 = System.nanoTime();
         internalIteration();
         double t = (double) (System.nanoTime() - t0) / 1000000;
-        history.add(getBestCandidate().getCost(), t);
+        if (trackHistory) {
+            history.add(getBestCandidate().getCost(), t);
+        }
         return t;
     }
 
     /**
-     * Clears the algorithm
+     * Resets the algorithm
      *
-     * @param clearHistory whether or not the history should be cleared as well
      */
-    public void reset(boolean clearHistory) {
+    public void reset() {
         this.bestCandidate = null;
-        if (clearHistory) {
-            history.clear();
-        }
         setBestCandidate(getCandidateFactory().getRandomCandidate());
     }
 
     /**
-     *
-     * @param seed
-     * @param clearHistory
+     * Clears the history
      */
-    public void reset(List<E> seed, boolean clearHistory) {
+    public void clearHistory() {
+        history.clear();
+    }
+
+    /**
+     * Should we record the history?
+     *
+     * @param doTrack wheter or not we should
+     */
+    public void doTrackHistory(boolean doTrack) {
+        trackHistory = doTrack;
+    }
+
+    /**
+     * Getter for the tracking status
+     *
+     * @return true if we are storing the history, false otherwise
+     */
+    public boolean isTrackingHistory() {
+        return trackHistory;
+    }
+
+    /**
+     * Resets the algorithm and
+     *
+     * @param seed the seed to use
+     */
+    public void reset(List<E> seed) {
         this.bestCandidate = null;
-        if (clearHistory) {
-            history.clear();
-        }
         setBestCandidate(getCandidateFactory().toCandidate(seed.get(0)));
     }
 
@@ -217,13 +238,9 @@ public abstract class MLAlgorithm<E> {
         List<Runnable> jobs = new LinkedList<>();
 
         for (final Candidate<E> c : candidates) {
-            jobs.add(new Runnable() {
-
-                @Override
-                public void run() {
-                    double evaluate = getEvaluator().evaluate(c);
-                    c.setCost(evaluate);
-                }
+            jobs.add((Runnable) () -> {
+                double evaluate = getEvaluator().evaluate(c);
+                c.setCost(evaluate);
             });
         }
         submitJobs(jobs);
@@ -242,13 +259,15 @@ public abstract class MLAlgorithm<E> {
     }
 
     /**
-     * Warms up the JVM by running the algorithm for the specified time. The algorithm is reset before and after.
+     * Warms up the JVM by running the algorithm for the specified time. The
+     * algorithm is reset before and after.
+     *
      * @param millis how long we run the algorithm
      */
     public void warmUp(long millis) {
-        reset(true);
+        reset();
         runFor(millis);
-        reset(true);
+        reset();
     }
 
     /**
@@ -291,14 +310,13 @@ public abstract class MLAlgorithm<E> {
 
     /**
      * Sets the evaluator
+     *
      * @param evaluator the new evaluator to be used
      */
     public void setEvaluator(Evaluator<E> evaluator) {
         this.evaluator = evaluator;
         this.candidateFactory.setEvaluator(evaluator);
     }
-    
-    
 
     /**
      * Uses a thread pool to finish all jobs
