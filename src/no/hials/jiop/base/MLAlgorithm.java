@@ -177,7 +177,7 @@ public abstract class MLAlgorithm<E> {
     /**
      * Should we record the history?
      *
-     * @param doTrack wheter or not we should
+     * @param doTrack whether or not we should
      */
     public void doTrackHistory(boolean doTrack) {
         trackHistory = doTrack;

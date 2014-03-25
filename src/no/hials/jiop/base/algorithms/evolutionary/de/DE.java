@@ -26,6 +26,7 @@
 package no.hials.jiop.base.algorithms.evolutionary.de;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import no.hials.jiop.base.candidates.Candidate;
 import java.util.Random;
@@ -53,32 +54,33 @@ public class DE<E> extends PopulationBasedMLAlgorithm<E> {
     @Override
     public void internalIteration() {
         final List<Runnable> jobs = new ArrayList<>(getContainer().size());
-        for (final Candidate<E> c : getContainer()) {
+        List<Candidate<E>> synchronizedList = Collections.synchronizedList(getContainer());
+        synchronizedList.stream().forEach((c) -> {
             jobs.add((Runnable) () -> {
-            E p = c.getVariables();
-            E p1, p2, p3;
-            do {
-                int rand = rng.nextInt(getContainer().size());
-                p1 = getContainer().get(rand).getVariables();
-            } while (p1 == c);
-            do {
-                int rand = rng.nextInt(getContainer().size());
-                p2 = getContainer().get(rand).getVariables();
-            } while (p2 == c && p2 == p1);
-            do {
-                int rand = rng.nextInt(getContainer().size());
-                p3 = getContainer().get(rand).getVariables();
-            } while (p3 == c && p3 == p1 && p3 == p2);
-            Encoding<E> differentiate = crossover.crossover(p, p1, p2, p3);
-            Candidate<E> sample = getCandidateFactory().toCandidate(differentiate);
-            if (sample.getCost() < c.getCost()) {
-                getContainer().set(getContainer().indexOf(c), sample);
-//                if (sample.getCost() < getBestCandidate().getCost()) {
-                    setBestCandidate(sample);
-//                }
-            }
+                E p = c.getVariables();
+                E p1, p2, p3;
+                do {
+                    int rand = rng.nextInt(synchronizedList.size());
+                    p1 = synchronizedList.get(rand).getVariables();
+                } while (p1 == c);
+                do {
+                    int rand = rng.nextInt(synchronizedList.size());
+                    p2 = synchronizedList.get(rand).getVariables();
+                } while (p2 == c && p2 == p1);
+                do {
+                    int rand = rng.nextInt(synchronizedList.size());
+                    p3 = synchronizedList.get(rand).getVariables();
+                } while (p3 == c && p3 == p1 && p3 == p2);
+                Encoding<E> differentiate = crossover.crossover(p, p1, p2, p3);
+                Candidate<E> sample = getCandidateFactory().toCandidate(differentiate);
+                if (sample.getCost() < c.getCost()) {
+                    synchronizedList.set(synchronizedList.indexOf(c), sample);
+                    if (sample.getCost() < getBestCandidate().getCost()) {
+                        setBestCandidate(sample);
+                    }
+                }
             });
-        }
+        });
         submitJobs(jobs);
     }
 

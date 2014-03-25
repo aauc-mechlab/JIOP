@@ -52,7 +52,7 @@ public class SAalt<E> extends MLAlgorithm<E> {
 
     @Override
     public void internalIteration() {
-        List<Candidate<E>> neighborCandidateList = getCandidateFactory().getNeighborCandidateList(current, getBestCandidate().getCost() / 10, 50);
+        List<Candidate<E>> neighborCandidateList = getCandidateFactory().getNeighborCandidateList(current, getBestCandidate().getCost() / 10, 25);
         Collections.sort(neighborCandidateList);
         Candidate<E> newSample = neighborCandidateList.get(0);
         if (doAccept(current, newSample)) {

@@ -47,7 +47,7 @@ public class DoubleArrayDifferentialCrossover extends DifferentialCrossover<doub
         int R = rng.nextInt(c.length);
         double[] array = new double[c.length];
         for (int i = 0; i < array.length; i++) {
-            if ((Math.random() < CR) || (i == R)) {
+            if ((rng.nextDouble() < CR) || (i == R)) {
                 array[i] = c1[i] + F * (c2[i] - c3[i]);
             } else {
                 array[i] = c[i];

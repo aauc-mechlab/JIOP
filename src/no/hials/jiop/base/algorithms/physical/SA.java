@@ -32,7 +32,7 @@ import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
- * A Simulated Annealing impelmenetation
+ * A Simulated Annealing implementation
  * @author Lars Ivar Hatledal
  * @param <E> the type
  */
@@ -71,7 +71,7 @@ public class SA<E> extends MLAlgorithm<E> {
      * Should we accept the new solution based on the Metropolis criteria?
      * @param current the current solution
      * @param newSample the new solution
-     * @return wheter or not the new solution should be accepted
+     * @return whether or not the new solution should be accepted
      */
     private boolean doAccept(Candidate<E> current, Candidate<E> newSample) {
         return newSample.getCost() < current.getCost() | Math.exp(-(newSample.getCost() - current.getCost()) / temperature) > Math.random();

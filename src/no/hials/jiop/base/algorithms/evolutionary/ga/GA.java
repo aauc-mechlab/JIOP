@@ -36,8 +36,9 @@ import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
- *
+ * A Genetic Algorithm implementation
  * @author Lars Ivar Hatledal
+ * @param <E>
  */
 public class GA<E> extends PopulationBasedMLAlgorithm<E> {
 

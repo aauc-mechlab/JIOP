@@ -53,7 +53,6 @@ public class CandidateFactory<E> {
         this.evaluator = evaluator;
         this.encodingFactory = encodingFactory;
         this.pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-//        this.pool = Executors.newCachedThreadPool();
     }
 
     public Candidate<E> getRandomCandidate() {
@@ -79,12 +78,8 @@ public class CandidateFactory<E> {
         final ExecutorCompletionService completionService = new ExecutorCompletionService(pool);
         final List<Candidate<E>> candidates = Collections.synchronizedList(new ArrayList<Candidate<E>>(size));
         for (int i = 0; i < size; i++) {
-            completionService.submit(new Runnable() {
-
-                @Override
-                public void run() {
-                        candidates.add(getRandomCandidate());
-                }
+            completionService.submit(() -> {
+                candidates.add(getRandomCandidate());
             }, true);
         }
         for (int i = 0; i < size; i++) {
@@ -101,12 +96,8 @@ public class CandidateFactory<E> {
         final ExecutorCompletionService completionService = new ExecutorCompletionService(pool);
         final List<Candidate<E>> candidates = Collections.synchronizedList(new ArrayList<Candidate<E>>(size));
         for (int i = 0; i < size; i++) {
-            completionService.submit(new Runnable() {
-
-                @Override
-                public void run() {
-                    candidates.add(getNeighborCandidate(original, proximity));
-                }
+            completionService.submit(() -> {
+                candidates.add(getNeighborCandidate(original, proximity));
             }, true);
         }
         for (int i = 0; i < size; i++) {
@@ -123,13 +114,9 @@ public class CandidateFactory<E> {
         final ExecutorCompletionService completionService = new ExecutorCompletionService(pool);
         final List<Candidate<E>> candidates = (new ArrayList<>(variables.size()));
         for (final E e : variables) {
-            completionService.submit(new Runnable() {
-
-                @Override
-                public void run() {
-                    synchronized(candidates) {
+            completionService.submit(() -> {
+                synchronized(candidates) {
                     candidates.add(toCandidate(e));
-                    }
                 }
             }, true);
         }
@@ -146,6 +133,4 @@ public class CandidateFactory<E> {
     public void setEvaluator(Evaluator<E> evaluator) {
         this.evaluator = evaluator;
     }
-    
-    
 }

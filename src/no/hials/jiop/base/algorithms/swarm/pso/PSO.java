@@ -50,25 +50,21 @@ public class PSO<E> extends PopulationBasedMLAlgorithm<E> {
 
     @Override
     public void internalIteration() {
-         final List<Runnable> jobs = new ArrayList<>(getContainer().size());
-        for (final Candidate<E> c : getContainer()) {
-           jobs.add(new Runnable() {
-
-                @Override
-                public void run() {
-                    ParticleEncoding<E> p = (ParticleEncoding<E>) c.getEncoding();
-                    p.update(omega, c1, c2, getBestCandidate().getVariables());
-                    double evaluate = getEvaluator().evaluate(c.getVariables());
-                    c.setCost(evaluate);
-                    if (evaluate < p.getLocalBest().getCost()) {
-                        p.setLocalBest(new Candidate<>(c));
-                    }
-                    if (evaluate < getBestCandidate().getCost()) {
-                        setBestCandidate(c);
-                    }
+        final List<Runnable> jobs = new ArrayList<>(getContainer().size());
+        getContainer().stream().forEach((c) -> {
+            jobs.add((Runnable) () -> {
+                ParticleEncoding<E> p = (ParticleEncoding<E>) c.getEncoding();
+                p.update(omega, c1, c2, getBestCandidate().getVariables());
+                double evaluate = getEvaluator().evaluate(c.getVariables());
+                c.setCost(evaluate);
+                if (evaluate < p.getLocalBest().getCost()) {
+                    p.setLocalBest(new Candidate<>(c));
+                }
+                if (evaluate < getBestCandidate().getCost()) {
+                    setBestCandidate(c);
                 }
             });
-        }
+        });
         submitJobs(jobs);
     }
 

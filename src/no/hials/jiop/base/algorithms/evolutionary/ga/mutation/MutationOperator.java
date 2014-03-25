@@ -30,7 +30,7 @@ import java.util.List;
 import no.hials.jiop.base.candidates.Candidate;
 
 /**
- *
+ * Mutation operator interface
  * @author Lars Ivar Hatledal
  */
 public interface MutationOperator<E> {
