@@ -25,6 +25,7 @@
  */
 package no.hials.jiop.base.algorithms.physical;
 
+import java.util.ArrayList;
 import java.util.List;
 import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.MLAlgorithm;
@@ -33,10 +34,13 @@ import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
 
 /**
  * A Simulated Annealing implementation
+ *
  * @author Lars Ivar Hatledal
  * @param <E> the type
  */
 public class SA<E> extends MLAlgorithm<E> {
+
+    private final Object mutex = new Object();
 
     private final AnnealingSchedule schedule;
     private final double startingTemperature;
@@ -44,11 +48,10 @@ public class SA<E> extends MLAlgorithm<E> {
 
     private Candidate<E> current;
 
-
     public SA(double startingTemperature, EncodingFactory<E> factory, Evaluator<E> evaluator) {
         this(startingTemperature, new GeometricAnnealingSchedule(0.85), factory, evaluator);
     }
-    
+
     public SA(double startingTemperature, AnnealingSchedule schedule, EncodingFactory<E> factory, Evaluator<E> evaluator) {
         super(factory, evaluator);
         this.schedule = schedule;
@@ -57,18 +60,28 @@ public class SA<E> extends MLAlgorithm<E> {
 
     @Override
     public void internalIteration() {
-        Candidate<E> newSample = getCandidateFactory().getNeighborCandidate(current, 0.005);
-        if (doAccept(current, newSample)) {
-            current = newSample;
+        final int availableProcessors = Runtime.getRuntime().availableProcessors();
+        final List<Runnable> jobs = new ArrayList<>(availableProcessors);
+        for (int i = 0; i < availableProcessors; i++) {
+            jobs.add(() -> {
+                Candidate<E> newSample = getCandidateFactory().getNeighborCandidate(current, getBestCandidate().getCost()/2);
+                synchronized (mutex) {
+                    if (doAccept(current, newSample)) {
+                        current = newSample;
+                    }
+                }
+                if (newSample.getCost() < getBestCandidate().getCost()) {
+                    setBestCandidate(newSample);
+                }
+                temperature = schedule.cool(temperature);
+            });
         }
-        if (newSample.getCost() < getBestCandidate().getCost()) {
-            setBestCandidate(newSample);
-        }
-        temperature = schedule.cool(temperature);
+        submitJobs(jobs);
     }
 
     /**
      * Should we accept the new solution based on the Metropolis criteria?
+     *
      * @param current the current solution
      * @param newSample the new solution
      * @return whether or not the new solution should be accepted
