@@ -25,3 +25,4 @@ nbproject/*
 *.swp
 *.DS_Store
 *.lock
+/JIOP-numerical/nbproject/private/
