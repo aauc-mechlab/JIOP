@@ -195,7 +195,7 @@ public class DifferentialEvolution extends Algorithm implements Optimizable {
 
         public Candidates(int size) {
             super(size);
-            for (int i = 0; i < DifferentialEvolution.this.NP; i++) {
+            for (int i = 0; i < size; i++) {
                 add(Candidate.randomCandidate(getDimension(), getEvaluator()));
             }
         }
