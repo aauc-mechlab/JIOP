@@ -19,19 +19,18 @@ public class SimulatedAnnealing extends Algorithm {
         super("Simulated Annealing", dimension, evaluator);
         this.startingTemperature = startingTemperature;
         this.alpha = alpha;
+        this.init();
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void subInit() {
         this.temperature = startingTemperature;
         this.current = Candidate.randomCandidate(getDimension(), getEvaluator());
         this.bestCandidate = current.copy();
     }
 
     @Override
-    public void init(DoubleArray... seed) {
-        super.init();
+    public void subInit(DoubleArray... seed) {
         this.current = new Candidate(seed[0], getEvaluator().evaluate(seed[0]));
         this.bestCandidate = current.copy();
     }

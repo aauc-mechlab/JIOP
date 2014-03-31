@@ -5,35 +5,31 @@
  */
 package no.hials.jiop;
 
-import no.hials.jiop.swarm.MultiSwarmOptimization;
+import java.io.Serializable;
 
 /**
  *
  * @author LarsIvar
  */
-public class AlgorithmOptimizer {
+public class AlgorithmOptimizer implements Serializable {
 
-    private final Algorithm algorithm;
-    private final Algorithm optimizable;
+    public final Algorithm algorithm;
+    public final Algorithm optimizable;
 
     public AlgorithmOptimizer(Algorithm optimizable) {
         this.optimizable = optimizable;
-        this.optimizable.init();
-        this.algorithm = new DifferentialEvolution(20, 0.9, 0.8, optimizable.getNumberOfFreeParameters(), new OptimizerEvalutor(), false);
-        this.algorithm.init();
+        this.algorithm = new SimulatedAnnealing(20, 0.95, optimizable.getNumberOfFreeParameters(), new OptimizerEvalutor());
     }
 
     public AlgorithmOptimizer(Algorithm algorithm, Algorithm optimizable) {
         this.algorithm = algorithm;
-        this.algorithm.init();
         this.optimizable = optimizable;
-        this.optimizable.init();
     }
 
-    public DoubleArray optimize() {
-        SolutionData compute = algorithm.compute(20000l);
-        System.out.println(compute);
-        return compute.solution;
+    public SolutionData optimize(double error, long timeOut) {
+        SolutionData compute = algorithm.compute(error, timeOut);
+        optimizable.init();
+        return compute;
     }
 
     private class OptimizerEvalutor implements Evaluator {
@@ -42,7 +38,10 @@ public class AlgorithmOptimizer {
         public double evaluate(DoubleArray array) {
             double cost = 0;
             optimizable.setFreeParameters(array);
-            cost += optimizable.compute(50).cost;
+            for (int i = 0; i < 5; i++) {
+                optimizable.init();
+                cost += optimizable.compute(50).cost;
+            }
             return cost;
         }
 

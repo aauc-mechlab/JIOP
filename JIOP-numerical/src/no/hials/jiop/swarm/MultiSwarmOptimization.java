@@ -38,16 +38,16 @@ public class MultiSwarmOptimization extends Algorithm {
 
     boolean multiCore = false;
 
-    public MultiSwarmOptimization(boolean m, int numSwarms, int numParticles, int dimension, Evaluator evaluator) {
-        super("Multi Swarm Optimization " + m, dimension, evaluator);
+    public MultiSwarmOptimization(int numSwarms, int numParticles, int dimension, Evaluator evaluator, boolean multiCore) {
+        super("Multi Swarm Optimization " + multiCore, dimension, evaluator);
         this.numSwarms = numSwarms;
         this.numParticles = numParticles;
-        this.multiCore = m;
+        this.multiCore = multiCore;
+        this.init();
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void subInit() {
         this.bestCandidate = null;
         this.swarms = new ArrayList<>(numSwarms);
         for (int i = 0; i < numSwarms; i++) {
@@ -64,9 +64,8 @@ public class MultiSwarmOptimization extends Algorithm {
     }
 
     @Override
-    public void init(DoubleArray... seeds) {
-        super.init();
-        init();
+    public void subInit(DoubleArray... seeds) {
+        subInit();
         double cost = getEvaluator().evaluate(seeds[0]);
         if (cost < bestCandidate.getCost()) {
             this.bestCandidate = new Candidate(seeds[0], cost).copy();

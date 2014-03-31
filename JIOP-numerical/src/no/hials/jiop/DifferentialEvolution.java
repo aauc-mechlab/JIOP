@@ -37,19 +37,18 @@ public class DifferentialEvolution extends Algorithm implements Optimizable {
         this.CR = CR;
         this.NP = NP;
         this.multiCore = multiCore;
+        this.init();
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void subInit() {
         this.candidates = new Candidates(NP);
         Collections.sort(candidates);
         this.bestCandidate = candidates.get(0).copy();
     }
 
     @Override
-    public void init(DoubleArray... seeds) {
-        super.init();
+    public void subInit(DoubleArray... seeds) {
         this.candidates = new Candidates(NP - seeds.length);
         for (DoubleArray seed : seeds) {
             candidates.add(new Candidate(seed, getEvaluator().evaluate(seed)));
@@ -60,7 +59,7 @@ public class DifferentialEvolution extends Algorithm implements Optimizable {
 
     @Override
     protected Candidate singleIteration() {
-
+        
         if (multiCore) {
             for (final Candidate c : candidates) {
                 completionService.submit(new Runnable() {
@@ -111,7 +110,7 @@ public class DifferentialEvolution extends Algorithm implements Optimizable {
                 }
             }
         } else {
-            for (final Candidate c : candidates) {
+            for (Candidate c : candidates) {
                 DoubleArray p = c;
                 DoubleArray p1, p2, p3;
                 do {

@@ -40,6 +40,7 @@ public class ParticleSwarmOptimization extends Algorithm {
         super("Particle Swarm Optimization " + multiCore, dimension, evaluator);
         this.size = size;
         this.multiCore = multiCore;
+        this.init();
     }
 
     public ParticleSwarmOptimization(int size, double omega, double c1, double c2, int dimension, Evaluator evaluator, boolean multiCore) {
@@ -51,15 +52,13 @@ public class ParticleSwarmOptimization extends Algorithm {
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void subInit() {
         this.swarm = new Swarm(size);
         this.bestCandidate = swarm.get(0).copy();
     }
 
     @Override
-    public void init(DoubleArray... seeds) {
-        super.init();
+    public void subInit(DoubleArray... seeds) {
         this.swarm = new Swarm(size - seeds.length);
         for (DoubleArray seed : seeds) {
             swarm.add(new Particle(seed, getEvaluator().evaluate(seed)));

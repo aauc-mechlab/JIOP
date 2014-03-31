@@ -25,19 +25,18 @@ public class AmoebaOptimization extends Algorithm  {
     public AmoebaOptimization(int size, int dimension, Evaluator evaluator) {
         super("Amoeba Optimization", dimension, evaluator);
         this.size = size;
+        this.init();
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void subInit() {
         this.candidates = new Amoeba(size);
         Collections.sort(candidates);
 //        bestCandidate = candidates.get(0).copy();
     }
 
     @Override
-    public void init(DoubleArray... seeds) {
-        super.init();
+    public void subInit(DoubleArray... seeds) {
         this.candidates = new Amoeba(size - seeds.length);
         for (DoubleArray seed : seeds) {
             candidates.add(new Candidate(seed, getEvaluator().evaluate(seed)));

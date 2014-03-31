@@ -6,6 +6,7 @@
 package no.hials.jiop;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,6 +18,8 @@ public class ArtificialBeeColony extends Algorithm {
 
     private int size;
     private int numOutlookers;
+    
+    
 
     private Colony colony;
 
@@ -24,18 +27,20 @@ public class ArtificialBeeColony extends Algorithm {
         super("Artificial Bee Colony", dimension, evaluator);
         this.size = size;
         this.numOutlookers = numOutlookers;
+        this.init();
+        
+        
+        
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void subInit() {
         this.colony = new Colony(size);
         Collections.sort(colony);
     }
 
     @Override
-    public void init(DoubleArray... seeds) {
-        super.init();
+    public void subInit(DoubleArray... seeds) {
         this.colony = new Colony(size - seeds.length);
         for (DoubleArray seed : seeds) {
             colony.add(new Candidate(seed, getEvaluator().evaluate(seed)));
@@ -111,7 +116,5 @@ public class ArtificialBeeColony extends Algorithm {
                 add(Candidate.randomCandidate(getDimension(), getEvaluator()));
             }
         }
-
     }
-
 }
