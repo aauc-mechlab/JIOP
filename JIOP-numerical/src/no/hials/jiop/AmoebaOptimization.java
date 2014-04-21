@@ -23,10 +23,9 @@ public class AmoebaOptimization extends Algorithm  {
     private Amoeba candidates;
 //    private Candidate bestCandidate;
 
-    public AmoebaOptimization(int size, int dimension, Evaluator evaluator) {
-        super("Amoeba Optimization", dimension, evaluator);
+    public AmoebaOptimization(int size) {
+        super("Amoeba Optimization");
         this.size = size;
-        this.init();
     }
 
     @Override

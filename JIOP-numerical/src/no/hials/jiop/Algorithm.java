@@ -22,17 +22,14 @@ import no.hials.utilities.DoubleArray;
 public abstract class Algorithm implements Optimizable, Serializable {
 
     private final String name;
-    private final int dimension;
     private Evaluator evaluator;
 
     private XYSeries timeSeries;
 
     protected final Random rng = new Random();
 
-    public Algorithm(String name, int dimension, Evaluator evaluator) {
+    public Algorithm(String name) {
         this.name = name;
-        this.dimension = dimension;
-        this.evaluator = evaluator;
         this.timeSeries = new XYSeries(name);
     }
 
@@ -42,8 +39,12 @@ public abstract class Algorithm implements Optimizable, Serializable {
     }
 
     public final void init(DoubleArray... seeds) {
-        this.timeSeries = new XYSeries(name);
-        subInit(seeds);
+        if (seeds == null || seeds.length == 0) {
+            init();
+        } else {
+            this.timeSeries = new XYSeries(name);
+            subInit(seeds);
+        }
     }
     
     public abstract void subInit();
@@ -136,7 +137,7 @@ public abstract class Algorithm implements Optimizable, Serializable {
     }
 
     public int getDimension() {
-        return dimension;
+        return evaluator.getDimension();
     }
 
     @Override

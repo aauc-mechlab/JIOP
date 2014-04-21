@@ -38,12 +38,11 @@ public class MultiSwarmOptimization extends Algorithm {
 
     boolean multiCore = false;
 
-    public MultiSwarmOptimization(int numSwarms, int numParticles, int dimension, Evaluator evaluator, boolean multiCore) {
-        super("Multi Swarm Optimization " + multiCore, dimension, evaluator);
+    public MultiSwarmOptimization(int numSwarms, int numParticles, boolean multiCore) {
+        super("Multi Swarm Optimization " + multiCore);
         this.numSwarms = numSwarms;
         this.numParticles = numParticles;
         this.multiCore = multiCore;
-        this.init();
     }
 
     @Override

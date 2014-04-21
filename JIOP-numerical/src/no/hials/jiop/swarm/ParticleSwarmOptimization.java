@@ -36,15 +36,14 @@ public class ParticleSwarmOptimization extends Algorithm {
     private boolean multiCore;
     private Candidate bestCandidate;
 
-    public ParticleSwarmOptimization(int size, int dimension, Evaluator evaluator, boolean multiCore) {
-        super("Particle Swarm Optimization " + multiCore, dimension, evaluator);
+    public ParticleSwarmOptimization(int size,  boolean multiCore) {
+        super("Particle Swarm Optimization " + multiCore);
         this.size = size;
         this.multiCore = multiCore;
-        this.init();
     }
 
-    public ParticleSwarmOptimization(int size, double omega, double c1, double c2, int dimension, Evaluator evaluator, boolean multiCore) {
-        this(size, dimension, evaluator, multiCore);
+    public ParticleSwarmOptimization(int size, double omega, double c1, double c2, boolean multiCore) {
+        this(size, multiCore);
         this.size = size;
         this.omega = omega;
         this.c1 = c1;

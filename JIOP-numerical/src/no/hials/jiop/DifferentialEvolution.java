@@ -33,13 +33,12 @@ public class DifferentialEvolution extends Algorithm implements Optimizable {
     private boolean multiCore;
     private Candidate bestCandidate;
 
-    public DifferentialEvolution(int NP, double F, double CR, int dimension, Evaluator evaluator, boolean multiCore) {
-        super("Differential Evolution " + multiCore, dimension, evaluator);
+    public DifferentialEvolution(int NP, double F, double CR, boolean multiCore) {
+        super("Differential Evolution " + multiCore);
         this.F = F;
         this.CR = CR;
         this.NP = NP;
         this.multiCore = multiCore;
-        this.init();
     }
 
     @Override

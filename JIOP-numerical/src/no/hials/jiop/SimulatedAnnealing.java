@@ -17,11 +17,10 @@ public class SimulatedAnnealing extends Algorithm {
     private double temperature, alpha;
     private Candidate current, bestCandidate;
 
-    public SimulatedAnnealing(double startingTemperature, double alpha, int dimension, Evaluator evaluator) {
-        super("Simulated Annealing", dimension, evaluator);
+    public SimulatedAnnealing(double startingTemperature, double alpha) {
+        super("Simulated Annealing");
         this.startingTemperature = startingTemperature;
         this.alpha = alpha;
-        this.init();
     }
 
     @Override

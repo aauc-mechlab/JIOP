@@ -20,18 +20,16 @@ public class ArtificialBeeColony extends Algorithm {
     private int size;
     private int numOutlookers;
     
-    
-
     private Colony colony;
 
-    public ArtificialBeeColony(int size, int numOutlookers, int dimension, Evaluator evaluator) {
-        super("Artificial Bee Colony", dimension, evaluator);
+    public ArtificialBeeColony(int size, int numOutlookers) {
+        super("Artificial Bee Colony");
         this.size = size;
         this.numOutlookers = numOutlookers;
-        this.init();
-        
-        
-        
+    }
+    
+     public ArtificialBeeColony(int size, double outlookers) {
+        this(size, (int) (size * outlookers));
     }
 
     @Override
@@ -49,9 +47,7 @@ public class ArtificialBeeColony extends Algorithm {
         Collections.sort(colony);
     }
 
-    public ArtificialBeeColony(int size, double outlookers, int dimension, Evaluator evaluator) {
-        this(size, (int) (size * outlookers), dimension, evaluator);
-    }
+   
 
     @Override
     protected Candidate singleIteration() {

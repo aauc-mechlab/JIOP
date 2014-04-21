@@ -39,11 +39,10 @@ public class BacterialForagingOptimization extends Algorithm {
 
     private boolean multiCore;
 
-    public BacterialForagingOptimization(int size, int dimension, Evaluator evaluator, boolean multiCore) {
-        super("Bacterial Foraging Optimization " + multiCore, dimension, evaluator);
+    public BacterialForagingOptimization(int size, boolean multiCore) {
+        super("Bacterial Foraging Optimization " + multiCore);
         this.multiCore = multiCore;
         this.size = size;
-        this.init();
     }
 
     @Override

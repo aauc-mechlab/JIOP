@@ -14,5 +14,6 @@ import no.hials.utilities.DoubleArray;
  */
 public interface Evaluator {
     
+    public int getDimension();
     public double evaluate(DoubleArray array);
 }

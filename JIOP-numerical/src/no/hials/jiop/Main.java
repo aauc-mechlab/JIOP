@@ -5,15 +5,17 @@
  */
 package no.hials.jiop;
 
+import java.util.ArrayList;
+import java.util.List;
 import no.hials.jiop.swarm.MultiSwarmOptimization;
 import no.hials.jiop.swarm.ParticleSwarmOptimization;
+import no.hials.utilities.DoubleArray;
 import no.hials.utilities.NormUtil;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
-import no.hials.utilities.DoubleArray;
 
 /**
  *
@@ -36,64 +38,36 @@ public class Main {
 
                 return cost;
             }
+
+            @Override
+            public int getDimension() {
+                return dim;
+            }
         };
 
         XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
+        List<Algorithm> algorithms = new ArrayList<>();
 
-//        Algorithm bfo = new BacterialForagingOptimization(100, dim, myEval, false);
-//        SolutionData bfoCompute = bfo.compute(0d, 100l);
-//        System.out.println("BFO " + bfoCompute);
-//        xySeriesCollection.addSeries(bfo.getSeries());
+        algorithms.add(new DifferentialEvolution(30, 0.9, 0.7, false));
+        algorithms.add(new DifferentialEvolution(30, 0.9, 0.7, true));
+        algorithms.add(new ParticleSwarmOptimization(40, false));
+        algorithms.add(new ParticleSwarmOptimization(40, true));
+        algorithms.add(new MultiSwarmOptimization(5, 30, false));
+        algorithms.add(new MultiSwarmOptimization(5, 30, true));
+        algorithms.add(new ArtificialBeeColony(30, 0.25));
+        algorithms.add(new AmoebaOptimization(3));
+        algorithms.add(new SimulatedAnnealing(100, 0.995));
+        algorithms.add(new BacterialForagingOptimization(100, false));
+        algorithms.add(new BacterialForagingOptimization(100, true));
 
-//        Algorithm bfo1 = new BacterialForagingOptimization(100, dim, myEval, true);
-//        SolutionData bfo1Compute = bfo1.compute(0d, 100l);
-//        System.out.println("BFO1 " + bfo1Compute);
-//        xySeriesCollection.addSeries(bfo1.getSeries());
+        for (Algorithm alg : algorithms) {
+            alg.setEvaluator(myEval);
+            alg.init();
+            SolutionData compute = alg.compute(0d, 100l);
+            System.out.println(alg.toString() + "\n" + compute);
+            xySeriesCollection.addSeries(alg.getSeries());
+        }
 
-        Algorithm de = new DifferentialEvolution(30, 0.9, 0.7, dim, myEval, false);
-        SolutionData deCompute = de.compute(0d, 100l);
-        System.out.println("DE " + deCompute);
-        xySeriesCollection.addSeries(de.getSeries());
-
-        Algorithm de1 = new DifferentialEvolution(30, 0.9, 0.7, dim, myEval, true);
-        SolutionData de1Compute = de1.compute(0d, 100l);
-        System.out.println("DE1 " + de1Compute);
-        xySeriesCollection.addSeries(de1.getSeries());
-
-        Algorithm pso = new ParticleSwarmOptimization(40, dim, myEval, false);
-        SolutionData psoCompute = pso.compute(0d, 100l);
-        System.out.println("PSO " + psoCompute);
-        xySeriesCollection.addSeries(pso.getSeries());
-
-        Algorithm pso1 = new ParticleSwarmOptimization(40, dim, myEval, true);;
-        SolutionData pso1Compute = pso1.compute(0d, 100l);
-        System.out.println("PSO1 " + pso1Compute);
-        xySeriesCollection.addSeries(pso1.getSeries());
-
-        Algorithm mso = new MultiSwarmOptimization(5, 30, dim, myEval, false);
-        SolutionData msoCompute = mso.compute(0d, 100l);
-        System.out.println("MSO " + msoCompute);
-        xySeriesCollection.addSeries(mso.getSeries());
-
-        Algorithm mso1 = new MultiSwarmOptimization(5, 30, dim, myEval, true);
-        SolutionData mso1Compute = mso1.compute(0d, 100l);
-        System.out.println("MSO1 " + mso1Compute);
-        xySeriesCollection.addSeries(mso1.getSeries());
-
-        Algorithm abs = new ArtificialBeeColony(30, 0.25, dim, myEval);
-        SolutionData absCompute = abs.compute(0d, 100l);
-        System.out.println("ABS " + absCompute);
-        xySeriesCollection.addSeries(abs.getSeries());
-
-//        Algorithm sa = new SimulatedAnnealing(10, 0.995, dim, myEval);
-//        SolutionData saCompute = sa.compute(0d, 100l);
-//        System.out.println("SA " + saCompute);
-//        xySeriesCollection.addSeries(sa.getSeries());
-//
-//        Algorithm amo = new AmoebaOptimization(3, dim, myEval);
-//        SolutionData amoCompute = amo.compute(0d, 100l);
-//        System.out.println("AMO " + amoCompute);
-//        xySeriesCollection.addSeries(amo.getSeries());
         if (xySeriesCollection.getSeriesCount() > 0) {
             ApplicationFrame frame = new ApplicationFrame("");
             final JFreeChart chart = ChartFactory.createXYLineChart("", "Time[s]", "Cost", xySeriesCollection);

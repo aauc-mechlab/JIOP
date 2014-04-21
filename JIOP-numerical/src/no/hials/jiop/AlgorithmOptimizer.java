@@ -19,7 +19,8 @@ public class AlgorithmOptimizer implements Serializable {
 
     public AlgorithmOptimizer(Algorithm optimizable) {
         this.optimizable = optimizable;
-        this.algorithm = new SimulatedAnnealing(20, 0.95, optimizable.getNumberOfFreeParameters(), new OptimizerEvalutor());
+        this.algorithm = new SimulatedAnnealing(20, 0.95);
+        this.algorithm.setEvaluator(new OptimizerEvalutor());
     }
 
     public AlgorithmOptimizer(Algorithm algorithm, Algorithm optimizable) {
@@ -44,6 +45,11 @@ public class AlgorithmOptimizer implements Serializable {
                 cost += optimizable.compute(50).cost;
             }
             return cost;
+        }
+
+        @Override
+        public int getDimension() {
+           return optimizable.getNumberOfFreeParameters();
         }
 
     }
