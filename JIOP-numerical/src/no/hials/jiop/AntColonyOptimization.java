@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import no.hials.utilities.DoubleArray;
+import no.hials.utilities.PermutationsWithRepetition;
 
 /**
  *

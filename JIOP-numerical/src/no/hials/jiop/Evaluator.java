@@ -5,6 +5,8 @@
  */
 
 package no.hials.jiop;
+import no.hials.utilities.DoubleArray;
+
 
 /**
  *

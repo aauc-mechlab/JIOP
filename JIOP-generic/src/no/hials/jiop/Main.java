@@ -74,13 +74,13 @@ public class Main {
             EvaluatedCandidate run = method.runFor(0.0000000001, 1000);
             System.out.println(run);
 
-            final JFrame frame = new JFrame(method.getName());
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            SwingUtilities.invokeLater(() -> {
-                frame.getContentPane().add(method.getPlot());
-                frame.setVisible(true);
-                frame.setSize(500, 500);
-            });
+//            final JFrame frame = new JFrame(method.getName());
+//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//            SwingUtilities.invokeLater(() -> {
+//                frame.getContentPane().add(method.getPlot());
+//                frame.setVisible(true);
+//                frame.setSize(500, 500);
+//            });
         }
     }
 

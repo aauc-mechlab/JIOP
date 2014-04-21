@@ -6,6 +6,7 @@
 package no.hials.jiop;
 
 import java.io.Serializable;
+import no.hials.utilities.DoubleArray;
 
 /**
  *

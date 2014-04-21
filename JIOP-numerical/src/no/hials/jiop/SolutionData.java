@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package no.hials.jiop;
+import no.hials.utilities.DoubleArray;
 
 /**
  *

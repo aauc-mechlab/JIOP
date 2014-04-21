@@ -7,6 +7,7 @@ package no.hials.jiop;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import no.hials.utilities.DoubleArray;
 
 /**
  *

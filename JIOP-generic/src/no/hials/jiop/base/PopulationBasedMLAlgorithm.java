@@ -39,7 +39,6 @@ import no.hials.jiop.base.MLHistory.MLHistory;
 import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.CandidateContainer;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
-import org.math.plot.Plot2DPanel;
 
 /**
  * Extention of MLAlgorithm with support for populationBased algorithms
@@ -91,12 +90,6 @@ public abstract class PopulationBasedMLAlgorithm<E> extends MLAlgorithm<E> {
         return t;
     }
 
-    @Override
-    public Plot2DPanel getPlot() {
-        Plot2DPanel plot = super.getPlot();
-        plot.addLinePlot("", getAvgHistory().getTimestamps(), getAvgHistory().getCosts());
-        return plot;
-    }
 
     /**
      * Getter for the candidate container

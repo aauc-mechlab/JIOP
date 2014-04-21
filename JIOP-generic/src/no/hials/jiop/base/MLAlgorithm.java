@@ -44,7 +44,6 @@ import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
 import no.hials.jiop.base.candidates.CandidateFactory;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
-import org.math.plot.Plot2DPanel;
 
 /**
  * Base class for all JIOP algorithms
@@ -246,17 +245,6 @@ public abstract class MLAlgorithm<E> {
         submitJobs(jobs);
     }
 
-    /**
-     * Get a plot showing the data from the MLHistory
-     *
-     * @return a JPanel instance with the plot
-     */
-    public Plot2DPanel getPlot() {
-        Plot2DPanel plot = new Plot2DPanel();
-        plot.addLegend("INVISIBLE");
-        plot.addLinePlot("", getHistory().getTimestamps(), getHistory().getCosts());
-        return plot;
-    }
 
     /**
      * Warms up the JVM by running the algorithm for the specified time. The
