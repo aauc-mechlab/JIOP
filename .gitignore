@@ -7,14 +7,20 @@
 *.ear
 
 #ant specific
-dist/
-build/
+JIOP-generic/dist/
+JIOP-generic/build/
+
+JIOP-numerical/dist/
+JIOP-numerical/build/
  
 #netbeans specific
-core
-nbproject/*
-!nbproject/project.properties
-!nbproject/project.xml
+JIOP-generic/nbproject/*
+JIOP-generic/!nbproject/project.properties
+JIOP-generic/!nbproject/project.xml
+
+JIOP-numerical/nbproject/*
+JIOP-numerical/!nbproject/project.properties
+JIOP-numerical/!nbproject/project.xml
  
 
 #general swap/backup files
@@ -25,4 +31,3 @@ nbproject/*
 *.swp
 *.DS_Store
 *.lock
-/JIOP-numerical/nbproject/private/
