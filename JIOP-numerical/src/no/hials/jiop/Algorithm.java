@@ -1,19 +1,40 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (c) 2014, Aalesund University College 
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 package no.hials.jiop;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Random;
+import no.hials.utilities.DoubleArray;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
-import no.hials.utilities.DoubleArray;
 
 /**
  *
@@ -38,7 +59,16 @@ public abstract class Algorithm implements Optimizable, Serializable {
         subInit();
     }
 
-    public final void init(DoubleArray... seeds) {
+    public final void init(DoubleArray seed) {
+        if (seed == null) {
+            init();
+        } else {
+            this.timeSeries = new XYSeries(name);
+            subInit(new DoubleArray[]{seed});
+        }
+    }
+
+    public final void init(DoubleArray[] seeds) {
         if (seeds == null || seeds.length == 0) {
             init();
         } else {
@@ -46,9 +76,21 @@ public abstract class Algorithm implements Optimizable, Serializable {
             subInit(seeds);
         }
     }
-    
-    public abstract void subInit();
-    public abstract void subInit(DoubleArray... seeds);
+
+    public final void init(List<DoubleArray> seeds) {
+        if (seeds == null || seeds.isEmpty()) {
+            init();
+        } else {
+            this.timeSeries = new XYSeries(name);
+            subInit(seeds.toArray(new DoubleArray[seeds.size()]));
+        }
+    }
+
+    protected abstract Candidate singleIteration();
+
+    protected abstract void subInit();
+
+    protected abstract void subInit(DoubleArray... seeds);
 
     public SolutionData compute(long timeOut) {
         Candidate solution = null;
@@ -68,8 +110,8 @@ public abstract class Algorithm implements Optimizable, Serializable {
 
     public SolutionData compute(double error, long timeOut) {
         Candidate solution = null;
-        long t0 = System.currentTimeMillis();
         long t;
+        long t0 = System.currentTimeMillis();
         int it = 0;
         do {
             solution = singleIteration();
@@ -96,6 +138,21 @@ public abstract class Algorithm implements Optimizable, Serializable {
         return new SolutionData(solution, solution.getCost(), it, System.currentTimeMillis() - t0);
     }
 
+    public SolutionData compute(int iterations, long timeOut) {
+        Candidate solution = null;
+        long t;
+        long t0 = System.currentTimeMillis();
+        int it = 0;
+        do {
+            solution = singleIteration();
+            double x = (double) (System.currentTimeMillis() - t0) / 1000;
+            double y = solution.getCost();
+            timeSeries.add(x, y);
+        } while (((t = System.currentTimeMillis() - t0) < timeOut) && (it++ < iterations));
+
+        return new SolutionData(solution, solution.getCost(), it, System.currentTimeMillis() - t0);
+    }
+
     public void optimizeFreeParameters(double error, long timeOut) {
         DoubleArray freeParameters = getFreeParameters();
         AlgorithmOptimizer optimizer = new AlgorithmOptimizer(this);
@@ -117,8 +174,6 @@ public abstract class Algorithm implements Optimizable, Serializable {
         frame.pack();
 
     }
-
-    protected abstract Candidate singleIteration();
 
     public XYSeries getSeries() {
         return timeSeries;

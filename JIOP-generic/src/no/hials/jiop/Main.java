@@ -30,8 +30,6 @@ import java.util.Arrays;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
 import no.hials.jiop.base.Evaluator;
 import no.hials.jiop.base.algorithms.swarm.pso.PSO;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import no.hials.jiop.base.MLAlgorithm;
 import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayEncodingFactory;
 import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayParticleEncodingFactory;
@@ -58,6 +56,7 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
 
         System.out.println(Arrays.toString(desired));
+        
 
         MLAlgorithm<double[]>[] methods = new MLAlgorithm[]{
             new DE<>(30, new DoubleArrayDifferentialCrossover(0.8, 0.9), new DoubleArrayEncodingFactory(dim), new MyEvaluator()),
