@@ -23,13 +23,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop;
+package no.hials.jiop.physical;
+import no.hials.jiop.Algorithm;
+import no.hials.jiop.Candidate;
 import no.hials.utilities.DoubleArray;
 import no.hials.utilities.NormUtil;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class SimulatedAnnealing extends Algorithm {
 

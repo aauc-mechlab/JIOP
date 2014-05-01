@@ -44,6 +44,7 @@ import no.hials.jiop.base.candidates.Candidate;
 import no.hials.jiop.base.candidates.EvaluatedCandidate;
 import no.hials.jiop.base.candidates.CandidateFactory;
 import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
+import org.jfree.data.xy.XYSeries;
 
 /**
  * Base class for all JIOP algorithms
@@ -52,7 +53,6 @@ import no.hials.jiop.base.candidates.encoding.factories.EncodingFactory;
  */
 public abstract class MLAlgorithm<E> {
 
-    private final Object mutex = new Object();
     private final ExecutorService pool;
 
     private Evaluator<E> evaluator;
@@ -206,10 +206,8 @@ public abstract class MLAlgorithm<E> {
      *
      * @return the best candidate
      */
-    public Candidate<E> getBestCandidate() {
-        synchronized (mutex) {
-            return new Candidate<>(bestCandidate);
-        }
+    public synchronized Candidate<E> getBestCandidate() {
+        return new Candidate<>(bestCandidate);
     }
 
     /**
@@ -217,13 +215,11 @@ public abstract class MLAlgorithm<E> {
      *
      * @param candidate the new best candidate
      */
-    public void setBestCandidate(Candidate<E> candidate) {
-        synchronized (mutex) {
-            if (this.bestCandidate == null) {
-                this.bestCandidate = new Candidate<>(candidate);
-            } else if (candidate.getCost() < this.bestCandidate.getCost()) {
-                this.bestCandidate = new Candidate<>(candidate);
-            }
+    public synchronized void setBestCandidate(Candidate<E> candidate) {
+        if (this.bestCandidate == null) {
+            this.bestCandidate = new Candidate<>(candidate);
+        } else if (candidate.getCost() < this.bestCandidate.getCost()) {
+            this.bestCandidate = new Candidate<>(candidate);
         }
     }
 
@@ -244,7 +240,6 @@ public abstract class MLAlgorithm<E> {
         }
         submitJobs(jobs);
     }
-
 
     /**
      * Warms up the JVM by running the algorithm for the specified time. The
@@ -279,7 +274,7 @@ public abstract class MLAlgorithm<E> {
     }
 
     /**
-     * Getter for the
+     * Getter for the MLHistory
      *
      * @return
      */
@@ -323,6 +318,15 @@ public abstract class MLAlgorithm<E> {
                 Logger.getLogger(MLAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    public XYSeries getSeries() {
+        XYSeries series = new XYSeries(getName());
+        for (int i = 0; i < history.size(); i++) {
+            MLHistory.MLHistoryPoint get = history.get(i);
+            series.add(get.timestamp, get.cost);
+        }
+        return series;
     }
 
     /**

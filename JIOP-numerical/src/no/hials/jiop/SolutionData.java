@@ -27,8 +27,8 @@ package no.hials.jiop;
 import no.hials.utilities.DoubleArray;
 
 /**
- *
- * @author LarsIvar
+ * 
+ * @author Lars Ivar Hatledal
  */
 public class SolutionData {
 

@@ -35,13 +35,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.Algorithm;
 import no.hials.jiop.Candidate;
-import no.hials.jiop.Evaluator;
 import no.hials.utilities.DoubleArray;
 import no.hials.utilities.NormUtil;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class ParticleSwarmOptimization extends Algorithm {
 

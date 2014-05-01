@@ -90,7 +90,7 @@ public class MLHistory extends ArrayList<MLHistoryPoint> {
         return sb.toString();
     }
 
-    protected class MLHistoryPoint {
+    public class MLHistoryPoint {
 
     public final double cost;
     public final int iteration;

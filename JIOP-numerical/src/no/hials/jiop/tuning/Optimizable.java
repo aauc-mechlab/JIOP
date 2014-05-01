@@ -24,12 +24,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop;
+package no.hials.jiop.tuning;
 import no.hials.utilities.DoubleArray;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public interface Optimizable {
     

@@ -25,39 +25,44 @@
  */
 package no.hials.jiop;
 
-import no.hials.jiop.utils.ArrayUtil;
 import java.util.Arrays;
-import no.hials.jiop.base.candidates.EvaluatedCandidate;
 import no.hials.jiop.base.Evaluator;
-import no.hials.jiop.base.algorithms.swarm.pso.PSO;
 import no.hials.jiop.base.MLAlgorithm;
-import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayEncodingFactory;
-import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayParticleEncodingFactory;
 import no.hials.jiop.base.algorithms.evolutionary.de.DE;
 import no.hials.jiop.base.algorithms.evolutionary.de.DoubleArrayDifferentialCrossover;
+import no.hials.jiop.base.algorithms.evolutionary.ga.GA;
 import no.hials.jiop.base.algorithms.evolutionary.ga.crossover.DoubleArrayCrossover;
 import no.hials.jiop.base.algorithms.evolutionary.ga.mutation.DoubleArrayMutation;
-import no.hials.jiop.base.algorithms.evolutionary.ga.GA;
 import no.hials.jiop.base.algorithms.evolutionary.ga.selection.StochasticUniversalSampling;
 import no.hials.jiop.base.algorithms.physical.GeometricAnnealingSchedule;
 import no.hials.jiop.base.algorithms.physical.SA;
 import no.hials.jiop.base.algorithms.physical.SAalt;
 import no.hials.jiop.base.algorithms.swarm.abs.ABS;
+import no.hials.jiop.base.algorithms.swarm.pso.PSO;
+import no.hials.jiop.base.candidates.EvaluatedCandidate;
+import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayEncodingFactory;
+import no.hials.jiop.base.candidates.encoding.factories.DoubleArrayParticleEncodingFactory;
+import no.hials.jiop.utils.ArrayUtil;
+import no.hials.jiop.utils.NormUtil;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.ApplicationFrame;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
 public class Main {
-
+    
     public static final int dim = 5;
     public static double[] desired = ArrayUtil.randomD(dim);
-
+    
     public static void main(String[] args) throws InterruptedException {
-
+        
         System.out.println(Arrays.toString(desired));
         
-
         MLAlgorithm<double[]>[] methods = new MLAlgorithm[]{
             new DE<>(30, new DoubleArrayDifferentialCrossover(0.8, 0.9), new DoubleArrayEncodingFactory(dim), new MyEvaluator()),
             new PSO<>(30, 2, 0.9, 0.9, new DoubleArrayParticleEncodingFactory(dim), new MyEvaluator()),
@@ -65,38 +70,43 @@ public class Main {
             new SAalt(100, new GeometricAnnealingSchedule(0.85), new DoubleArrayEncodingFactory(dim), new MyEvaluator()),
             new GA<>(80, 0.1f, 0.5f, 0.2f, new StochasticUniversalSampling(), new DoubleArrayCrossover(), new DoubleArrayMutation(0.01, 0), new DoubleArrayEncodingFactory(dim), new MyEvaluator()),
             new ABS(60, 6, new DoubleArrayEncodingFactory(dim), new MyEvaluator())};
-
+        
+        XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
         for (final MLAlgorithm method : methods) {
             
             method.warmUp(1000);
             method.doTrackHistory(true);
-            EvaluatedCandidate run = method.runFor(0.0000000001, 1000);
+            EvaluatedCandidate run = method.runFor(0.0000000001, 100);
             System.out.println(run);
-
-//            final JFrame frame = new JFrame(method.getName());
-//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//            SwingUtilities.invokeLater(() -> {
-//                frame.getContentPane().add(method.getPlot());
-//                frame.setVisible(true);
-//                frame.setSize(500, 500);
-//            });
+            
+            xySeriesCollection.addSeries(method.getSeries());
+            
         }
-    }
-
-    static class MyEvaluator extends Evaluator<double[]> {
-
-        @Override
-        public double evaluate(double[] encoding) {
-
-            double cost = 0;
-            int i = 0;
-            for (double d : encoding) {
-                cost += Math.abs(d - desired[i++]);
-            }
-            return cost;
+        
+         if (xySeriesCollection.getSeriesCount() > 0) {
+            ApplicationFrame frame = new ApplicationFrame("");
+            final JFreeChart chart = ChartFactory.createXYLineChart("", "Time[s]", "Cost", xySeriesCollection);
+            final ChartPanel chartPanel = new ChartPanel(chart);
+            chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+            frame.setContentPane(chartPanel);
+            frame.setVisible(true);
+            frame.pack();
         }
-
     }
     
-   
+    static class MyEvaluator extends Evaluator<double[]> {
+        
+        @Override
+        public double evaluate(double[] encoding) {
+           double cost = 0;
+                for (int i = 0; i < encoding.length; i++) {
+                    double xi = new NormUtil(1, 0, 5, -5).normalize(encoding[i]);
+                    cost += (xi * xi) - (10 * Math.cos(2 * Math.PI * xi)) + 10;
+                }
+
+                return cost;
+        }
+        
+    }
+    
 }

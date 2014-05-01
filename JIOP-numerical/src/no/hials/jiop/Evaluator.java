@@ -29,8 +29,8 @@ import no.hials.utilities.DoubleArray;
 
 
 /**
- *
- * @author LarsIvar
+ * Interface used for evaluating performance of the candidates
+ * @author Lars Ivar Hatledal
  */
 public interface Evaluator {
     

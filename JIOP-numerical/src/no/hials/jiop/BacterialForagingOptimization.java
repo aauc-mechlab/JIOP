@@ -35,10 +35,11 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.utilities.DoubleArray;
+import no.hials.utilities.NormUtil;
 
 /**
- *
- * @author LarsIvar
+ * Bacterial Foraging Optimization based on an article by James McCaffrey: http://msdn.microsoft.com/en-us/magazine/hh882453.aspx
+ * @author Lars Ivar Hatledal
  */
 public class BacterialForagingOptimization extends Algorithm {
 
@@ -356,7 +357,12 @@ public class BacterialForagingOptimization extends Algorithm {
 
     @Override
     public void setFreeParameters(DoubleArray array) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.size = (int) new NormUtil(1, 0, 1000, 10).normalize(array.get(0));
+        this.nc = (int) new NormUtil(1, 0, 10, 2).normalize(array.get(1));
+        this.nre = (int) new NormUtil(1, 0, 10, 1).normalize(array.get(2));
+        this.ns = (int) new NormUtil(1, 0, 10, 1).normalize(array.get(3));
+        this.ped = new NormUtil(1, 0, 1, 0.1).normalize(array.get(4));
+        this.ci =  new NormUtil(1, 0, 0.2, 0.005).normalize(array.get(5));
     }
 
     @Override

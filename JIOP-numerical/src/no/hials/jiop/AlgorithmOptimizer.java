@@ -25,12 +25,13 @@
  */
 package no.hials.jiop;
 
+import no.hials.jiop.physical.SimulatedAnnealing;
 import java.io.Serializable;
 import no.hials.utilities.DoubleArray;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class AlgorithmOptimizer implements Serializable {
 

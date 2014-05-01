@@ -23,7 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop;
+package no.hials.jiop.evolutionary;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,12 +33,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import no.hials.jiop.Algorithm;
+import no.hials.jiop.Candidate;
+import no.hials.jiop.tuning.Optimizable;
 import no.hials.utilities.DoubleArray;
 import no.hials.utilities.NormUtil;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public class DifferentialEvolution extends Algorithm implements Optimizable {
 
@@ -52,6 +55,10 @@ public class DifferentialEvolution extends Algorithm implements Optimizable {
 
     private boolean multiCore;
     private Candidate bestCandidate;
+
+    public DifferentialEvolution(int NP, double F, double CR) {
+        this(NP, F, CR, false);
+    }
 
     public DifferentialEvolution(int NP, double F, double CR, boolean multiCore) {
         super("Differential Evolution " + multiCore);
@@ -80,7 +87,7 @@ public class DifferentialEvolution extends Algorithm implements Optimizable {
 
     @Override
     protected Candidate singleIteration() {
-        
+
         if (multiCore) {
             for (final Candidate c : candidates) {
                 completionService.submit(new Runnable() {
@@ -205,10 +212,10 @@ public class DifferentialEvolution extends Algorithm implements Optimizable {
         this.F = new NormUtil(1, 0, 2, 0.1).normalize(array.get(1));
         this.CR = new NormUtil(1, 0, 1, 0.1).normalize(array.get(2));
     }
-    
+
     @Override
     public DoubleArray getFreeParameters() {
-        return new DoubleArray(NP,F,CR);
+        return new DoubleArray(NP, F, CR);
     }
 
     private class Candidates extends ArrayList<Candidate> {

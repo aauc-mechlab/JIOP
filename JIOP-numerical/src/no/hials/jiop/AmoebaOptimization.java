@@ -30,10 +30,10 @@ import java.util.Collections;
 import no.hials.utilities.DoubleArray;
 
 /**
- *
- * @author LarsIvar
+ * Amoeba Optimization based on an article by James McCaffrey: http://msdn.microsoft.com/en-us/magazine/dn201752.aspx
+ * @author Lars Ivar Hatledal
  */
-public class AmoebaOptimization extends Algorithm  {
+public class AmoebaOptimization extends Algorithm {
 
     private int size;
     private double alpha = 1.0;  // Reflection
@@ -41,7 +41,6 @@ public class AmoebaOptimization extends Algorithm  {
     private double gamma = 2.0;  // Expansion
 
     private Amoeba candidates;
-//    private Candidate bestCandidate;
 
     public AmoebaOptimization(int size) {
         super("Amoeba Optimization");
@@ -52,7 +51,6 @@ public class AmoebaOptimization extends Algorithm  {
     public void subInit() {
         this.candidates = new Amoeba(size);
         Collections.sort(candidates);
-//        bestCandidate = candidates.get(0).copy();
     }
 
     @Override
@@ -62,7 +60,6 @@ public class AmoebaOptimization extends Algorithm  {
             candidates.add(new Candidate(seed, getEvaluator().evaluate(seed)));
         }
         Collections.sort(candidates);
-//        bestCandidate = candidates.get(0).copy();
     }
 
     @Override
@@ -93,8 +90,6 @@ public class AmoebaOptimization extends Algorithm  {
         replaceWorst(reflected);
         return candidates.get(0);  // Best solution
     }
-
-   
 
     public Candidate centroid() {
         double[] c = new double[getDimension()];
@@ -151,7 +146,6 @@ public class AmoebaOptimization extends Algorithm  {
     public void replaceWorst(Candidate newSolution) {
         candidates.set(size - 1, newSolution.copy());
         Collections.sort(candidates);
-//        this.bestCandidate = candidates.get(0).copy();
     }
 
     public void shrink() {
@@ -169,7 +163,6 @@ public class AmoebaOptimization extends Algorithm  {
             candidates.get(i).setCost(getEvaluator().evaluate(candidates.get(i)));
         }
         Collections.sort(candidates);
-//        bestCandidate = candidates.get(0).copy();
     }
 
     public boolean isWorseThanAllButWorst(Candidate reflected) {
@@ -195,6 +188,38 @@ public class AmoebaOptimization extends Algorithm  {
     @Override
     public DoubleArray getFreeParameters() {
         return new DoubleArray(size, alpha, beta, gamma);
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public double getAlpha() {
+        return alpha;
+    }
+
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+
+    public double getBeta() {
+        return beta;
+    }
+
+    public void setBeta(double beta) {
+        this.beta = beta;
+    }
+
+    public double getGamma() {
+        return gamma;
+    }
+
+    public void setGamma(double gamma) {
+        this.gamma = gamma;
     }
 
     private class Amoeba extends ArrayList<Candidate> {

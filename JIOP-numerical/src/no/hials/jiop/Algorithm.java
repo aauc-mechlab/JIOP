@@ -25,6 +25,7 @@
  */
 package no.hials.jiop;
 
+import no.hials.jiop.tuning.Optimizable;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Random;
@@ -38,7 +39,7 @@ import org.jfree.ui.ApplicationFrame;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public abstract class Algorithm implements Optimizable, Serializable {
 

@@ -25,6 +25,9 @@
  */
 package no.hials.jiop;
 
+import no.hials.jiop.swarm.ArtificialBeeColony;
+import no.hials.jiop.evolutionary.DifferentialEvolution;
+import no.hials.jiop.physical.SimulatedAnnealing;
 import java.util.ArrayList;
 import java.util.List;
 import no.hials.jiop.swarm.MultiSwarmOptimization;
@@ -38,8 +41,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
 
 /**
- *
- * @author LarsIvar
+ * Main class
+ * @author Lars Ivar Hatledal
  */
 public class Main {
 
