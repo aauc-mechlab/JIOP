@@ -1,27 +1,18 @@
-#java specific
+# NetBeans specific #
+*nbproject/private/
+*build/
+*nbbuild/
+*dist/
+*nbdist/
+*nbactions.xml
+*nb-configuration.xml
+
+# Class Files #
 *.class
- 
+
 # Package Files #
-*.jar
 *.war
 *.ear
-
-#ant specific
-JIOP-generic/dist/
-JIOP-generic/build/
-
-JIOP-numerical/dist/
-JIOP-numerical/build/
- 
-#netbeans specific
-JIOP-generic/nbproject/*
-JIOP-generic/!nbproject/project.properties
-JIOP-generic/!nbproject/project.xml
-
-JIOP-numerical/nbproject/*
-JIOP-numerical/!nbproject/project.properties
-JIOP-numerical/!nbproject/project.xml
- 
 
 #general swap/backup files
 *.so
