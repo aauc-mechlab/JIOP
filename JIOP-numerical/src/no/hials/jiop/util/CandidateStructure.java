@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,16 +24,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop;
-
+package no.hials.jiop.util;
 
 /**
- * Interface used for evaluating performance of the candidates
- * @author Lars Ivar Hatledal
- * @param <E>
+ *
+ * @author LarsIvar
  */
-public interface Evaluator<E> {
+public interface CandidateStructure<E> extends Structure<E>, Comparable<CandidateStructure>{
     
-    public int getDimension();
-    public double evaluate(E elements);
+    public double getCost();
+    public void setCost(double cost);
+    public void randomize();    
 }

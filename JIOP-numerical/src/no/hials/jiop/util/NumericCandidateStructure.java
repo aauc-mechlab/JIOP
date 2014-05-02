@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,17 +23,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-package no.hials.jiop;
-
+package no.hials.jiop.util;
 
 /**
- * Interface used for evaluating performance of the candidates
- * @author Lars Ivar Hatledal
+ *
+ * @author LarsIvar
  * @param <E>
  */
-public interface Evaluator<E> {
+public interface NumericCandidateStructure<E> extends NumericStructure<E>, CandidateStructure<E> {
+
+    public NumericCandidateStructure<E> neighbor(double proximity);
     
-    public int getDimension();
-    public double evaluate(E elements);
 }

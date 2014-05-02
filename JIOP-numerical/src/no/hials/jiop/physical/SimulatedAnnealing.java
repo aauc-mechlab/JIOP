@@ -24,23 +24,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 package no.hials.jiop.physical;
+
+import java.util.List;
 import no.hials.jiop.Algorithm;
-import no.hials.jiop.Candidate;
-import no.hials.utilities.DoubleArray;
-import no.hials.utilities.NormUtil;
+import no.hials.jiop.util.CandidateStructure;
+import no.hials.jiop.util.NumericCandidateStructure;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
-public class SimulatedAnnealing extends Algorithm {
+public class SimulatedAnnealing<E> extends Algorithm<E> {
 
-    private double startingTemperature;
+    private final double startingTemperature;
     private double temperature, alpha;
-    private Candidate current, bestCandidate;
+    private NumericCandidateStructure current, bestCandidate;
 
-    public SimulatedAnnealing(double startingTemperature, double alpha) {
-        super("Simulated Annealing");
+    public SimulatedAnnealing(Class<?> clazz, double startingTemperature, double alpha) {
+        super(clazz, "Simulated Annealing");
         this.startingTemperature = startingTemperature;
         this.alpha = alpha;
     }
@@ -48,28 +49,32 @@ public class SimulatedAnnealing extends Algorithm {
     @Override
     public void subInit() {
         this.temperature = startingTemperature;
-        this.current = Candidate.randomCandidate(getDimension(), getEvaluator());
-        this.bestCandidate = current.copy();
+        this.current = (NumericCandidateStructure) random();
+        this.bestCandidate = (NumericCandidateStructure) copy(current);
     }
 
     @Override
-    public void subInit(DoubleArray... seed) {
-        this.current = new Candidate(seed[0], getEvaluator().evaluate(seed[0]));
-        this.bestCandidate = current.copy();
-    }
-
-    @Override
-    protected Candidate singleIteration() {
-        Candidate newSample = Candidate.neighborCandidate(current, bestCandidate.getCost()/5, getEvaluator());
+    protected CandidateStructure<E> singleIteration() {
+        CandidateStructure<E> newSample = current.neighbor(bestCandidate.getCost() / 5);
+        newSample.setCost(getEvaluator().evaluate(newSample.getElements()));
         if (doAccept(current, newSample)) {
-            current = newSample.copy();
+            current = (NumericCandidateStructure) copy(newSample);
         }
         if (newSample.getCost() < bestCandidate.getCost()) {
-            bestCandidate = newSample.copy();
+            bestCandidate = (NumericCandidateStructure) copy(newSample);
         }
         temperature *= alpha;
-        return bestCandidate.copy();
+        return (NumericCandidateStructure) copy(bestCandidate);
     }
+
+    @Override
+    protected void subInit(List<E> seeds) {
+        this.temperature = startingTemperature;
+        this.current = (NumericCandidateStructure) newCandidate(seeds.get(0));
+        this.bestCandidate = (NumericCandidateStructure) copy(current);
+    }
+
+    
 
     /**
      * Should we accept the new solution based on the Metropolis criteria?
@@ -78,24 +83,28 @@ public class SimulatedAnnealing extends Algorithm {
      * @param newSample the new solution
      * @return whether or not the new solution should be accepted
      */
-    private boolean doAccept(Candidate current, Candidate newSample) {
+    private boolean doAccept(CandidateStructure<E> current, CandidateStructure<E> newSample) {
         return newSample.getCost() < current.getCost() | Math.exp(-(newSample.getCost() - current.getCost()) / temperature) > Math.random();
     }
 
-    @Override
-    public int getNumberOfFreeParameters() {
-       return 2;
-    }
-
-    @Override
-    public void setFreeParameters(DoubleArray array) {
-        this.startingTemperature = new NormUtil(1, 0, 1000, 10).normalize(array.get(0));
-        this.alpha = new NormUtil(1, 0, 0.995, 0.8).normalize(array.get(1));
-    }
-
-    @Override
-    public DoubleArray getFreeParameters() {
-        return new DoubleArray(startingTemperature, alpha);
-    }
-
+//    @Override
+//    public int getNumberOfFreeParameters() {
+//       return 2;
+//    }
+//
+//    @Override
+//    public void setFreeParameters(DoubleArray array) {
+//        this.startingTemperature = new NormUtil(1, 0, 1000, 10).normalize(array.get(0));
+//        this.alpha = new NormUtil(1, 0, 0.995, 0.8).normalize(array.get(1));
+//    }
+//
+//    @Override
+//    public DoubleArray getFreeParameters() {
+//        return new DoubleArray(startingTemperature, alpha);
+//    }
+//
+//    @Override
+//    protected CandidateStructure singleIteration() {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
 }

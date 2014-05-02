@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,17 +23,31 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package no.hials.jiop.utils;
 
-package no.hials.jiop;
-
+import java.util.Iterator;
 
 /**
- * Interface used for evaluating performance of the candidates
- * @author Lars Ivar Hatledal
- * @param <E>
+ *
+ * @author LarsIvar
  */
-public interface Evaluator<E> {
-    
-    public int getDimension();
-    public double evaluate(E elements);
+public class StructureIterator implements Iterator {
+
+    private int index;
+    private final Structure structure;
+
+    public StructureIterator(Structure structure) {
+        this.structure = structure;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return index != structure.size();
+    }
+
+    @Override
+    public Object next() {
+        return structure.get(index++);
+    }
+
 }

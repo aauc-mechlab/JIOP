@@ -24,20 +24,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 package no.hials.jiop;
-import no.hials.utilities.DoubleArray;
+import no.hials.jiop.util.CandidateStructure;
 
 /**
  * 
  * @author Lars Ivar Hatledal
  */
-public class SolutionData {
+public class SolutionData<E> {
 
     public final long nano;
     public final double cost;
     public final int iterations;
-    public final DoubleArray solution;
+    public final CandidateStructure<E>  solution;
 
-    public SolutionData(DoubleArray solution, double cost, int iterations, long nano) {
+    public SolutionData(CandidateStructure<E>  solution, double cost, int iterations, long nano) {
         this.cost = cost;
         this.nano = nano;
         this.solution = solution;

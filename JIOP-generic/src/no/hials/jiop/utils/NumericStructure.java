@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,17 +23,36 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-package no.hials.jiop;
-
+package no.hials.jiop.utils;
 
 /**
- * Interface used for evaluating performance of the candidates
- * @author Lars Ivar Hatledal
+ *
+ * @author LarsIvar
  * @param <E>
  */
-public interface Evaluator<E> {
+public abstract class NumericStructure<E> implements Structure<E> {
+
+    public abstract NumericStructure plus(NumericStructure other);
+
+    public abstract NumericStructure minus(NumericStructure other);
+
+    public abstract NumericStructure scale(Number scalar);
+
+    public abstract void set(int index, Number value);
     
-    public int getDimension();
-    public double evaluate(E elements);
+
+    @Override
+    public abstract Number get(int index);
+
+    @Override
+    public String toString(String delimiter) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < size(); i++) {
+            sb.append(get(i));
+            if (i != size() - 1) {
+                sb.append(delimiter);
+            }
+        }
+        return sb.toString();
+    }
 }

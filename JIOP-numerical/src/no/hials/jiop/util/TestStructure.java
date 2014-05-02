@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,16 +24,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop;
-
+package no.hials.jiop.util;
 
 /**
- * Interface used for evaluating performance of the candidates
- * @author Lars Ivar Hatledal
- * @param <E>
+ *
+ * @author LarsIvar
  */
-public interface Evaluator<E> {
-    
-    public int getDimension();
-    public double evaluate(E elements);
+public class TestStructure {
+    public static void main(String[] args) {
+        NumericCandidateStructure<double[]> structure = new DoubleArrayCandidateStructure(3);
+        NumericStructure<double[]> copy = new DoubleArrayCandidateStructure(structure.getElements());
+        NumericStructure plus = copy.plus(new Double[]{1d,2d,3d});
+        structure.randomize();
+        System.out.println(plus.toString(":"));
+        System.out.println(structure.toString(":"));
+        
+////        Class.forName(className).getConstructor(String.class).newInstance(arg)
+    }
 }

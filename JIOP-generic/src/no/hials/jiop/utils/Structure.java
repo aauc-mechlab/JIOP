@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,16 +24,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop;
+package no.hials.jiop.utils;
 
+import java.io.Serializable;
 
 /**
- * Interface used for evaluating performance of the candidates
- * @author Lars Ivar Hatledal
+ *
+ * @author LarsIvar
  * @param <E>
  */
-public interface Evaluator<E> {
+public interface Structure<E> extends Serializable, Iterable{
     
-    public int getDimension();
-    public double evaluate(E elements);
+    public Object get(int index);
+    public E getElements();
+    public int size();
+    
+    public String toString(String delimiter);
+    
 }

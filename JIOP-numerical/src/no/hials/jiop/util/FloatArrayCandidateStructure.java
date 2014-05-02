@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,69 +23,69 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop;
-import no.hials.utilities.DoubleArray;
+
+package no.hials.jiop.util;
+
+import java.util.Random;
 
 /**
  *
  * @author LarsIvar
  */
-public class Candidate extends DoubleArray implements Comparable<Candidate> {
+public class FloatArrayCandidateStructure extends FloatArrayStructure implements CandidateStructure<float[]>, NumericCandidateStructure<float[]> {
 
-    private double cost;
+    private final Random rng = new Random();
+    private double cost = Float.MAX_VALUE;
 
-    public Candidate(DoubleArray array) {
-        this(array, Double.MAX_VALUE);
+    public FloatArrayCandidateStructure(int length) {
+        super(length);
     }
 
-    protected Candidate(Candidate candidate) {
-        super(candidate);
-        this.cost = candidate.getCost();
+    public FloatArrayCandidateStructure(float[] elements) {
+        super(elements);
     }
 
-    public Candidate(DoubleArray array, double cost) {
-        super(array.getArray());
-        this.cost = cost;
+    @Override
+    public void randomize() {
+        for (int i = 0; i < size(); i++) {
+            set(i, rng.nextFloat());
+        }
     }
 
-    public void setCost(double cost) {
-        this.cost = cost;
+    @Override
+    public FloatArrayCandidateStructure neighbor(double proximity) {
+        float[] arr = new float[size()];
+        for (int i = 0; i < arr.length; i++) {
+            float val = (float) (get(i).floatValue() + rng.nextDouble()* Math.abs(proximity - (-proximity)) + (-proximity));
+            if (val < 0) {
+                val = 0;
+            } else if (val > 1) {
+                val = 1;
+            }
+            arr[i] = val;
+        }
+        return new FloatArrayCandidateStructure(arr);
     }
 
-    public void setVariables(double[] variables) {
-        super.array = variables;
-    }
-
-    public double getCost() {
+    @Override
+    public synchronized double getCost() {
         return cost;
     }
 
     @Override
-    public Candidate copy() {
-        return new Candidate(this);
+    public synchronized void setCost(double cost) {
+        this.cost = cost;
     }
 
     @Override
-    public int compareTo(Candidate c) {
-        if (this.cost == c.getCost()) {
+    public int compareTo(CandidateStructure o) {
+        if (getCost() == getCost()) {
             return 0;
-        } else if (this.cost < c.getCost()) {
+        } else if (getCost() < o.getCost()) {
             return -1;
         } else {
             return 1;
         }
     }
-
-//    public static Candidate randomCandidate(int length, Evaluator eval) {
-//        DoubleArray random = DoubleArray.random(length);
-//        return new Candidate(random, eval.evaluate(random));
-//    }
-//    
-//    public static Candidate neighborCandidate(Candidate candidate, double factor, Evaluator eval) {
-//        DoubleArray array = DoubleArray.neighbor(candidate, factor);
-//        Candidate neighbor = new Candidate(array, eval.evaluate(array));
-//        neighbor.clamp(0, 1);
-//        return neighbor;
-//    }
 
 }

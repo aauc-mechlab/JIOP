@@ -25,34 +25,83 @@
  */
 package no.hials.jiop;
 
-import no.hials.jiop.tuning.Optimizable;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
-import no.hials.utilities.DoubleArray;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import no.hials.jiop.util.CandidateStructure;
 import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.ApplicationFrame;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
-public abstract class Algorithm implements Optimizable, Serializable {
+public abstract class Algorithm<E> implements Serializable {
 
     private final String name;
-    private Evaluator evaluator;
+    private Evaluator<E> evaluator;
+    private final Class<?> clazz;
 
     private XYSeries timeSeries;
 
     protected final Random rng = new Random();
 
-    public Algorithm(String name) {
+    public Algorithm(Class<?> clazz, String name) {
         this.name = name;
+        this.clazz = clazz;
         this.timeSeries = new XYSeries(name);
+    }
+
+    public CandidateStructure<E> random() {
+        try {
+            CandidateStructure<E> newCandidate = newCandidate();
+            newCandidate.randomize();
+            evaluator.evaluate((E) newCandidate.getElements());
+            return newCandidate;
+        } catch (SecurityException | IllegalArgumentException ex) {
+            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+
+    public CandidateStructure<E> newCandidate() {
+        try {
+            Constructor<?> constructor = clazz.getConstructor(int.class);
+            CandidateStructure newInstance = (CandidateStructure) constructor.newInstance(getEvaluator().getDimension());
+            getEvaluator().evaluate((E) newInstance.getElements());
+            return newInstance;
+        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
+    public CandidateStructure<E> newCandidate(E e) {
+        try {
+            Constructor<?> constructor = clazz.getConstructor(e.getClass());
+            CandidateStructure newInstance = (CandidateStructure) constructor.newInstance(e);
+            newInstance.setCost(getEvaluator().evaluate((E) newInstance.getElements()));
+            return newInstance;
+        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
+     public CandidateStructure<E> copy(CandidateStructure<E> candidate) {
+        try {
+            Constructor<?> constructor = clazz.getConstructor(candidate.getElements().getClass());
+            CandidateStructure copy = (CandidateStructure) constructor.newInstance(candidate.getElements());
+            copy.setCost(candidate.getCost());
+            return copy;
+        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public final void init() {
@@ -60,17 +109,8 @@ public abstract class Algorithm implements Optimizable, Serializable {
         subInit();
     }
 
-    public final void init(DoubleArray seed) {
-        if (seed == null) {
-            init();
-        } else {
-            this.timeSeries = new XYSeries(name);
-            subInit(new DoubleArray[]{seed});
-        }
-    }
-
-    public final void init(DoubleArray[] seeds) {
-        if (seeds == null || seeds.length == 0) {
+    public final void init(List<E> seeds) {
+        if (seeds == null || seeds.isEmpty()) {
             init();
         } else {
             this.timeSeries = new XYSeries(name);
@@ -78,23 +118,14 @@ public abstract class Algorithm implements Optimizable, Serializable {
         }
     }
 
-    public final void init(List<DoubleArray> seeds) {
-        if (seeds == null || seeds.isEmpty()) {
-            init();
-        } else {
-            this.timeSeries = new XYSeries(name);
-            subInit(seeds.toArray(new DoubleArray[seeds.size()]));
-        }
-    }
-
-    protected abstract Candidate singleIteration();
+    protected abstract CandidateStructure<E> singleIteration();
 
     protected abstract void subInit();
 
-    protected abstract void subInit(DoubleArray... seeds);
+    protected abstract void subInit(List<E> seeds);
 
     public SolutionData compute(long timeOut) {
-        Candidate solution = null;
+        CandidateStructure<E> solution = null;
         long t0 = System.currentTimeMillis();
         long t;
         int it = 0;
@@ -110,7 +141,7 @@ public abstract class Algorithm implements Optimizable, Serializable {
     }
 
     public SolutionData compute(double error, long timeOut) {
-        Candidate solution = null;
+        CandidateStructure<E> solution = null;
         long t;
         long t0 = System.currentTimeMillis();
         int it = 0;
@@ -126,7 +157,7 @@ public abstract class Algorithm implements Optimizable, Serializable {
     }
 
     public SolutionData compute(int iterations) {
-        Candidate solution = null;
+        CandidateStructure<E> solution = null;
         long t0 = System.currentTimeMillis();
         int it = 0;
         do {
@@ -140,7 +171,7 @@ public abstract class Algorithm implements Optimizable, Serializable {
     }
 
     public SolutionData compute(int iterations, long timeOut) {
-        Candidate solution = null;
+        CandidateStructure<E> solution = null;
         long t;
         long t0 = System.currentTimeMillis();
         int it = 0;
@@ -154,37 +185,36 @@ public abstract class Algorithm implements Optimizable, Serializable {
         return new SolutionData(solution, solution.getCost(), it, System.currentTimeMillis() - t0);
     }
 
-    public void optimizeFreeParameters(double error, long timeOut) {
-        DoubleArray freeParameters = getFreeParameters();
-        AlgorithmOptimizer optimizer = new AlgorithmOptimizer(this);
-        SolutionData optimize = optimizer.optimize(error, timeOut);
-        System.out.println(optimize);
-        System.out.println("Variables changed");
-        System.out.println("Was: " + freeParameters);
-        setFreeParameters(optimize.solution);
-        System.out.println("Is: " + getFreeParameters());
-        ApplicationFrame frame = new ApplicationFrame("");
-        XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
-        xySeriesCollection.addSeries(optimizer.algorithm.timeSeries);
-        xySeriesCollection.addSeries(optimizer.optimizable.timeSeries);
-        final JFreeChart chart = ChartFactory.createXYLineChart("", "Time[s]", "Cost", xySeriesCollection);
-        final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
-        frame.setContentPane(chartPanel);
-        frame.setVisible(true);
-        frame.pack();
-
-    }
-
+//    public void optimizeFreeParameters(double error, long timeOut) {
+//        DoubleArray freeParameters = getFreeParameters();
+//        AlgorithmOptimizer optimizer = new AlgorithmOptimizer(this);
+//        SolutionData optimize = optimizer.optimize(error, timeOut);
+//        System.out.println(optimize);
+//        System.out.println("Variables changed");
+//        System.out.println("Was: " + freeParameters);
+//        setFreeParameters(optimize.solution);
+//        System.out.println("Is: " + getFreeParameters());
+//        ApplicationFrame frame = new ApplicationFrame("");
+//        XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
+//        xySeriesCollection.addSeries(optimizer.algorithm.timeSeries);
+//        xySeriesCollection.addSeries(optimizer.optimizable.timeSeries);
+//        final JFreeChart chart = ChartFactory.createXYLineChart("", "Time[s]", "Cost", xySeriesCollection);
+//        final ChartPanel chartPanel = new ChartPanel(chart);
+//        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+//        frame.setContentPane(chartPanel);
+//        frame.setVisible(true);
+//        frame.pack();
+//
+//    }
     public XYSeries getSeries() {
         return timeSeries;
     }
 
-    public Evaluator getEvaluator() {
+    public Evaluator<E> getEvaluator() {
         return evaluator;
     }
 
-    public void setEvaluator(Evaluator evaluator) {
+    public void setEvaluator(Evaluator<E> evaluator) {
         this.evaluator = evaluator;
     }
 
