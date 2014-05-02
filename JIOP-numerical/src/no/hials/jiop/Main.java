@@ -33,9 +33,9 @@ import no.hials.jiop.physical.SimulatedAnnealing;
 import no.hials.jiop.swarm.ArtificialBeeColony;
 import no.hials.jiop.swarm.MultiSwarmOptimization;
 import no.hials.jiop.swarm.ParticleSwarmOptimization;
+import no.hials.jiop.util.DoubleArrayBacteriaStructure;
 import no.hials.jiop.util.DoubleArrayCandidateStructure;
 import no.hials.jiop.util.DoubleArrayParticleStructure;
-import no.hials.jiop.util.FloatArrayCandidateStructure;
 import no.hials.utilities.NormUtil;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -52,51 +52,12 @@ public class Main {
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
-        final int dim = 15;
-        Evaluator<float[]> feval = new Evaluator<float[]>() {
-
-            @Override
-            public int getDimension() {
-                return dim;
-            }
-
-            @Override
-            public double evaluate(float[] elements) {
-                double cost = 0;
-                for (int i = 0; i < elements.length; i++) {
-                    double xi = new NormUtil(1, 0, 5, -5).normalize(elements[i]);
-                    cost += (xi * xi) - (10 * Math.cos(2 * Math.PI * xi)) + 10;
-                }
-
-                return cost;
-            }
-
-        };
-        Evaluator<double[]> deval = new Evaluator<double[]>() {
-
-            @Override
-            public int getDimension() {
-                return dim;
-            }
-
-            @Override
-            public double evaluate(double[] elements) {
-                double cost = 0;
-                for (int i = 0; i < elements.length; i++) {
-                    double xi = new NormUtil(1, 0, 5, -5).normalize(elements[i]);
-                    cost += (xi * xi) - (10 * Math.cos(2 * Math.PI * xi)) + 10;
-                }
-
-                return cost;
-            }
-
-        };
-
         XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
         List<Algorithm<double[]>> algorithms = new ArrayList<>();
 
         algorithms.add(new DifferentialEvolution(DoubleArrayCandidateStructure.class, 30, 0.9, 0.7, false));
         algorithms.add(new DifferentialEvolution(DoubleArrayCandidateStructure.class, 30, 0.9, 0.7, true));
+
         algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleStructure.class, 40, false));
         algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleStructure.class, 40, true));
         algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleStructure.class, 5, 30, false));
@@ -105,15 +66,11 @@ public class Main {
         algorithms.add(new AmoebaOptimization(DoubleArrayCandidateStructure.class, 50));
         algorithms.add(new SimulatedAnnealing(DoubleArrayCandidateStructure.class, 100, 0.995));
 
-//        algorithms.add(new BacterialForagingOptimization(100, false));
-//        algorithms.add(new BacterialForagingOptimization(100, true));
-        int i = 0;
+        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaStructure.class, 100, false));
+        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaStructure.class, 100, true));
+
         for (Algorithm alg : algorithms) {
-//            if (i++ >= 3) {
-//                alg.setEvaluator(feval);
-//            } else {
-            alg.setEvaluator(deval);
-//            }
+            alg.setEvaluator(new ExampleEvaluator(10));
             alg.init();
             SolutionData<double[]> compute = alg.compute(0d, 1000l);
             System.out.println(alg.toString() + "\n" + compute);
@@ -128,6 +85,39 @@ public class Main {
             frame.setContentPane(chartPanel);
             frame.setVisible(true);
             frame.pack();
+        }
+
+        ApplicationFrame frame = new ApplicationFrame("");
+        final JFreeChart chart = ChartFactory.createXYLineChart("", "Time[s]", "Cost", xySeriesCollection);
+        final ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+        frame.setContentPane(chartPanel);
+        frame.setVisible(true);
+        frame.pack();
+    }
+
+    public static class ExampleEvaluator implements Evaluator<double[]> {
+
+        private final int dimension;
+
+        public ExampleEvaluator(int dimension) {
+            this.dimension = dimension;
+        }
+
+        @Override
+        public int getDimension() {
+            return dimension;
+        }
+
+        @Override
+        public double evaluate(double[] elements) {
+            double cost = 0;
+            for (int i = 0; i < elements.length; i++) {
+                double xi = new NormUtil(1, 0, 5, -5).normalize(elements[i]);
+                cost += (xi * xi) - (10 * Math.cos(2 * Math.PI * xi)) + 10;
+            }
+
+            return cost;
         }
 
     }

@@ -29,26 +29,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.Algorithm;
 import no.hials.jiop.Evaluator;
 import no.hials.jiop.util.NumericCandidateStructure;
 import no.hials.jiop.util.NumericParticleStructure;
-import no.hials.utilities.DoubleArray;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
 public class MultiSwarmOptimization<E> extends Algorithm<E> {
-
-    private final Object mutex = new Object();
-    private final ExecutorService pool = Executors.newCachedThreadPool();
-    private final ExecutorCompletionService completionService = new ExecutorCompletionService(pool);
 
     private List<Swarm> swarms;
     public int numSwarms, numParticles;
@@ -99,7 +91,7 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
     protected NumericParticleStructure<E> singleIteration() {
         if (multiCore) {
             for (final Swarm swarm : swarms) {
-                completionService.submit(() -> {
+                getCompletionService().submit(() -> {
                     for (NumericParticleStructure<E> particle : swarm) {
                         for (int i = 0; i < getDimension(); i++) {
                             double li = particle.getLocalBest().get(i).doubleValue();
@@ -134,18 +126,18 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
                         if (cost < swarm.swarmBest.getCost()) {
                             swarm.swarmBest = (NumericParticleStructure<E>) copy(particle);
                         }
-                        synchronized (mutex) {
+                        synchronized (this) {
                             if (cost < bestCandidate.getCost()) {
                                 bestCandidate = (NumericParticleStructure<E>) copy(particle);
                             }
                         }
                     }
-                }, true);
+                }, null);
             }
 
             for (final Swarm swarm : swarms) {
                 try {
-                    completionService.take().get();
+                    getCompletionService().take().get();
                 } catch (InterruptedException | ExecutionException ex) {
                     Logger.getLogger(MultiSwarmOptimization.class.getName()).log(Level.SEVERE, null, ex);
                 }

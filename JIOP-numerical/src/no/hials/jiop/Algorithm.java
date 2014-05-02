@@ -30,6 +30,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.util.CandidateStructure;
@@ -47,8 +51,10 @@ public abstract class Algorithm<E> implements Serializable {
     private final Class<?> clazz;
 
     private XYSeries timeSeries;
-
     protected final Random rng = new Random();
+
+    private ExecutorService pool;
+    private ExecutorCompletionService completionService;
 
     public Algorithm(Class<?> clazz, String name) {
         this(clazz, null, name);
@@ -149,6 +155,15 @@ public abstract class Algorithm<E> implements Serializable {
         } while ((t = System.currentTimeMillis() - t0) < timeOut);
 
         return new SolutionData(solution, solution.getCost(), it, t);
+    }
+
+    protected CompletionService<CandidateStructure<E>> getCompletionService() {
+        if (pool == null) {
+
+            pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            completionService = new ExecutorCompletionService(pool);
+        }
+        return completionService;
     }
 
     public SolutionData compute(double error, long timeOut) {

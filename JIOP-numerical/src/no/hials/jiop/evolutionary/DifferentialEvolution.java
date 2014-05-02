@@ -43,10 +43,6 @@ import no.hials.jiop.util.NumericCandidateStructure;
  */
 public class DifferentialEvolution<E> extends Algorithm<E> {
 
-    private final Object mutex = new Object();
-    private final ExecutorService pool = Executors.newCachedThreadPool();
-    private final ExecutorCompletionService completionService = new ExecutorCompletionService(pool);
-
     private int NP;
     private double F, CR;
     private Candidates candidates;
@@ -89,7 +85,7 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
 
         if (multiCore) {
             for (final NumericCandidateStructure<E> c : candidates) {
-                completionService.submit(() -> {
+                getCompletionService().submit(() -> {
                     NumericCandidateStructure<E> c1;
                     NumericCandidateStructure<E> c2, c3;
                     do {
@@ -118,23 +114,25 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
                     evaluateAndUpdate(sample);
                     if (sample.getCost() < c.getCost()) {
                         candidates.set(candidates.indexOf(c), sample);
-                        synchronized (mutex) {
+                        synchronized (this) {
                             if (sample.getCost() < bestCandidate.getCost()) {
                                 bestCandidate = sample;
                             }
                         }
                     }
-                }, true);
+                }, null);
             }
             for (NumericCandidateStructure<E> c : candidates) {
                 try {
-                    completionService.take().get();
+                    getCompletionService().take().get();
                 } catch (InterruptedException | ExecutionException ex) {
                     Logger.getLogger(DifferentialEvolution.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         } else {
+
             for (NumericCandidateStructure<E> c : candidates) {
+
                 NumericCandidateStructure<E> c1;
                 NumericCandidateStructure<E> c2, c3;
                 do {
@@ -161,8 +159,10 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
                 }
                 sample.clamp(0, 1);
                 evaluateAndUpdate(sample);
+
                 if (sample.getCost() < c.getCost()) {
                     candidates.set(candidates.indexOf(c), sample);
+
                     if (sample.getCost() < bestCandidate.getCost()) {
                         bestCandidate = sample;
                     }
