@@ -29,11 +29,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import no.hials.jiop.Algorithm;
+import no.hials.jiop.Evaluator;
 import no.hials.jiop.util.NumericCandidateStructure;
 
 /**
  *
  * @author Lars Ivar Hatledal
+ * @param <E>
  */
 public class ArtificialBeeColony<E> extends Algorithm<E> {
 
@@ -71,7 +73,6 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
     @Override
     protected NumericCandidateStructure<E> singleIteration() {
         final List<NumericCandidateStructure<E>> bestCandidates = colony.subList(0, numOutlookers);
-        
         final List<NumericCandidateStructure<E>> newPop = new ArrayList<>(size);
         for (final NumericCandidateStructure<E> c : bestCandidates) {
             int neighborHoodSize = size / (numOutlookers);
@@ -79,8 +80,7 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
             neighborhood.add(c);
             int remaining = neighborHoodSize - 1;
             for (int i = 0; i < remaining; i++) {
-                NumericCandidateStructure<E> neighbor = c.neighbor(c.getCost() / 5);
-                neighbor.setCost(getEvaluator().evaluate(neighbor.getElements()));
+                NumericCandidateStructure<E> neighbor = (NumericCandidateStructure<E>) evaluateAndUpdate(c.neighbor(c.getCost() / 5));
                 neighborhood.add(neighbor);
             }
             Collections.sort(neighborhood);

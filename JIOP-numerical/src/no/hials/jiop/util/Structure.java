@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, LarsIvar
+ * Copyright (c) 2014, Aalesund University College
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,6 @@ public interface Structure<E> extends Serializable, Iterable {
     public int size();
 
     public void randomize();
-    
 
     public String toString(String delimiter);
 

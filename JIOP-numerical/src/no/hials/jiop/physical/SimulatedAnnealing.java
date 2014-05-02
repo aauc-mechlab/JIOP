@@ -36,7 +36,7 @@ import no.hials.jiop.util.NumericCandidateStructure;
  */
 public class SimulatedAnnealing<E> extends Algorithm<E> {
 
-    private final double startingTemperature;
+    private double startingTemperature;
     private double temperature, alpha;
     private NumericCandidateStructure current, bestCandidate;
 
@@ -62,8 +62,7 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
 
     @Override
     protected NumericCandidateStructure<E> singleIteration() {
-        NumericCandidateStructure<E> newSample = current.neighbor(bestCandidate.getCost() / 5);
-        newSample.setCost(getEvaluator().evaluate(newSample.getElements()));
+        NumericCandidateStructure<E> newSample = (NumericCandidateStructure<E>) evaluateAndUpdate(current.neighbor(0.01));
         if (doAccept(current, newSample)) {
             current = (NumericCandidateStructure<E>) copy(newSample);
         }
@@ -71,7 +70,7 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
             bestCandidate = (NumericCandidateStructure<E>) copy(newSample);
         }
         temperature *= alpha;
-        return (NumericCandidateStructure) copy(bestCandidate);
+        return (NumericCandidateStructure<E>) copy(bestCandidate);
     }
 
     /**
@@ -100,9 +99,20 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
 //    public DoubleArray getFreeParameters() {
 //        return new DoubleArray(startingTemperature, alpha);
 //    }
-//
-//    @Override
-//    protected CandidateStructure singleIteration() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
+
+    public double getStartingTemperature() {
+        return startingTemperature;
+    }
+
+    public void setStartingTemperature(double startingTemperature) {
+        this.startingTemperature = startingTemperature;
+    }
+
+    public double getAlpha() {
+        return alpha;
+    }
+
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
 }

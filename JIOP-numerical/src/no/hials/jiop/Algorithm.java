@@ -42,7 +42,7 @@ import org.jfree.data.xy.XYSeries;
  */
 public abstract class Algorithm<E> implements Serializable {
 
-    private final String name;
+    private String name;
     private Evaluator<E> evaluator;
     private final Class<?> clazz;
 
@@ -51,17 +51,30 @@ public abstract class Algorithm<E> implements Serializable {
     protected final Random rng = new Random();
 
     public Algorithm(Class<?> clazz, String name) {
+        this(clazz, null, name);
+    }
+
+    public Algorithm(Class<?> clazz, Evaluator<E> evaluator, String name) {
         this.name = name;
         this.clazz = clazz;
+        this.evaluator = evaluator;
         this.timeSeries = new XYSeries(name);
+    }
+
+    public double evaluate(CandidateStructure<E> candidate) {
+        return getEvaluator().evaluate(candidate.getElements());
+    }
+
+    public CandidateStructure<E> evaluateAndUpdate(CandidateStructure<E> candidate) {
+        candidate.setCost(getEvaluator().evaluate(candidate.getElements()));
+        return candidate;
     }
 
     public CandidateStructure<E> random() {
         try {
             CandidateStructure<E> newInstance = newCandidate();
             newInstance.randomize();
-            newInstance.setCost(evaluator.evaluate(newInstance.getElements()));
-            return newInstance;
+            return evaluateAndUpdate(newInstance);
         } catch (SecurityException | IllegalArgumentException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -73,8 +86,7 @@ public abstract class Algorithm<E> implements Serializable {
         try {
             Constructor<?> constructor = clazz.getConstructor(int.class);
             CandidateStructure<E> newInstance = (CandidateStructure) constructor.newInstance(getEvaluator().getDimension());
-            newInstance.setCost(getEvaluator().evaluate(newInstance.getElements()));
-            return newInstance;
+            return evaluateAndUpdate(newInstance);
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -219,6 +231,10 @@ public abstract class Algorithm<E> implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getDimension() {

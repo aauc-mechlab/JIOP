@@ -31,7 +31,10 @@ import java.util.List;
 import no.hials.jiop.evolutionary.DifferentialEvolution;
 import no.hials.jiop.physical.SimulatedAnnealing;
 import no.hials.jiop.swarm.ArtificialBeeColony;
+import no.hials.jiop.swarm.MultiSwarmOptimization;
+import no.hials.jiop.swarm.ParticleSwarmOptimization;
 import no.hials.jiop.util.DoubleArrayCandidateStructure;
+import no.hials.jiop.util.DoubleArrayParticleStructure;
 import no.hials.jiop.util.FloatArrayCandidateStructure;
 import no.hials.utilities.NormUtil;
 import org.jfree.chart.ChartFactory;
@@ -49,7 +52,7 @@ public class Main {
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
-        final int dim = 5;
+        final int dim = 15;
         Evaluator<float[]> feval = new Evaluator<float[]>() {
 
             @Override
@@ -92,29 +95,27 @@ public class Main {
         XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
         List<Algorithm<double[]>> algorithms = new ArrayList<>();
 
-        algorithms.add(new ArtificialBeeColony(DoubleArrayCandidateStructure.class, 60, 0.25));
+        algorithms.add(new DifferentialEvolution(DoubleArrayCandidateStructure.class, 30, 0.9, 0.7, false));
+        algorithms.add(new DifferentialEvolution(DoubleArrayCandidateStructure.class, 30, 0.9, 0.7, true));
+        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleStructure.class, 40, false));
+        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleStructure.class, 40, true));
+        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleStructure.class, 5, 30, false));
+        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleStructure.class, 5, 30, true));
+        algorithms.add(new ArtificialBeeColony(DoubleArrayCandidateStructure.class, 60, 0.2));
         algorithms.add(new AmoebaOptimization(DoubleArrayCandidateStructure.class, 50));
         algorithms.add(new SimulatedAnnealing(DoubleArrayCandidateStructure.class, 100, 0.995));
-        
-        algorithms.add(new DifferentialEvolution(FloatArrayCandidateStructure.class, 30, 0.9, 0.7, false));
-        algorithms.add(new DifferentialEvolution(FloatArrayCandidateStructure.class, 30, 0.9, 0.7, true));
-//        algorithms.add(new ParticleSwarmOptimization(40, false));
-//        algorithms.add(new ParticleSwarmOptimization(40, true));
-//        algorithms.add(new MultiSwarmOptimization(5, 30, false));
-//        algorithms.add(new MultiSwarmOptimization(5, 30, true));
 
 //        algorithms.add(new BacterialForagingOptimization(100, false));
 //        algorithms.add(new BacterialForagingOptimization(100, true));
-
         int i = 0;
         for (Algorithm alg : algorithms) {
-            if (i++ >= 3) {
-                alg.setEvaluator(feval);
-            } else {
-                alg.setEvaluator(deval);
-            }
+//            if (i++ >= 3) {
+//                alg.setEvaluator(feval);
+//            } else {
+            alg.setEvaluator(deval);
+//            }
             alg.init();
-            SolutionData<double[]> compute = alg.compute(0d, 100l);
+            SolutionData<double[]> compute = alg.compute(0d, 1000l);
             System.out.println(alg.toString() + "\n" + compute);
             xySeriesCollection.addSeries(alg.getSeries());
         }

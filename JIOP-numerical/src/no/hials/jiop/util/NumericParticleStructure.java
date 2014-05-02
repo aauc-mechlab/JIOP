@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,15 +23,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package no.hials.jiop.util;
 
 /**
  *
  * @author LarsIvar
- * @param <E>
  */
-public interface NumericCandidateStructure<E> extends NumericStructure<E>, CandidateStructure<E> {
-
-    public NumericCandidateStructure<E> neighbor(double proximity);
+public interface NumericParticleStructure<E> extends NumericCandidateStructure<E>{
     
+    public NumericCandidateStructure<E> getLocalBest();
+    public void setLocalBest(NumericCandidateStructure<E> localBest);
+    public NumericStructure<E> getVelocity();
 }
