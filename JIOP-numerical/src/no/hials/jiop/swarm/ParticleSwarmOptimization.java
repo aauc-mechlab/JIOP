@@ -27,6 +27,8 @@
 //
 //import java.util.ArrayList;
 //import java.util.Collections;
+//import java.util.Iterator;
+//import java.util.List;
 //import java.util.concurrent.ExecutionException;
 //import java.util.concurrent.ExecutorCompletionService;
 //import java.util.concurrent.ExecutorService;
@@ -34,15 +36,17 @@
 //import java.util.logging.Level;
 //import java.util.logging.Logger;
 //import no.hials.jiop.Algorithm;
-//import no.hials.jiop.Candidate;
-//import no.hials.utilities.DoubleArray;
-//import no.hials.utilities.NormUtil;
+//import no.hials.jiop.util.CandidateStructure;
+//import no.hials.jiop.util.DoubleArrayCandidateStructure;
+//import no.hials.jiop.util.DoubleArrayStructure;
+//import no.hials.jiop.util.NumericCandidateStructure;
+//import no.hials.jiop.util.NumericStructure;
 //
 ///**
 // *
 // * @author Lars Ivar Hatledal
 // */
-//public class ParticleSwarmOptimization extends Algorithm {
+//public class ParticleSwarmOptimization<E> extends Algorithm<E> {
 //
 //    private final Object mutex = new Object();
 //    private final ExecutorService pool = Executors.newCachedThreadPool();
@@ -53,16 +57,16 @@
 //    public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, maxVel = 0.1;
 //
 //    private boolean multiCore;
-//    private Candidate bestCandidate;
+//    private NumericCandidateStructure<E> bestCandidate;
 //
-//    public ParticleSwarmOptimization(int size,  boolean multiCore) {
-//        super("Particle Swarm Optimization " + multiCore);
+//    public ParticleSwarmOptimization(Class<?> clazz, int size, boolean multiCore) {
+//        super(clazz, "Particle Swarm Optimization " + multiCore);
 //        this.size = size;
 //        this.multiCore = multiCore;
 //    }
 //
-//    public ParticleSwarmOptimization(int size, double omega, double c1, double c2, boolean multiCore) {
-//        this(size, multiCore);
+//    public ParticleSwarmOptimization(Class<?> clazz, int size, double omega, double c1, double c2, boolean multiCore) {
+//        this(clazz, size, multiCore);
 //        this.size = size;
 //        this.omega = omega;
 //        this.c1 = c1;
@@ -72,40 +76,42 @@
 //    @Override
 //    public void subInit() {
 //        this.swarm = new Swarm(size);
-//        this.bestCandidate = swarm.get(0).copy();
-//    }
-//
-//    @Override
-//    public void subInit(DoubleArray... seeds) {
-//        this.swarm = new Swarm(size - seeds.length);
-//        for (DoubleArray seed : seeds) {
-//            swarm.add(new Particle(seed, getEvaluator().evaluate(seed)));
-//        }
 //        Collections.sort(swarm);
-//        this.bestCandidate = swarm.get(0).copy();
+//        this.bestCandidate = (NumericCandidateStructure<E>) copy(swarm.get(0));
 //    }
 //
 //    @Override
-//    protected Candidate singleIteration() {
+//    public void subInit(List<E> seeds) {
+//        this.swarm = new Swarm(size - seeds.size());
+//        for (E seed : seeds) {
+//            swarm.add((NumericCandidateStructure<E>) newCandidate(seed));
+//        }
+//
+//        Collections.sort(swarm);
+//        this.bestCandidate = (NumericCandidateStructure<E>) copy(swarm.get(0));
+//    }
+//
+//    @Override
+//    protected NumericCandidateStructure<E> singleIteration() {
 //        if (multiCore) {
-//            for (final Particle particle : swarm) {
+//            for (final DoubleArrayParticleStructure particle : swarm) {
 //                completionService.submit(new Runnable() {
 //
 //                    @Override
 //                    public void run() {
 //                        for (int i = 0; i < getDimension(); i++) {
-//                            double li = particle.localBest.get(i);
-//                            double gi = bestCandidate.get(i);
-//                            double pi = particle.get(i);
-//                            double vi = particle.velocity.get(i);
+//                            Number li = particle.localBest.get(i);
+//                            Number gi = bestCandidate.get(i);
+//                            Number pi = particle.get(i);
+//                            Number vi = particle.velocity.get(i);
 //
-//                            double newVel = (omega * vi) + (rng.nextDouble() * c1 * (li - pi)) + (rng.nextDouble() * c2 * (gi - pi));
+//                            double newVel = (omega * vi.doubleValue()) + (rng.nextDouble() * c1 * (li.doubleValue() - pi.doubleValue())) + (rng.nextDouble() * c2 * (gi.doubleValue() - pi.doubleValue()));
 //
 //                            if (Math.abs(newVel) > maxVel) {
 //                                newVel = newVel > 0 ? maxVel : -maxVel;
 //                            }
 //
-//                            double newPos = pi + newVel;
+//                            double newPos = pi.doubleValue() + newVel;
 //                            if (newPos < 0) {
 //                                newPos = 0;
 //                            } else if (newPos > 1) {
@@ -114,7 +120,7 @@
 //                            particle.set(i, newPos);
 //                            particle.velocity.set(i, newVel);
 //                        }
-//                        double cost = getEvaluator().evaluate(particle);
+//                        double cost = getEvaluator().evaluate(particle.getElements());
 //                        particle.setCost(cost);
 //                        if (cost < particle.localBest.getCost()) {
 //                            particle.localBest = particle.copy();
@@ -128,7 +134,7 @@
 //                }, true);
 //
 //            }
-//            for (Particle p : swarm) {
+//            for (DoubleArrayParticleStructure p : swarm) {
 //                try {
 //                    completionService.take().get();
 //                } catch (InterruptedException | ExecutionException ex) {
@@ -136,7 +142,7 @@
 //                }
 //            }
 //        } else {
-//            for (Particle particle : swarm) {
+//            for (DoubleArrayParticleStructure particle : swarm) {
 //                for (int i = 0; i < getDimension(); i++) {
 //                    double li = particle.localBest.get(i);
 //                    double gi = bestCandidate.get(i);
@@ -168,7 +174,7 @@
 //                }
 //            }
 //        }
-//        return bestCandidate.copy();
+//        return (NumericCandidateStructure<E>) copy(bestCandidate);
 //    }
 //
 //    public double getOmega() {
@@ -203,56 +209,125 @@
 //        this.maxVel = maxVel;
 //    }
 //
-//    @Override
-//    public int getNumberOfFreeParameters() {
-//        return 4;
-//    }
-//
-//    @Override
-//    public void setFreeParameters(DoubleArray array) {
-//        this.omega = new NormUtil(1, 0, 1, 0.01).normalize(array.get(0));
-//        this.c1 = new NormUtil(1, 0, 2, 0.01).normalize(array.get(1));
-//        this.c2 = new NormUtil(1, 0, 2, 0.01).normalize(array.get(2));
-//        this.maxVel = new NormUtil(1, 0, 1, 0.0001).normalize(array.get(3));
-//    }
-//
-//    @Override
-//    public DoubleArray getFreeParameters() {
-//        return new DoubleArray(omega,c1,c2,maxVel);
-//    }
-//
-//    private class Swarm extends ArrayList<Particle> {
+////    @Override
+////    public int getNumberOfFreeParameters() {
+////        return 4;
+////    }
+////
+////    @Override
+////    public void setFreeParameters(DoubleArray array) {
+////        this.omega = new NormUtil(1, 0, 1, 0.01).normalize(array.get(0));
+////        this.c1 = new NormUtil(1, 0, 2, 0.01).normalize(array.get(1));
+////        this.c2 = new NormUtil(1, 0, 2, 0.01).normalize(array.get(2));
+////        this.maxVel = new NormUtil(1, 0, 1, 0.0001).normalize(array.get(3));
+////    }
+////
+////    @Override
+////    public DoubleArray getFreeParameters() {
+////        return new DoubleArray(omega,c1,c2,maxVel);
+////    }
+//    private class Swarm extends ArrayList<DoubleArrayParticleStructure> {
 //
 //        public Swarm(int size) {
 //            super(size);
 //            for (int i = 0; i < size; i++) {
-//                DoubleArray random = Candidate.random(getDimension());
-//                add(new Particle(random, getEvaluator().evaluate(random)));
+//                add(new DoubleArrayParticleStructure((NumericCandidateStructure<double[]>) random()));
 //            }
 //            Collections.sort(this);
 //        }
 //    }
 //
-//    private class Particle extends Candidate {
+//    public class NumericParticleStructure<E> implements NumericCandidateStructure<E> {
 //
-//        public Candidate localBest;
-//        public DoubleArray velocity;
+//        public DoubleArrayCandidateStructure localBest;
+//        public DoubleArrayStructure velocity;
 //
-//        public Particle(DoubleArray array, double cost) {
-//            super(array, cost);
-//            this.localBest = super.copy();
-//            this.velocity = new DoubleArray(length);
-//        }
-//
-//        public Particle(Particle particle) {
-//            super(particle);
-//            this.localBest = particle.localBest.copy();
-//            this.velocity = particle.velocity.copy();
+//        public DoubleArrayParticleStructure(NumericCandidateStructure<double[]> candidate) {
+//            super(candidate.getElements());
+//            this.velocity = new DoubleArrayStructure(candidate.size());
+//            this.velocity.randomize();
+//            this.localBest = copy(candidate);
 //        }
 //
 //        @Override
-//        public Particle copy() {
-//            return new Particle(this);
+//        public NumericCandidateStructure<E> neighbor(double proximity) {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //        }
+//
+//        @Override
+//        public NumericStructure plus(Number[] other) {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public NumericStructure minus(Number[] other) {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public NumericStructure scale(Number scalar) {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public Number[] getValues() {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public void clamp(Number min, Number max) {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public void set(int index, Number value) {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public Number get(int index) {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public E getElements() {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public int size() {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public void randomize() {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public String toString(String delimiter) {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public Iterator iterator() {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public double getCost() {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public void setCost(double cost) {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
+//        @Override
+//        public int compareTo(CandidateStructure o) {
+//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        }
+//
 //    }
 //}

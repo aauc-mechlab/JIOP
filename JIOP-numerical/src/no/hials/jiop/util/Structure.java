@@ -23,7 +23,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
 package no.hials.jiop.util;
 
 import java.io.Serializable;
@@ -33,11 +32,17 @@ import java.io.Serializable;
  * @author LarsIvar
  * @param <E>
  */
-public interface Structure<E> extends Serializable, Iterable{
-    
+public interface Structure<E> extends Serializable, Iterable {
+
     public Object get(int index);
+
     public E getElements();
+
     public int size();
-    public String toString(String delimiter);
+
+    public void randomize();
     
+
+    public String toString(String delimiter);
+
 }

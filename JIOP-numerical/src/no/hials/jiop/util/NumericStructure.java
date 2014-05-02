@@ -38,7 +38,7 @@ public interface NumericStructure<E> extends Structure<E> {
 
     public NumericStructure scale(Number scalar);
 
-    public Number[] getValues();
+//    public Number[] getValues();
 
     public void clamp(Number min, Number max);
 

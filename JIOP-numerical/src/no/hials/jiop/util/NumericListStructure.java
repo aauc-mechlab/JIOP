@@ -25,28 +25,32 @@
  */
 package no.hials.jiop.util;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 /**
  *
  * @author LarsIvar
  */
-public class DoubleArrayStructure implements NumericStructure<double[]> {
+public class NumericListStructure implements NumericStructure<List<Number>> {
 
     private final Random rng = new Random();
-    private final double[] elements;
+    private final List<Number> elements;
 
-    public DoubleArrayStructure(int length) {
-        this.elements = new double[length];
+    public NumericListStructure(int length) {
+        elements = new ArrayList<>(length);
     }
 
-    public DoubleArrayStructure(double[] elements) {
-        this.elements = elements.clone();
+    public NumericListStructure(double[] elements) {
+        this(elements.length);
+        for (double d : elements) {
+            this.elements.add(d);
+        }
     }
-    
-        @Override
+
+    @Override
     public void randomize() {
         for (int i = 0; i < size(); i++) {
             set(i, rng.nextDouble());
@@ -54,62 +58,57 @@ public class DoubleArrayStructure implements NumericStructure<double[]> {
     }
 
     @Override
-    public DoubleArrayStructure plus(Number[] other) {
+    public NumericListStructure plus(Number[] other) {
         double[] arr = new double[size()];
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = elements[i] + other[i].doubleValue();
+            arr[i] = elements.get(i).doubleValue() + other[i].doubleValue();
         }
-        return new DoubleArrayStructure(arr);
+        return new NumericListStructure(arr);
     }
 
     @Override
-    public DoubleArrayStructure minus(Number[] other) {
+    public NumericListStructure minus(Number[] other) {
         double[] arr = new double[size()];
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = elements[i] - other[i].doubleValue();
+            arr[i] = elements.get(i).doubleValue() - other[i].doubleValue();
         }
-        return new DoubleArrayStructure(arr);
+        return new NumericListStructure(arr);
     }
 
     @Override
-    public DoubleArrayStructure scale(Number scalar) {
+    public NumericListStructure scale(Number scalar) {
         double[] arr = new double[size()];
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = elements[i] * scalar.doubleValue();
+            arr[i] = elements.get(i).doubleValue() * scalar.doubleValue();
         }
-        return new DoubleArrayStructure(arr);
+        return new NumericListStructure(arr);
     }
 
     @Override
     public void clamp(Number min, Number max) {
-        for (int i = 0; i < elements.length; i++) {
-            double val = elements[i];
+        for (int i = 0; i < size(); i++) {
+            double val = elements.get(i).doubleValue();
             if (val < min.doubleValue()) {
-                elements[i] = min.doubleValue();
+                elements.set(i, min.doubleValue());
             } else if (val > max.doubleValue()) {
-                elements[i] = max.doubleValue();
+                elements.set(i, max.doubleValue());
             }
         }
     }
 
     @Override
-    public double[] getElements() {
-        return elements;
-    }
-
-    @Override
     public int size() {
-        return elements.length;
+        return elements.size();
     }
 
     @Override
     public Number get(int index) {
-        return elements[index];
+        return elements.get(index);
     }
 
     @Override
     public void set(int index, Number value) {
-        elements[index] = value.doubleValue();
+        elements.set(index, value.doubleValue());
     }
 
     @Override
@@ -131,7 +130,12 @@ public class DoubleArrayStructure implements NumericStructure<double[]> {
 
     @Override
     public String toString() {
-        return Arrays.toString(elements);
+        return elements.toString();
+    }
+
+    @Override
+    public List<Number> getElements() {
+       return elements;
     }
 
 }

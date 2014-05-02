@@ -38,6 +38,7 @@ import org.jfree.data.xy.XYSeries;
 /**
  *
  * @author Lars Ivar Hatledal
+ * @param <E>
  */
 public abstract class Algorithm<E> implements Serializable {
 
@@ -57,10 +58,10 @@ public abstract class Algorithm<E> implements Serializable {
 
     public CandidateStructure<E> random() {
         try {
-            CandidateStructure<E> newCandidate = newCandidate();
-            newCandidate.randomize();
-            evaluator.evaluate((E) newCandidate.getElements());
-            return newCandidate;
+            CandidateStructure<E> newInstance = newCandidate();
+            newInstance.randomize();
+            newInstance.setCost(evaluator.evaluate(newInstance.getElements()));
+            return newInstance;
         } catch (SecurityException | IllegalArgumentException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -71,32 +72,30 @@ public abstract class Algorithm<E> implements Serializable {
     public CandidateStructure<E> newCandidate() {
         try {
             Constructor<?> constructor = clazz.getConstructor(int.class);
-            CandidateStructure newInstance = (CandidateStructure) constructor.newInstance(getEvaluator().getDimension());
-            getEvaluator().evaluate((E) newInstance.getElements());
+            CandidateStructure<E> newInstance = (CandidateStructure) constructor.newInstance(getEvaluator().getDimension());
+            newInstance.setCost(getEvaluator().evaluate(newInstance.getElements()));
             return newInstance;
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
-    
+
     public CandidateStructure<E> newCandidate(E e) {
         try {
-            Constructor<?> constructor = clazz.getConstructor(e.getClass());
-            CandidateStructure newInstance = (CandidateStructure) constructor.newInstance(e);
-            newInstance.setCost(getEvaluator().evaluate((E) newInstance.getElements()));
+            Constructor<?> constructor = clazz.getConstructor(e.getClass(), double.class);
+            CandidateStructure<E> newInstance = (CandidateStructure) constructor.newInstance(e, getEvaluator().evaluate(e));
             return newInstance;
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
-    
-     public CandidateStructure<E> copy(CandidateStructure<E> candidate) {
+
+    public CandidateStructure<E> copy(CandidateStructure<E> candidate) {
         try {
-            Constructor<?> constructor = clazz.getConstructor(candidate.getElements().getClass());
-            CandidateStructure copy = (CandidateStructure) constructor.newInstance(candidate.getElements());
-            copy.setCost(candidate.getCost());
+            Constructor<?> constructor = clazz.getConstructor(candidate.getElements().getClass(), double.class);
+            CandidateStructure copy = (CandidateStructure) constructor.newInstance(candidate.getElements(), candidate.getCost());
             return copy;
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);

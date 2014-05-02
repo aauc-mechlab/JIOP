@@ -23,7 +23,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
 package no.hials.jiop.util;
 
 import java.util.Random;
@@ -44,19 +43,17 @@ public class FloatArrayCandidateStructure extends FloatArrayStructure implements
     public FloatArrayCandidateStructure(float[] elements) {
         super(elements);
     }
-
-    @Override
-    public void randomize() {
-        for (int i = 0; i < size(); i++) {
-            set(i, rng.nextFloat());
-        }
+    
+     public FloatArrayCandidateStructure(float[] elements, double cost) {
+        super(elements);
+        this.cost = cost;
     }
 
     @Override
     public FloatArrayCandidateStructure neighbor(double proximity) {
         float[] arr = new float[size()];
         for (int i = 0; i < arr.length; i++) {
-            float val = (float) (get(i).floatValue() + rng.nextDouble()* Math.abs(proximity - (-proximity)) + (-proximity));
+            float val = (float) (get(i).floatValue() + rng.nextDouble() * Math.abs(proximity - (-proximity)) + (-proximity));
             if (val < 0) {
                 val = 0;
             } else if (val > 1) {

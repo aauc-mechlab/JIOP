@@ -49,32 +49,30 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
     @Override
     public void subInit() {
         this.temperature = startingTemperature;
-        this.current = (NumericCandidateStructure) random();
-        this.bestCandidate = (NumericCandidateStructure) copy(current);
-    }
-
-    @Override
-    protected CandidateStructure<E> singleIteration() {
-        CandidateStructure<E> newSample = current.neighbor(bestCandidate.getCost() / 5);
-        newSample.setCost(getEvaluator().evaluate(newSample.getElements()));
-        if (doAccept(current, newSample)) {
-            current = (NumericCandidateStructure) copy(newSample);
-        }
-        if (newSample.getCost() < bestCandidate.getCost()) {
-            bestCandidate = (NumericCandidateStructure) copy(newSample);
-        }
-        temperature *= alpha;
-        return (NumericCandidateStructure) copy(bestCandidate);
+        this.current = (NumericCandidateStructure<E>) random();
+        this.bestCandidate = (NumericCandidateStructure<E>) copy(current);
     }
 
     @Override
     protected void subInit(List<E> seeds) {
         this.temperature = startingTemperature;
-        this.current = (NumericCandidateStructure) newCandidate(seeds.get(0));
-        this.bestCandidate = (NumericCandidateStructure) copy(current);
+        this.current = (NumericCandidateStructure<E>) newCandidate(seeds.get(0));
+        this.bestCandidate = (NumericCandidateStructure<E>) copy(current);
     }
 
-    
+    @Override
+    protected NumericCandidateStructure<E> singleIteration() {
+        NumericCandidateStructure<E> newSample = current.neighbor(bestCandidate.getCost() / 5);
+        newSample.setCost(getEvaluator().evaluate(newSample.getElements()));
+        if (doAccept(current, newSample)) {
+            current = (NumericCandidateStructure<E>) copy(newSample);
+        }
+        if (newSample.getCost() < bestCandidate.getCost()) {
+            bestCandidate = (NumericCandidateStructure<E>) copy(newSample);
+        }
+        temperature *= alpha;
+        return (NumericCandidateStructure) copy(bestCandidate);
+    }
 
     /**
      * Should we accept the new solution based on the Metropolis criteria?

@@ -34,5 +34,5 @@ public interface CandidateStructure<E> extends Structure<E>, Comparable<Candidat
     
     public double getCost();
     public void setCost(double cost);
-    public void randomize();    
+   
 }

@@ -27,6 +27,7 @@ package no.hials.jiop.util;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Random;
 
 /**
  *
@@ -34,6 +35,7 @@ import java.util.Iterator;
  */
 public class FloatArrayStructure implements NumericStructure<float[]> {
 
+    private final Random rng = new Random();
     private final float[] elements;
 
     public FloatArrayStructure(int length) {
@@ -42,6 +44,13 @@ public class FloatArrayStructure implements NumericStructure<float[]> {
 
     public FloatArrayStructure(float[] elements) {
         this.elements = elements.clone();
+    }
+
+    @Override
+    public void randomize() {
+        for (int i = 0; i < size(); i++) {
+            set(i, (float) rng.nextDouble());
+        }
     }
 
     @Override
@@ -84,14 +93,14 @@ public class FloatArrayStructure implements NumericStructure<float[]> {
         }
     }
 
-    @Override
-    public Number[] getValues() {
-        Float[] d = new Float[size()];
-        for (int i = 0; i < d.length; i++) {
-            d[i] = get(i).floatValue();
-        }
-        return d;
-    }
+//    @Override
+//    public Number[] getValues() {
+//        Float[] d = new Float[size()];
+//        for (int i = 0; i < d.length; i++) {
+//            d[i] = get(i).floatValue();
+//        }
+//        return d;
+//    }
 
     @Override
     public float[] getElements() {

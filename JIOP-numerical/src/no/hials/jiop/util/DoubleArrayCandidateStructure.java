@@ -44,11 +44,9 @@ public class DoubleArrayCandidateStructure extends DoubleArrayStructure implemen
         super(elements);
     }
 
-    @Override
-    public void randomize() {
-        for (int i = 0; i < size(); i++) {
-            set(i, rng.nextDouble());
-        }
+    public DoubleArrayCandidateStructure(double[] elements, double cost) {
+        super(elements);
+        this.cost = cost;
     }
 
     @Override
@@ -78,7 +76,7 @@ public class DoubleArrayCandidateStructure extends DoubleArrayStructure implemen
 
     @Override
     public int compareTo(CandidateStructure o) {
-        if (getCost() == getCost()) {
+        if (getCost() == o.getCost()) {
             return 0;
         } else if (getCost() < o.getCost()) {
             return -1;

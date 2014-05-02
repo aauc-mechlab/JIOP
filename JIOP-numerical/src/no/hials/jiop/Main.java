@@ -25,12 +25,12 @@
  */
 package no.hials.jiop;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import no.hials.jiop.evolutionary.DifferentialEvolution;
 import no.hials.jiop.physical.SimulatedAnnealing;
-import no.hials.jiop.util.CandidateStructure;
+import no.hials.jiop.swarm.ArtificialBeeColony;
 import no.hials.jiop.util.DoubleArrayCandidateStructure;
 import no.hials.jiop.util.FloatArrayCandidateStructure;
 import no.hials.utilities.NormUtil;
@@ -48,14 +48,28 @@ import org.jfree.ui.ApplicationFrame;
 public class Main {
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
-        Class<?> clazz = Class.forName("no.hials.jiop.util.DoubleArrayCandidateStructure");
-        Constructor<?> constructor = clazz.getConstructor(int.class);
-        CandidateStructure newInstance = (CandidateStructure) constructor.newInstance(3);
-        newInstance.randomize();
-        System.out.println(newInstance.toString(":"));
 
         final int dim = 5;
-        Evaluator<double[]> myEval = new Evaluator<double[]>() {
+        Evaluator<float[]> feval = new Evaluator<float[]>() {
+
+            @Override
+            public int getDimension() {
+                return dim;
+            }
+
+            @Override
+            public double evaluate(float[] elements) {
+                double cost = 0;
+                for (int i = 0; i < elements.length; i++) {
+                    double xi = new NormUtil(1, 0, 5, -5).normalize(elements[i]);
+                    cost += (xi * xi) - (10 * Math.cos(2 * Math.PI * xi)) + 10;
+                }
+
+                return cost;
+            }
+
+        };
+        Evaluator<double[]> deval = new Evaluator<double[]>() {
 
             @Override
             public int getDimension() {
@@ -76,24 +90,31 @@ public class Main {
         };
 
         XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
-        List<Algorithm> algorithms = new ArrayList<>();
+        List<Algorithm<double[]>> algorithms = new ArrayList<>();
 
-//        algorithms.add(new DifferentialEvolution(30, 0.9, 0.7, false));
-//        algorithms.add(new DifferentialEvolution(30, 0.9, 0.7, true));
+        algorithms.add(new ArtificialBeeColony(DoubleArrayCandidateStructure.class, 60, 0.25));
+        algorithms.add(new AmoebaOptimization(DoubleArrayCandidateStructure.class, 50));
+        algorithms.add(new SimulatedAnnealing(DoubleArrayCandidateStructure.class, 100, 0.995));
+        
+        algorithms.add(new DifferentialEvolution(FloatArrayCandidateStructure.class, 30, 0.9, 0.7, false));
+        algorithms.add(new DifferentialEvolution(FloatArrayCandidateStructure.class, 30, 0.9, 0.7, true));
 //        algorithms.add(new ParticleSwarmOptimization(40, false));
 //        algorithms.add(new ParticleSwarmOptimization(40, true));
 //        algorithms.add(new MultiSwarmOptimization(5, 30, false));
 //        algorithms.add(new MultiSwarmOptimization(5, 30, true));
-//        algorithms.add(new ArtificialBeeColony(30, 0.25));
-//        algorithms.add(new AmoebaOptimization(3));
-        algorithms.add(new SimulatedAnnealing(DoubleArrayCandidateStructure.class, 100, 0.995));
+
 //        algorithms.add(new BacterialForagingOptimization(100, false));
 //        algorithms.add(new BacterialForagingOptimization(100, true));
 
+        int i = 0;
         for (Algorithm alg : algorithms) {
-            alg.setEvaluator(myEval);
+            if (i++ >= 3) {
+                alg.setEvaluator(feval);
+            } else {
+                alg.setEvaluator(deval);
+            }
             alg.init();
-            SolutionData compute = alg.compute(0d, 100l);
+            SolutionData<double[]> compute = alg.compute(0d, 100l);
             System.out.println(alg.toString() + "\n" + compute);
             xySeriesCollection.addSeries(alg.getSeries());
         }
