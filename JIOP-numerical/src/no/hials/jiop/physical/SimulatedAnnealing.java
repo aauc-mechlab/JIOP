@@ -62,7 +62,8 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
 
     @Override
     protected NumericCandidateStructure<E> singleIteration() {
-        NumericCandidateStructure<E> newSample = (NumericCandidateStructure<E>) evaluateAndUpdate(current.neighbor(0.01));
+         double prox = rng.nextDouble()*Math.abs(0.2 - 0.00001) + 0.00001;
+        NumericCandidateStructure<E> newSample = (NumericCandidateStructure<E>) evaluateAndUpdate(current.neighbor(prox));
         if (doAccept(current, newSample)) {
             current = (NumericCandidateStructure<E>) copy(newSample);
         }

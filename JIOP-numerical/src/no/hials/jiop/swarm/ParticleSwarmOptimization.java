@@ -50,7 +50,7 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
 
     public int size;
     private Swarm swarm;
-    public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, maxVel = 0.1;
+    public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, maxVel = 0.5;
 
     private boolean multiCore;
     private NumericCandidateStructure<E> bestCandidate;

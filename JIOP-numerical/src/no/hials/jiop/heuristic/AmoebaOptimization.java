@@ -23,11 +23,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop;
+package no.hials.jiop.heuristic;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import no.hials.jiop.Algorithm;
 import no.hials.jiop.util.NumericCandidateStructure;
 
 /**

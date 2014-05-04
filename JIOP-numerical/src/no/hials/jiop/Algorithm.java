@@ -25,6 +25,13 @@
  */
 package no.hials.jiop;
 
+import no.hials.jiop.util.SolutionData;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -66,7 +73,7 @@ public abstract class Algorithm<E> implements Serializable {
         this.evaluator = evaluator;
         this.timeSeries = new XYSeries(name);
     }
-
+    
     public double evaluate(CandidateStructure<E> candidate) {
         return getEvaluator().evaluate(candidate.getElements());
     }
@@ -120,6 +127,7 @@ public abstract class Algorithm<E> implements Serializable {
         }
         return null;
     }
+    
 
     public final void init() {
         this.timeSeries = new XYSeries(name);
@@ -140,6 +148,15 @@ public abstract class Algorithm<E> implements Serializable {
     protected abstract void subInit();
 
     protected abstract void subInit(List<E> seeds);
+    
+     protected CompletionService<CandidateStructure<E>> getCompletionService() {
+        if (pool == null) {
+
+            pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            completionService = new ExecutorCompletionService(pool);
+        }
+        return completionService;
+    }
 
     public SolutionData compute(long timeOut) {
         CandidateStructure<E> solution = null;
@@ -157,14 +174,7 @@ public abstract class Algorithm<E> implements Serializable {
         return new SolutionData(solution, solution.getCost(), it, t);
     }
 
-    protected CompletionService<CandidateStructure<E>> getCompletionService() {
-        if (pool == null) {
-
-            pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-            completionService = new ExecutorCompletionService(pool);
-        }
-        return completionService;
-    }
+   
 
     public SolutionData compute(double error, long timeOut) {
         CandidateStructure<E> solution = null;
@@ -198,7 +208,6 @@ public abstract class Algorithm<E> implements Serializable {
 
     public SolutionData compute(int iterations, long timeOut) {
         CandidateStructure<E> solution = null;
-        long t;
         long t0 = System.currentTimeMillis();
         int it = 0;
         do {
@@ -206,10 +215,38 @@ public abstract class Algorithm<E> implements Serializable {
             double x = (double) (System.currentTimeMillis() - t0) / 1000;
             double y = solution.getCost();
             timeSeries.add(x, y);
-        } while (((t = System.currentTimeMillis() - t0) < timeOut) && (it++ < iterations));
+        } while (((System.currentTimeMillis() - t0) < timeOut) && (it++ < iterations));
 
         return new SolutionData(solution, solution.getCost(), it, System.currentTimeMillis() - t0);
     }
+    
+    
+//    /**
+//     * Writes the MLHistory data to file. If the directory does not exist, a new
+//     * one will be created.
+//     *
+//     * @param dir the directory
+//     * @param fileName the name of the file
+//     */
+//    public void dumpHistoryToFile(String dir, String fileName) {
+//        File file = new File(dir);
+//        if (!file.exists()) {
+//            file.mkdir();
+//        }
+//        StringBuilder sb = new StringBuilder();
+//        try (
+//                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dir + "//" + fileName)))) {
+//            for (int i = 0; i < series; i++) {
+//                sb.append(history.getIterations()[i]).append("\t").append(history.getTimestamps()[i]).append("\t").append(history.getCosts()[i]).append("\n");
+//            }
+//            bw.write(sb.toString());
+//            bw.flush();
+//        } catch (FileNotFoundException ex) {
+//            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (IOException ex) {
+//            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
 
 //    public void optimizeFreeParameters(double error, long timeOut) {
 //        DoubleArray freeParameters = getFreeParameters();

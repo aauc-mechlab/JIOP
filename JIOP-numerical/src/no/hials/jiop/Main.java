@@ -25,12 +25,15 @@
  */
 package no.hials.jiop;
 
+import no.hials.jiop.util.SolutionData;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import no.hials.jiop.evolutionary.DifferentialEvolution;
+import no.hials.jiop.heuristic.AmoebaOptimization;
 import no.hials.jiop.physical.SimulatedAnnealing;
 import no.hials.jiop.swarm.ArtificialBeeColony;
+import no.hials.jiop.swarm.BacterialForagingOptimization;
 import no.hials.jiop.swarm.MultiSwarmOptimization;
 import no.hials.jiop.swarm.ParticleSwarmOptimization;
 import no.hials.jiop.util.DoubleArrayBacteriaStructure;
@@ -57,22 +60,20 @@ public class Main {
 
         algorithms.add(new DifferentialEvolution(DoubleArrayCandidateStructure.class, 30, 0.9, 0.7, false));
         algorithms.add(new DifferentialEvolution(DoubleArrayCandidateStructure.class, 30, 0.9, 0.7, true));
-
         algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleStructure.class, 40, false));
         algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleStructure.class, 40, true));
         algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleStructure.class, 5, 30, false));
         algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleStructure.class, 5, 30, true));
         algorithms.add(new ArtificialBeeColony(DoubleArrayCandidateStructure.class, 60, 0.2));
         algorithms.add(new AmoebaOptimization(DoubleArrayCandidateStructure.class, 50));
-        algorithms.add(new SimulatedAnnealing(DoubleArrayCandidateStructure.class, 100, 0.995));
-
+        algorithms.add(new SimulatedAnnealing(DoubleArrayCandidateStructure.class, 20, 0.995));
         algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaStructure.class, 100, false));
         algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaStructure.class, 100, true));
 
         for (Algorithm alg : algorithms) {
-            alg.setEvaluator(new ExampleEvaluator(10));
+            alg.setEvaluator(new ExampleEvaluator(5));
             alg.init();
-            SolutionData<double[]> compute = alg.compute(0d, 1000l);
+            SolutionData<double[]> compute = alg.compute(0d, 100l);
             System.out.println(alg.toString() + "\n" + compute);
             xySeriesCollection.addSeries(alg.getSeries());
         }
@@ -86,14 +87,6 @@ public class Main {
             frame.setVisible(true);
             frame.pack();
         }
-
-        ApplicationFrame frame = new ApplicationFrame("");
-        final JFreeChart chart = ChartFactory.createXYLineChart("", "Time[s]", "Cost", xySeriesCollection);
-        final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
-        frame.setContentPane(chartPanel);
-        frame.setVisible(true);
-        frame.pack();
     }
 
     public static class ExampleEvaluator implements Evaluator<double[]> {
