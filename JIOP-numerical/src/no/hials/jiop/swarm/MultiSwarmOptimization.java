@@ -47,15 +47,13 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
     public int numSwarms, numParticles;
     public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, c3 = 0.3645, maxVel = 0.1;
 
-    private NumericCandidate<E> bestCandidate;
-
     boolean multiCore = false;
 
     public MultiSwarmOptimization(Class<?> clazz, int numSwarms, int numParticles, boolean multiCore) {
         this(clazz, numSwarms, numParticles, null, multiCore);
     }
-    
-     public MultiSwarmOptimization(Class<?> clazz, int numSwarms, int numParticles, Evaluator<E> evalutor, boolean multiCore) {
+
+    public MultiSwarmOptimization(Class<?> clazz, int numSwarms, int numParticles, Evaluator<E> evalutor, boolean multiCore) {
         super(clazz, evalutor, "Multi Swarm Optimization " + multiCore);
         this.numSwarms = numSwarms;
         this.numParticles = numParticles;
@@ -63,8 +61,8 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
     }
 
     @Override
-    public void subInit() {
-        this.bestCandidate = null;
+    public Candidate<E> subInit() {
+      Candidate<E> bestCandidate = null;
         this.swarms = new ArrayList<>(numSwarms);
         for (int i = 0; i < numSwarms; i++) {
             Swarm swarm = new Swarm(numParticles);
@@ -77,15 +75,17 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
             }
             swarms.add(swarm);
         }
+        return bestCandidate;
     }
 
     @Override
-    public void subInit(List<E> seeds) {
-        subInit();
+    public Candidate<E> subInit(List<E> seeds) {
+        Candidate<E> bestCandidate = subInit();
         double cost = getEvaluator().evaluate(seeds.get(0));
         if (cost < bestCandidate.getCost()) {
-            this.bestCandidate = (NumericCandidate<E>) newCandidate(seeds.get(0)).copy();
+            bestCandidate = newCandidate(seeds.get(0));
         }
+        return bestCandidate;
     }
 
     @Override
@@ -97,7 +97,7 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
                         for (int i = 0; i < getDimension(); i++) {
                             double li = particle.getLocalBest().get(i).doubleValue();
                             double si = swarm.swarmBest.get(i).doubleValue();
-                            double gi = bestCandidate.get(i).doubleValue();
+                            double gi = ((NumericCandidate<E>) getBestCandidate()).get(i).doubleValue();
                             double pi = particle.get(i).doubleValue();
                             double vi = particle.getVelocityAt(i).doubleValue();
 
@@ -127,11 +127,8 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
                         if (cost < swarm.swarmBest.getCost()) {
                             swarm.swarmBest = (ParticleCandidate<E>) (particle).copy();
                         }
-                        synchronized (this) {
-                            if (cost < bestCandidate.getCost()) {
-                                bestCandidate = (NumericCandidate<E>) (particle).copy();
-                            }
-                        }
+                         setBestCandidateIfBetter(particle);
+
                     }
                 }, null);
             }
@@ -149,7 +146,7 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
                     for (int i = 0; i < getDimension(); i++) {
                         double li = particle.getLocalBest().get(i).doubleValue();
                         double si = swarm.swarmBest.get(i).doubleValue();
-                        double gi = bestCandidate.get(i).doubleValue();
+                        double gi = ((NumericCandidate<E>) getBestCandidate()).get(i).doubleValue();
                         double pi = particle.get(i).doubleValue();
                         double vi = particle.getVelocityAt(i).doubleValue();
 
@@ -179,16 +176,28 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
                     if (cost < swarm.swarmBest.getCost()) {
                         swarm.swarmBest = (ParticleCandidate<E>) (particle).copy();
                     }
-
-                    if (cost < bestCandidate.getCost()) {
-                        bestCandidate = (NumericCandidate<E>) (particle).copy();
-                    }
-
+                    setBestCandidateIfBetter(particle);
                 }
             }
         }
-        return (bestCandidate).copy();
+        return getBestCandidate();
     }
+//
+//    private Candidate<E> getBestFromAllSwarms() {
+//        Candidate<E> bestCandidate = null;
+//
+//        for (Swarm swarm : swarms) {
+//            if (bestCandidate == null) {
+//                bestCandidate = (swarm.get(0));
+//            } else {
+//                if (swarm.get(0).getCost() < bestCandidate.getCost()) {
+//                    bestCandidate = (swarm.get(0));
+//                }
+//            }
+//            swarms.add(swarm);
+//        }
+//        return bestCandidate;
+//    }
 
 //    @Override
 //    public int getNumberOfFreeParameters() {
@@ -215,7 +224,7 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
         public Swarm(int size) {
             super(size);
             for (int i = 0; i < size; i++) {
-                add((ParticleCandidate<E>)random());
+                add((ParticleCandidate<E>) newCandidate());
             }
             Collections.sort(this);
             swarmBest = (ParticleCandidate<E>) (get(0).copy());

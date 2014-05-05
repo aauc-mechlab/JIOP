@@ -23,21 +23,21 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.util;
+package no.hials.jiop.candidates;
 import no.hials.jiop.candidates.Candidate;
 
 /**
  * 
  * @author Lars Ivar Hatledal
  */
-public class SolutionData<E> {
+public class CandidateSolution<E> {
 
     public final long nano;
     public final double cost;
     public final int iterations;
     public final Candidate<E>  solution;
 
-    public SolutionData(Candidate<E>  solution, double cost, int iterations, long nano) {
+    public CandidateSolution(Candidate<E>  solution, double cost, int iterations, long nano) {
         this.cost = cost;
         this.nano = nano;
         this.solution = solution;

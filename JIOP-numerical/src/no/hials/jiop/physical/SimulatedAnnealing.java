@@ -38,7 +38,7 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
 
     private double startingTemperature;
     private double temperature, alpha;
-    private Candidate<E> current, bestCandidate;
+    private Candidate<E> current;
 
     public SimulatedAnnealing(Class<?> clazz, double startingTemperature, double alpha) {
         super(clazz, "Simulated Annealing");
@@ -47,31 +47,28 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
     }
 
     @Override
-    public void subInit() {
+    public Candidate<E> subInit() {
         this.temperature = startingTemperature;
-        this.current = (NumericCandidate<E>) random();
-        this.bestCandidate = (NumericCandidate<E>) (current).copy();
+        this.current = (NumericCandidate<E>) newCandidate();
+        return current;
     }
 
     @Override
-    protected void subInit(List<E> seeds) {
+    protected Candidate<E> subInit(List<E> seeds) {
         this.temperature = startingTemperature;
         this.current = newCandidate(seeds.get(0));
-        this.bestCandidate =  (current).copy();
+        return current;
     }
 
     @Override
     protected Candidate<E> singleIteration() {
-        double prox = rng.nextDouble() * Math.abs(0.2 - 0.00001) + 0.00001;
+        double prox = rng.nextDouble() * Math.abs(0.5 - 0.00001) + 0.00001;
         Candidate<E> newSample = evaluateAndUpdate(current.neighbor(prox));
         if (doAccept(current, newSample)) {
-            current = (NumericCandidate<E>) (newSample);
-        }
-        if (newSample.getCost() < bestCandidate.getCost()) {
-            bestCandidate = (NumericCandidate<E>) (newSample);
+            current = newSample;
         }
         temperature *= alpha;
-        return bestCandidate;
+        return newSample;
     }
 
     /**

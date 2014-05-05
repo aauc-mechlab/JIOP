@@ -36,9 +36,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.hials.jiop.candidates.GeneralCandidate;
 import no.hials.jiop.candidates.Candidate;
-import no.hials.jiop.util.SolutionData;
+import no.hials.jiop.candidates.CandidateSolution;
 import org.jfree.data.xy.XYSeries;
 
 /**
@@ -57,6 +56,8 @@ public abstract class Algorithm<E> implements Serializable {
 
     private ExecutorService pool;
     private ExecutorCompletionService completionService;
+
+    private Candidate<E> bestCandidate;
 
     public Algorithm(Class<?> clazz, String name) {
         this(clazz, null, name);
@@ -94,26 +95,8 @@ public abstract class Algorithm<E> implements Serializable {
     }
 
     /**
-     * Creates and returns a random candidate. Uses reflection to construct a
-     * new instance of the template class
-     *
-     * @return a new Candidate instance initialized with random values
-     */
-    public Candidate<E> random() {
-        try {
-            Candidate<E> newInstance = newCandidate();
-//            newInstance.randomize();
-            return evaluateAndUpdate(newInstance);
-        } catch (SecurityException | IllegalArgumentException ex) {
-            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return null;
-    }
-
-    /**
-     * Creates and returns a new candidate. Uses reflection to construct a
-     * new instance of the template class
+     * Creates and returns a new candidate. Uses reflection to construct a new
+     * instance of the template class
      *
      * @return a new Candidate instance initialized with random values
      */
@@ -121,7 +104,7 @@ public abstract class Algorithm<E> implements Serializable {
         try {
             Constructor<?> constructor = templateClass.getConstructor(int.class);
             Candidate<E> newInstance = (Candidate) constructor.newInstance(getEvaluator().getDimension());
-            return newInstance;
+            return evaluateAndUpdate(newInstance);
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -139,20 +122,9 @@ public abstract class Algorithm<E> implements Serializable {
         return null;
     }
 
-//    public Candidate<E> copy(Candidate<E> candidate) {
-//        try {
-//            Constructor<?> constructor = templateClass.getConstructor(candidate.getElements().getClass(), double.class);
-//            Candidate copy = (Candidate) constructor.newInstance(candidate.getElements(), candidate.getCost());
-//            return copy;
-//        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-//            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return null;
-//    }
-
     public final void init() {
         this.timeSeries = new XYSeries(name);
-        subInit();
+        setBestCandidateIfBetter(subInit());
     }
 
     public final void init(List<E> seeds) {
@@ -160,83 +132,92 @@ public abstract class Algorithm<E> implements Serializable {
             init();
         } else {
             this.timeSeries = new XYSeries(name);
-            subInit(seeds);
+            setBestCandidateIfBetter(subInit(seeds));
         }
     }
 
+    public synchronized Candidate<E> getBestCandidate() {
+        return bestCandidate.copy();
+    }
+
+    public synchronized void setBestCandidateIfBetter(Candidate<E> candidate) {
+        if (bestCandidate == null) {
+            bestCandidate = candidate;
+        } else {
+            if (candidate.getCost() < bestCandidate.getCost()) {
+                this.bestCandidate = candidate.copy();
+            }
+        }
+    }
+
+    protected abstract Candidate<E> subInit();
+
+    protected abstract Candidate<E> subInit(List<E> seeds);
+
     protected abstract Candidate<E> singleIteration();
-
-    protected abstract void subInit();
-
-    protected abstract void subInit(List<E> seeds);
 
     protected CompletionService<Candidate<E>> getCompletionService() {
         if (pool == null) {
-
             pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             completionService = new ExecutorCompletionService(pool);
         }
         return completionService;
     }
 
-    public SolutionData compute(long timeOut) {
-        Candidate<E> solution = null;
+    public CandidateSolution compute(long timeOut) {
         long t0 = System.currentTimeMillis();
         long t;
         int it = 0;
         do {
-            solution = singleIteration();
+            setBestCandidateIfBetter(singleIteration().copy());
             double x = (double) (System.currentTimeMillis() - t0) / 1000;
-            double y = solution.getCost();
+            double y = getBestCandidate().getCost();
             timeSeries.add(x, y);
             it++;
         } while ((t = System.currentTimeMillis() - t0) < timeOut);
 
-        return new SolutionData(solution, solution.getCost(), it, t);
+        return new CandidateSolution(getBestCandidate(), getBestCandidate().getCost(), it, t);
     }
 
-    public SolutionData compute(double error, long timeOut) {
-        Candidate<E> solution = null;
+    public CandidateSolution compute(double error, long timeOut) {
         long t;
         long t0 = System.currentTimeMillis();
         int it = 0;
         do {
-            solution = singleIteration();
+            setBestCandidateIfBetter(singleIteration().copy());
             double x = (double) (System.currentTimeMillis() - t0) / 1000;
-            double y = solution.getCost();
+            double y = getBestCandidate().getCost();
             timeSeries.add(x, y);
             it++;
-        } while (((t = System.currentTimeMillis() - t0) < timeOut) && (solution.getCost() > error));
+        } while (((t = System.currentTimeMillis() - t0) < timeOut) && (getBestCandidate().getCost() > error));
 
-        return new SolutionData(solution, solution.getCost(), it, t);
+        return new CandidateSolution(getBestCandidate(), getBestCandidate().getCost(), it, t);
     }
 
-    public SolutionData compute(int iterations) {
-        Candidate<E> solution = null;
+    public CandidateSolution compute(int iterations) {
         long t0 = System.currentTimeMillis();
         int it = 0;
         do {
-            solution = singleIteration();
+            setBestCandidateIfBetter(singleIteration().copy());
             double x = (double) (System.currentTimeMillis() - t0) / 1000;
-            double y = solution.getCost();
+            double y = getBestCandidate().getCost();
             timeSeries.add(x, y);
         } while (it++ < iterations);
 
-        return new SolutionData(solution, solution.getCost(), it, System.currentTimeMillis() - t0);
+        return new CandidateSolution(getBestCandidate(), getBestCandidate().getCost(), it, System.currentTimeMillis() - t0);
     }
 
-    public SolutionData compute(int iterations, long timeOut) {
-        Candidate<E> solution = null;
+    public CandidateSolution compute(int iterations, long timeOut) {
         long t0 = System.currentTimeMillis();
         int it = 0;
         do {
-            solution = singleIteration();
+            setBestCandidateIfBetter(singleIteration().copy());
             double x = (double) (System.currentTimeMillis() - t0) / 1000;
-            double y = solution.getCost();
+            double y = getBestCandidate().getCost();
             timeSeries.add(x, y);
         } while (((System.currentTimeMillis() - t0) < timeOut) && (it++ < iterations));
 
-        return new SolutionData(solution, solution.getCost(), it, System.currentTimeMillis() - t0);
+        return new CandidateSolution(getBestCandidate(), getBestCandidate().getCost(), it, System.currentTimeMillis() - t0);
     }
 
 //    /**

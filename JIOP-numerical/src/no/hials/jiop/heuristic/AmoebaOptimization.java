@@ -54,18 +54,20 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
     }
 
     @Override
-    public void subInit() {
+    public Candidate<E> subInit() {
         this.candidates = new Amoeba(size);
         Collections.sort(candidates);
+        return candidates.get(0);
     }
 
     @Override
-    public void subInit(List<E> seeds) {
+    public Candidate<E> subInit(List<E> seeds) {
         this.candidates = new Amoeba(size - seeds.size());
         for (E seed : seeds) {
             candidates.add((NumericCandidate< E>) newCandidate(seed));
         }
         Collections.sort(candidates);
+        return candidates.get(0);
     }
 
     @Override
@@ -228,7 +230,7 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
         public Amoeba(int size) {
             super(size);
             for (int i = 0; i < size; i++) {
-                add((NumericCandidate<E>) random());
+                add((NumericCandidate<E>) newCandidate());
             }
         }
     }

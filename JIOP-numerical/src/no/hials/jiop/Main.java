@@ -38,7 +38,7 @@ import no.hials.jiop.swarm.ArtificialBeeColony;
 import no.hials.jiop.swarm.BacterialForagingOptimization;
 import no.hials.jiop.swarm.MultiSwarmOptimization;
 import no.hials.jiop.swarm.ParticleSwarmOptimization;
-import no.hials.jiop.util.SolutionData;
+import no.hials.jiop.candidates.CandidateSolution;
 import no.hials.utilities.NormUtil;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -73,7 +73,7 @@ public class Main {
         for (Algorithm alg : algorithms) {
             alg.setEvaluator(new ExampleEvaluator(5));
             alg.init();
-            SolutionData<double[]> compute = alg.compute(0d, 100l);
+            CandidateSolution<double[]> compute = alg.compute(0d, 500l);
             System.out.println(alg.toString() + "\n" + compute);
             xySeriesCollection.addSeries(alg.getSeries());
         }

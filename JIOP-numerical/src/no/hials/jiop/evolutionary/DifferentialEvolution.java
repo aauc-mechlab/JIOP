@@ -46,7 +46,6 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
     private Candidates candidates;
 
     private boolean multiCore;
-    private NumericCandidate<E> bestCandidate;
 
     public DifferentialEvolution(Class<?> clazz, int NP, double F, double CR) {
         this(clazz, NP, F, CR, false);
@@ -61,21 +60,21 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
     }
 
     @Override
-    public void subInit() {
+    public Candidate<E> subInit() {
         this.candidates = new Candidates(NP);
         Collections.sort(candidates);
-        this.bestCandidate = (NumericCandidate<E>) (candidates.get(0)).copy();
+        return candidates.get(0);
     }
 
     @Override
-    public void subInit(List<E> seeds) {
+    public Candidate<E> subInit(List<E> seeds) {
         this.candidates = new Candidates(NP - seeds.size());
         for (E seed : seeds) {
             candidates.add((NumericCandidate<E>) newCandidate(seed));
         }
 
         Collections.sort(candidates);
-        this.bestCandidate = (NumericCandidate<E>) (candidates.get(0)).copy();
+        return candidates.get(0);
     }
 
     @Override
@@ -112,11 +111,7 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
                     evaluateAndUpdate(sample);
                     if (sample.getCost() < c.getCost()) {
                         candidates.set(candidates.indexOf(c), sample);
-                        synchronized (this) {
-                            if (sample.getCost() < bestCandidate.getCost()) {
-                                bestCandidate = sample;
-                            }
-                        }
+                        setBestCandidateIfBetter(sample);
                     }
                 }, null);
             }
@@ -160,15 +155,12 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
 
                 if (sample.getCost() < c.getCost()) {
                     candidates.set(candidates.indexOf(c), sample);
-
-                    if (sample.getCost() < bestCandidate.getCost()) {
-                        bestCandidate = sample;
-                    }
+                    setBestCandidateIfBetter(sample);
                 }
             }
         }
 
-        return (bestCandidate).copy();
+        return getBestCandidate();
     }
 
     public int getNP() {
@@ -216,10 +208,9 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
         public Candidates(int size) {
             super(size);
             for (int i = 0; i < size; i++) {
-                add((NumericCandidate<E>) random());
+                add((NumericCandidate<E>) newCandidate());
             }
         }
- 
 
     }
 }

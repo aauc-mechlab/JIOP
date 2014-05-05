@@ -40,55 +40,51 @@ import no.hials.jiop.candidates.NumericCandidate;
 public class ArtificialBeeColony<E> extends Algorithm<E> {
 
     private int size;
-    private int numOutlookers;
+    private int numScouts;
 
     private Colony colony;
-    private Candidate<E> bestCandidate;
 
-    public ArtificialBeeColony(Class<?> clazz, int size, int numOutlookers) {
+    public ArtificialBeeColony(Class<?> clazz, int size, int numScouts) {
         super(clazz, "Artificial Bee Colony");
         this.size = size;
-        this.numOutlookers = numOutlookers;
+        this.numScouts = numScouts;
     }
 
-    public ArtificialBeeColony(Class<?> clazz, int size, double outlookers) {
-        this(clazz, size, (int) (size * outlookers));
+    public ArtificialBeeColony(Class<?> clazz, int size, double numScouts) {
+        this(clazz, size, (int) (size * numScouts));
     }
 
     @Override
-    public void subInit() {
+    public Candidate<E> subInit() {
         this.colony = new Colony(size);
         Collections.sort(colony);
-        this.bestCandidate = colony.get(0).copy();
-
-//        System.out.println("");
-//        Candidate<E> copy = colony.get(0).copy();
-//        System.out.println(copy == colony.get(0));
-//        System.out.println("");
+        return colony.get(0);
     }
 
     @Override
-    public void subInit(List<E> seeds) {
+    public Candidate<E> subInit(List<E> seeds) {
         this.colony = new Colony(size - seeds.size());
         for (E seed : seeds) {
             colony.add((NumericCandidate<E>) newCandidate(seed));
         }
 
         Collections.sort(colony);
-        this.bestCandidate = colony.get(0).copy();
+        return colony.get(0);
     }
 
     @Override
     protected Candidate<E> singleIteration() {
-        final List<NumericCandidate<E>> bestCandidates = colony.subList(0, numOutlookers - 1);
+        Collections.sort(colony);
+        final List<NumericCandidate<E>> scouts = colony.subList(0, numScouts-1);
+        scouts.add((NumericCandidate<E>) getBestCandidate());
         final List<NumericCandidate<E>> newPop = new ArrayList<>(size);
-        for (final NumericCandidate<E> c : bestCandidates) {
-            int neighborHoodSize = size / (numOutlookers);
+        for (final NumericCandidate<E> c : scouts) {
+            int neighborHoodSize = size / (numScouts);
             final List<NumericCandidate<E>> neighborhood = new ArrayList<>(neighborHoodSize);
             neighborhood.add(c);
             int remaining = neighborHoodSize - 1;
             for (int i = 0; i < remaining; i++) {
-                double prox = rng.nextDouble() * Math.abs(0.5 - 0.00001) + 0.00001;
+                double prox = rng.nextDouble() * Math.abs(0.1 - 0.00001) + 0.00001;
                 NumericCandidate<E> neighbor = (NumericCandidate<E>) evaluateAndUpdate(c.neighbor(prox));
                 neighborhood.add(neighbor);
             }
@@ -101,8 +97,7 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
         this.colony.clear();
         this.colony.addAll(newPop);
         Collections.sort(colony);
-        this.bestCandidate = colony.get(0).copy();
-        return bestCandidate;
+        return colony.get(0);
     }
 
     public int getSize() {
@@ -114,11 +109,11 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
     }
 
     public int getNumOutlookers() {
-        return numOutlookers;
+        return numScouts;
     }
 
-    public void setNumOutlookers(int numOutlookers) {
-        this.numOutlookers = numOutlookers;
+    public void setNumScouts(int numScouts) {
+        this.numScouts = numScouts;
     }
 
 //    @Override
@@ -141,7 +136,7 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
         public Colony(int size) {
             super(size);
             for (int i = 0; i < size; i++) {
-                add((NumericCandidate<E>) random());
+                add((NumericCandidate<E>) newCandidate());
             }
         }
     }

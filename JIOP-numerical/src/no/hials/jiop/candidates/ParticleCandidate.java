@@ -27,7 +27,7 @@ package no.hials.jiop.candidates;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
 public interface ParticleCandidate<E> extends NumericCandidate<E> {
 

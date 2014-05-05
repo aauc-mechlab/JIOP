@@ -51,7 +51,6 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
     private double ci = 0.05; //basic swim length for each bacterium
 
     private Colony colony;
-    private Candidate<E> bestCandidate;
 
     private final boolean multiCore;
 
@@ -62,20 +61,20 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
     }
 
     @Override
-    public void subInit() {
+    public Candidate<E> subInit() {
         this.colony = new Colony(size);
         Collections.sort(colony);
-        this.bestCandidate = (colony.get(0)).copy();
+        return colony.get(0);
     }
 
     @Override
-    public void subInit(List<E> seeds) {
+    public Candidate<E> subInit(List<E> seeds) {
         this.colony = new Colony(size - seeds.size());
         for (E seed : seeds) {
             colony.add((BacteriaCandidate<E>) newCandidate(seed));
         }
         Collections.sort(colony);
-        this.bestCandidate = (colony.get(0)).copy();
+        return colony.get(0);
     }
 
     @Override
@@ -118,12 +117,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                             b.setHealth(b.getHealth() + b.getCost()); // health is an accumulation of costs during bacterium's life
 
                             // new best?
-                            synchronized (this) {
-                                if (b.getCost() < bestCandidate.getCost()) // did we find a new best?
-                                {
-                                    bestCandidate = b.copy();
-                                }
-                            }
+                            setBestCandidateIfBetter(b);
 
                             int m = 0; // swim or not based on prev and curr costs
                             while (m < ns && b.getCost() < b.getPrevCost()) // we are improving
@@ -141,12 +135,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                                 } // move in current direction
                                 b.setPrevCost(b.getCost()); // update costs
                                 evaluateAndUpdate(b);
-                                synchronized (this) {
-                                    if (b.getCost() < bestCandidate.getCost()) // did we find a new best?
-                                    {
-                                        bestCandidate = b.copy();
-                                    }
-                                }
+                                setBestCandidateIfBetter(b);
                             }
                         }, null);
                     }
@@ -185,9 +174,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                         b.setHealth(b.getHealth() + b.getCost()); // health is an accumulation of costs during bacterium's life
 
                         // new best?
-                        if (b.getCost() < bestCandidate.getCost()) {
-                            bestCandidate = b.copy();
-                        }
+                        setBestCandidateIfBetter(b);
 
                         int m = 0; // swim or not based on prev and curr costs
                         while (m < ns && b.getCost() < b.getPrevCost()) // we are improving
@@ -205,10 +192,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                             } // move in current direction
                             b.setPrevCost(b.getCost()); // update costs
                             evaluateAndUpdate(b);
-                            if (b.getCost() < bestCandidate.getCost()) // did we find a new best?
-                            {
-                                bestCandidate = b.copy();
-                            }
+                            setBestCandidateIfBetter(b);
                         } // while improving
 
                     } // i, each bacterium in the chemotactic loop
@@ -250,12 +234,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                         b.setPrevCost(cost);
                         b.setHealth(0);
 
-                        synchronized (this) {
-                            // new best by pure luck?
-                            if (b.getCost() < bestCandidate.getCost()) {
-                                bestCandidate = b.copy();
-                            }
-                        }
+                        setBestCandidateIfBetter(b);
                     }
                 }, null);
             }
@@ -282,15 +261,12 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                     b.setPrevCost(cost);
                     b.setHealth(0);
 
-                    // new best by pure luck?
-                    if (b.getCost() < bestCandidate.getCost()) {
-                        bestCandidate = b.copy();
-                    }
+                    setBestCandidateIfBetter(b);
                 }
             }
         }
 
-        return bestCandidate.copy();
+        return getBestCandidate();
     }
 
     public int getNc() {
@@ -364,7 +340,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
         public Colony(int size) {
             super(size);
             for (int i = 0; i < size; i++) {
-                add((BacteriaCandidate<E>) random());
+                add((BacteriaCandidate<E>) newCandidate());
             }
         }
     }

@@ -54,7 +54,6 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
     public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, maxVel = 0.5;
 
     private boolean multiCore;
-    private NumericCandidate<E> bestCandidate;
 
     public ParticleSwarmOptimization(Class<?> clazz, int size, boolean multiCore) {
         super(clazz, "Particle Swarm Optimization " + multiCore);
@@ -71,21 +70,21 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
     }
 
     @Override
-    public void subInit() {
+    public Candidate<E> subInit() {
         this.swarm = new Swarm(size);
         Collections.sort(swarm);
-        this.bestCandidate = (NumericCandidate<E>) (swarm.get(0).copy());
+        return swarm.get(0);
     }
 
     @Override
-    public void subInit(List<E> seeds) {
+    public Candidate<E> subInit(List<E> seeds) {
         this.swarm = new Swarm(size - seeds.size());
         for (E seed : seeds) {
             swarm.add((ParticleCandidate<E>) newCandidate(seed));
         }
 
         Collections.sort(swarm);
-        this.bestCandidate = (NumericCandidate<E>) (swarm.get(0).copy());
+        return swarm.get(0);
     }
 
     @Override
@@ -95,7 +94,7 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
                 completionService.submit(() -> {
                     for (int i = 0; i < getDimension(); i++) {
                         double li = particle.getLocalBest().get(i).doubleValue();
-                        double gi = bestCandidate.get(i).doubleValue();
+                        double gi = ((NumericCandidate<E>) getBestCandidate()).get(i).doubleValue();
                         double pi = particle.get(i).doubleValue();
                         double vi = particle.getVelocityAt(i).doubleValue();
 
@@ -119,11 +118,7 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
                     if (cost < particle.getLocalBest().getCost()) {
                         particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
                     }
-                    synchronized (mutex) {
-                        if (cost < bestCandidate.getCost()) {
-                            bestCandidate = (NumericCandidate<E>) (particle.copy());
-                        }
-                    }
+                    setBestCandidateIfBetter(particle);
                 }, true);
 
             }
@@ -138,7 +133,7 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
             for (ParticleCandidate<E> particle : swarm) {
                 for (int i = 0; i < getDimension(); i++) {
                     double li = particle.getLocalBest().get(i).doubleValue();
-                    double gi = bestCandidate.get(i).doubleValue();
+                    double gi = ((NumericCandidate<E>) getBestCandidate()).get(i).doubleValue();
                     double pi = particle.get(i).doubleValue();
                     double vi = particle.getVelocityAt(i).doubleValue();
 
@@ -162,13 +157,10 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
                 if (cost < particle.getLocalBest().getCost()) {
                     particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
                 }
-                if (cost < bestCandidate.getCost()) {
-                    bestCandidate = (NumericCandidate<E>) (particle.copy());
-
-                }
+                setBestCandidateIfBetter(particle);
             }
         }
-        return bestCandidate.copy();
+        return getBestCandidate();
     }
 
     public double getOmega() {
@@ -225,9 +217,8 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
         public Swarm(int size) {
             super(size);
             for (int i = 0; i < size; i++) {
-                add((ParticleCandidate<E>) random());
+                add((ParticleCandidate<E>) newCandidate());
             }
-            Collections.sort(this);
         }
     }
 

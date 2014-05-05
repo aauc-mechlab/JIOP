@@ -123,7 +123,7 @@ public class DoubleArrayCandidate extends GeneralCandidate<double[]> implements 
     public DoubleArrayCandidate neighbor(double proximity) {
         double[] neighbor = new double[size()];
         for (int i = 0; i < size(); i++) {
-            double val = get(i).doubleValue() + rng.nextDouble() * Math.abs(proximity - (-proximity)) + (-proximity);
+            double val = elements[i] + (rng.nextDouble() * Math.abs(proximity - (-proximity)) + (-proximity));
             if (val < 0) {
                 val = 0;
             } else if (val > 1) {
