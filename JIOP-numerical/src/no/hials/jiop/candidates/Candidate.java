@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College
+ * Copyright (c) 2014, laht
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,15 +23,24 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.util;
+
+package no.hials.jiop.candidates;
+
+import java.io.Serializable;
 
 /**
  *
- * @author LarsIvar
+ * @author laht
  * @param <E>
  */
-public interface NumericCandidateStructure<E> extends NumericStructure<E>, CandidateStructure<E> {
-
-    public NumericCandidateStructure<E> neighbor(double proximity);
+public interface Candidate<E> extends Serializable, Iterable, Comparable<Candidate>{
     
+    public double getCost();
+    public void setCost(double cost);
+    public Candidate<E> copy();
+    public E getElements();
+    public Object get(int index);
+    public int size();
+    public E randomElements(int length);
+    public Candidate<E> neighbor(double proximity);
 }

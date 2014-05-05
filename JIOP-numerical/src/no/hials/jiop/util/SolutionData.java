@@ -24,7 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 package no.hials.jiop.util;
-import no.hials.jiop.util.CandidateStructure;
+import no.hials.jiop.candidates.Candidate;
 
 /**
  * 
@@ -35,9 +35,9 @@ public class SolutionData<E> {
     public final long nano;
     public final double cost;
     public final int iterations;
-    public final CandidateStructure<E>  solution;
+    public final Candidate<E>  solution;
 
-    public SolutionData(CandidateStructure<E>  solution, double cost, int iterations, long nano) {
+    public SolutionData(Candidate<E>  solution, double cost, int iterations, long nano) {
         this.cost = cost;
         this.nano = nano;
         this.solution = solution;

@@ -25,13 +25,6 @@
  */
 package no.hials.jiop;
 
-import no.hials.jiop.util.SolutionData;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +36,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.hials.jiop.util.CandidateStructure;
+import no.hials.jiop.candidates.GeneralCandidate;
+import no.hials.jiop.candidates.Candidate;
+import no.hials.jiop.util.SolutionData;
 import org.jfree.data.xy.XYSeries;
 
 /**
@@ -55,7 +50,7 @@ public abstract class Algorithm<E> implements Serializable {
 
     private String name;
     private Evaluator<E> evaluator;
-    private final Class<?> clazz;
+    private final Class<?> templateClass;
 
     private XYSeries timeSeries;
     protected final Random rng = new Random();
@@ -67,26 +62,47 @@ public abstract class Algorithm<E> implements Serializable {
         this(clazz, null, name);
     }
 
-    public Algorithm(Class<?> clazz, Evaluator<E> evaluator, String name) {
+    public Algorithm(Class<?> templateClass, Evaluator<E> evaluator, String name) {
         this.name = name;
-        this.clazz = clazz;
+        this.templateClass = templateClass;
         this.evaluator = evaluator;
         this.timeSeries = new XYSeries(name);
     }
-    
-    public double evaluate(CandidateStructure<E> candidate) {
+
+    /**
+     * Evaluates the cost of the given candidate and returns it This is the same
+     * as to call getEvaluator().evaluate(candidate) Note: This call does not
+     * update the candidates affiliated cost.
+     *
+     * @param candidate the candidate to evalaute
+     * @return the candidates cost
+     */
+    public double evaluate(Candidate<E> candidate) {
         return getEvaluator().evaluate(candidate.getElements());
     }
 
-    public CandidateStructure<E> evaluateAndUpdate(CandidateStructure<E> candidate) {
+    /**
+     * Evaluates and updates the cost of the given candidate. This is the same
+     * as to call candidate.setCost(getEvaluator().evaluate(candidate))
+     *
+     * @param candidate the candidate to evaluate
+     * @return the updated candidate intance
+     */
+    public Candidate<E> evaluateAndUpdate(Candidate<E> candidate) {
         candidate.setCost(getEvaluator().evaluate(candidate.getElements()));
         return candidate;
     }
 
-    public CandidateStructure<E> random() {
+    /**
+     * Creates and returns a random candidate. Uses reflection to construct a
+     * new instance of the template class
+     *
+     * @return a new Candidate instance initialized with random values
+     */
+    public Candidate<E> random() {
         try {
-            CandidateStructure<E> newInstance = newCandidate();
-            newInstance.randomize();
+            Candidate<E> newInstance = newCandidate();
+//            newInstance.randomize();
             return evaluateAndUpdate(newInstance);
         } catch (SecurityException | IllegalArgumentException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
@@ -95,21 +111,16 @@ public abstract class Algorithm<E> implements Serializable {
         return null;
     }
 
-    public CandidateStructure<E> newCandidate() {
+    /**
+     * Creates and returns a new candidate. Uses reflection to construct a
+     * new instance of the template class
+     *
+     * @return a new Candidate instance initialized with random values
+     */
+    public Candidate<E> newCandidate() {
         try {
-            Constructor<?> constructor = clazz.getConstructor(int.class);
-            CandidateStructure<E> newInstance = (CandidateStructure) constructor.newInstance(getEvaluator().getDimension());
-            return evaluateAndUpdate(newInstance);
-        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    public CandidateStructure<E> newCandidate(E e) {
-        try {
-            Constructor<?> constructor = clazz.getConstructor(e.getClass(), double.class);
-            CandidateStructure<E> newInstance = (CandidateStructure) constructor.newInstance(e, getEvaluator().evaluate(e));
+            Constructor<?> constructor = templateClass.getConstructor(int.class);
+            GeneralCandidate<E> newInstance = (GeneralCandidate) constructor.newInstance(getEvaluator().getDimension());
             return newInstance;
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
@@ -117,17 +128,27 @@ public abstract class Algorithm<E> implements Serializable {
         return null;
     }
 
-    public CandidateStructure<E> copy(CandidateStructure<E> candidate) {
+    public Candidate<E> newCandidate(E e) {
         try {
-            Constructor<?> constructor = clazz.getConstructor(candidate.getElements().getClass(), double.class);
-            CandidateStructure copy = (CandidateStructure) constructor.newInstance(candidate.getElements(), candidate.getCost());
-            return copy;
+            Constructor<?> constructor = templateClass.getConstructor(e.getClass(), double.class);
+            GeneralCandidate<E> newInstance = (GeneralCandidate) constructor.newInstance(e, getEvaluator().evaluate(e));
+            return newInstance;
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
-    
+
+//    public Candidate<E> copy(Candidate<E> candidate) {
+//        try {
+//            Constructor<?> constructor = templateClass.getConstructor(candidate.getElements().getClass(), double.class);
+//            Candidate copy = (Candidate) constructor.newInstance(candidate.getElements(), candidate.getCost());
+//            return copy;
+//        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+//            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return null;
+//    }
 
     public final void init() {
         this.timeSeries = new XYSeries(name);
@@ -143,13 +164,13 @@ public abstract class Algorithm<E> implements Serializable {
         }
     }
 
-    protected abstract CandidateStructure<E> singleIteration();
+    protected abstract Candidate<E> singleIteration();
 
     protected abstract void subInit();
 
     protected abstract void subInit(List<E> seeds);
-    
-     protected CompletionService<CandidateStructure<E>> getCompletionService() {
+
+    protected CompletionService<Candidate<E>> getCompletionService() {
         if (pool == null) {
 
             pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -159,7 +180,7 @@ public abstract class Algorithm<E> implements Serializable {
     }
 
     public SolutionData compute(long timeOut) {
-        CandidateStructure<E> solution = null;
+        Candidate<E> solution = null;
         long t0 = System.currentTimeMillis();
         long t;
         int it = 0;
@@ -174,10 +195,8 @@ public abstract class Algorithm<E> implements Serializable {
         return new SolutionData(solution, solution.getCost(), it, t);
     }
 
-   
-
     public SolutionData compute(double error, long timeOut) {
-        CandidateStructure<E> solution = null;
+        Candidate<E> solution = null;
         long t;
         long t0 = System.currentTimeMillis();
         int it = 0;
@@ -193,7 +212,7 @@ public abstract class Algorithm<E> implements Serializable {
     }
 
     public SolutionData compute(int iterations) {
-        CandidateStructure<E> solution = null;
+        Candidate<E> solution = null;
         long t0 = System.currentTimeMillis();
         int it = 0;
         do {
@@ -207,7 +226,7 @@ public abstract class Algorithm<E> implements Serializable {
     }
 
     public SolutionData compute(int iterations, long timeOut) {
-        CandidateStructure<E> solution = null;
+        Candidate<E> solution = null;
         long t0 = System.currentTimeMillis();
         int it = 0;
         do {
@@ -219,8 +238,7 @@ public abstract class Algorithm<E> implements Serializable {
 
         return new SolutionData(solution, solution.getCost(), it, System.currentTimeMillis() - t0);
     }
-    
-    
+
 //    /**
 //     * Writes the MLHistory data to file. If the directory does not exist, a new
 //     * one will be created.
@@ -247,7 +265,6 @@ public abstract class Algorithm<E> implements Serializable {
 //            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
 //        }
 //    }
-
 //    public void optimizeFreeParameters(double error, long timeOut) {
 //        DoubleArray freeParameters = getFreeParameters();
 //        AlgorithmOptimizer optimizer = new AlgorithmOptimizer(this);

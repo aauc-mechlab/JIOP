@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, LarsIvar
+ * Copyright (c) 2014, Aalesund University College
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,18 +23,26 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-package no.hials.jiop.util;
+package no.hials.jiop.candidates;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
+ * @param <E>
  */
-public interface NumericBacteriaStructrue<E> extends NumericCandidateStructure<E>{
-    
-    public double getPrevCost();
-    public void setPrevCost(double cost);
-    public double getHealth();
-    public void setHealth(double health);
-    
+public interface  NumericCandidate<E> extends Candidate<E> {
+
+    public abstract NumericCandidate plus(Number[] other);
+
+    public abstract NumericCandidate minus(Number[] other);
+
+    public abstract NumericCandidate scale(Number scalar);
+
+    public abstract void clamp(Number min, Number max);
+
+    public abstract void set(int index, Number value);
+
+    @Override
+    public abstract Number get(int index);
+
 }

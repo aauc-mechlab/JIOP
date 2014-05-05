@@ -23,78 +23,71 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.util;
+package no.hials.jiop.candidates;
 
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Random;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
  */
-public class DoubleArrayStructure implements NumericStructure<double[]> {
+public class DoubleArrayCandidate extends GeneralCandidate<double[]> implements NumericCandidate<double[]>{
 
-    private final Random rng = new Random();
-    private final double[] elements;
-
-    public DoubleArrayStructure(int length) {
-        this.elements = new double[length];
+    public DoubleArrayCandidate(int length) {
+        super(length);
     }
 
-    public DoubleArrayStructure(double[] elements) {
-        this.elements = elements.clone();
+    public DoubleArrayCandidate(double[] elements) {
+        super(elements);
     }
-    
-        @Override
-    public void randomize() {
-        for (int i = 0; i < size(); i++) {
-            set(i, rng.nextDouble());
-        }
+
+    public DoubleArrayCandidate(double[] elements, double cost) {
+        super(elements, cost);
     }
 
     @Override
-    public DoubleArrayStructure plus(Number[] other) {
+    public GeneralCandidate<double[]> copy() {
+        return new DoubleArrayCandidate(getElements().clone(), getCost());
+    }
+
+
+    @Override
+    public DoubleArrayCandidate plus(Number[] other) {
         double[] arr = new double[size()];
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = elements[i] + other[i].doubleValue();
+            set(i, get(i).doubleValue() + other[i].doubleValue());
         }
-        return new DoubleArrayStructure(arr);
+        return new DoubleArrayCandidate(arr);
     }
 
     @Override
-    public DoubleArrayStructure minus(Number[] other) {
+    public DoubleArrayCandidate minus(Number[] other) {
         double[] arr = new double[size()];
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = elements[i] - other[i].doubleValue();
+            set(i, get(i).doubleValue() - other[i].doubleValue());
         }
-        return new DoubleArrayStructure(arr);
+        return new DoubleArrayCandidate(arr);
     }
 
     @Override
-    public DoubleArrayStructure scale(Number scalar) {
+    public DoubleArrayCandidate scale(Number scalar) {
         double[] arr = new double[size()];
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = elements[i] * scalar.doubleValue();
+            set(i, get(i).doubleValue() * scalar.doubleValue());
         }
-        return new DoubleArrayStructure(arr);
+        return new DoubleArrayCandidate(arr);
     }
 
     @Override
     public void clamp(Number min, Number max) {
-        for (int i = 0; i < elements.length; i++) {
-            double val = elements[i];
+        for (int i = 0; i < size(); i++) {
+            double val = get(i).doubleValue();
             if (val < min.doubleValue()) {
-                elements[i] = min.doubleValue();
+                set(i, min.doubleValue());
             } else if (val > max.doubleValue()) {
-                elements[i] = max.doubleValue();
+                set(i, max.doubleValue());
             }
         }
-    }
-
-    @Override
-    public double[] getElements() {
-        return elements;
     }
 
     @Override
@@ -113,25 +106,32 @@ public class DoubleArrayStructure implements NumericStructure<double[]> {
     }
 
     @Override
-    public Iterator iterator() {
-        return new StructureIterator(this);
-    }
-
-    @Override
-    public String toString(String delimiter) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < size(); i++) {
-            sb.append(get(i));
-            if (i != size() - 1) {
-                sb.append(delimiter);
-            }
-        }
-        return sb.toString();
-    }
-
-    @Override
     public String toString() {
         return Arrays.toString(elements);
+    }
+
+    @Override
+    public double[] randomElements(int length) {
+        double[] rand = new double[length];
+        for (int i = 0; i < rand.length; i++) {
+            rand[i] = rng.nextDouble();
+        }
+        return rand;
+    }
+
+    @Override
+    public DoubleArrayCandidate neighbor(double proximity) {
+        double[] neighbor = new double[size()];
+        for (int i = 0; i < size(); i++) {
+            double val = get(i).doubleValue() + rng.nextDouble() * Math.abs(proximity - (-proximity)) + (-proximity);
+            if (val < 0) {
+                val = 0;
+            } else if (val > 1) {
+                val = 1;
+            }
+            neighbor[i] = val;
+        }
+        return new DoubleArrayCandidate(neighbor);
     }
 
 }

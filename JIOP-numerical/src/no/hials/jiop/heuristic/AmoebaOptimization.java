@@ -29,13 +29,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import no.hials.jiop.Algorithm;
-import no.hials.jiop.util.NumericCandidateStructure;
+import no.hials.jiop.candidates.NumericCandidate;
 
 /**
  * Amoeba Optimization based on an article by James McCaffrey:
  * http://msdn.microsoft.com/en-us/magazine/dn201752.aspx
  *
  * @author Lars Ivar Hatledal
+ * @param <E>
  */
 public class AmoebaOptimization<E> extends Algorithm<E> {
 
@@ -61,42 +62,42 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
     public void subInit(List<E> seeds) {
         this.candidates = new Amoeba(size - seeds.size());
         for (E seed : seeds) {
-            candidates.add((NumericCandidateStructure< E>) newCandidate(seed));
+            candidates.add((NumericCandidate< E>) newCandidate(seed));
         }
         Collections.sort(candidates);
     }
 
     @Override
-    protected NumericCandidateStructure<E> singleIteration() {
-        NumericCandidateStructure<E> centroid = centroid();
-        NumericCandidateStructure<E> reflected = reflected(centroid);
+    protected NumericCandidate<E> singleIteration() {
+        NumericCandidate<E> centroid = centroid();
+        NumericCandidate<E> reflected = reflected(centroid);
         if (reflected.getCost() < candidates.get(0).getCost()) {
-            NumericCandidateStructure<E> expanded = expanded(reflected, centroid);
+            NumericCandidate<E> expanded = expanded(reflected, centroid);
             if (expanded.getCost() < candidates.get(0).getCost()) {
                 replaceWorst(expanded);
             } else {
                 replaceWorst(reflected);
             }
-           return (NumericCandidateStructure<E>) copy(candidates.get(0));  // Best solution
+           return (NumericCandidate<E>) (candidates.get(0)).copy();  // Best solution
         }
         if (isWorseThanAllButWorst(reflected) == true) {
             if (reflected.getCost() <= candidates.get(size - 1).getCost()) {
                 replaceWorst(reflected);
             }
-            NumericCandidateStructure<E> contracted = contracted(centroid);
+            NumericCandidate<E> contracted = contracted(centroid);
             if (contracted.getCost() > candidates.get(size - 1).getCost()) {
                 shrink();
             } else {
                 replaceWorst(contracted);
             }
-            return (NumericCandidateStructure<E>) copy(candidates.get(0));  // Best solution
+            return (NumericCandidate<E>) (candidates.get(0)).copy();  // Best solution
         }
         replaceWorst(reflected);
-        return (NumericCandidateStructure<E>) copy(candidates.get(0));  // Best solution
+        return (NumericCandidate<E>) (candidates.get(0)).copy();  // Best solution
     }
 
-    public NumericCandidateStructure<E> centroid() {
-        NumericCandidateStructure<E> c = (NumericCandidateStructure<E>) newCandidate();
+    public NumericCandidate<E> centroid() {
+        NumericCandidate<E> c = (NumericCandidate<E>) newCandidate();
         for (int i = 0; i < size - 1; ++i) {
             for (int j = 0; j < getDimension(); ++j) {
                 c.set(j, c.get(j).doubleValue() + candidates.get(i).get(j).doubleValue());
@@ -106,45 +107,45 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
         for (int j = 0; j < getDimension(); ++j) {
             c.set(j, c.get(j).doubleValue() / (size - 1));
         }
-//        c.clamp(0, 1);
+        c.clamp(0, 1);
         c.setCost(getEvaluator().evaluate(c.getElements()));
         return c;
     }
 
-    public NumericCandidateStructure<E> reflected(NumericCandidateStructure<E> centroid) {
-        NumericCandidateStructure<E> r = (NumericCandidateStructure<E>) newCandidate();
-        NumericCandidateStructure<E> worst = candidates.get(size - 1);
+    public NumericCandidate<E> reflected(NumericCandidate<E> centroid) {
+        NumericCandidate<E> r = (NumericCandidate<E>) newCandidate();
+        NumericCandidate<E> worst = candidates.get(size - 1);
         for (int j = 0; j < getDimension(); ++j) {
             r.set(j, ((1 + alpha) * centroid.get(j).doubleValue()) - (alpha * worst.get(j).doubleValue()));
         }
-//        r.clamp(0, 1);
+        r.clamp(0, 1);
         r.setCost(getEvaluator().evaluate(r.getElements()));
         return r;
     }
 
-    public NumericCandidateStructure<E> expanded(NumericCandidateStructure<E> reflected, NumericCandidateStructure<E> centroid) {
-        NumericCandidateStructure<E> e = (NumericCandidateStructure<E>) newCandidate();
+    public NumericCandidate<E> expanded(NumericCandidate<E> reflected, NumericCandidate<E> centroid) {
+        NumericCandidate<E> e = (NumericCandidate<E>) newCandidate();
         for (int j = 0; j < getDimension(); ++j) {
             e.set(j, (gamma * reflected.get(j).doubleValue()) + ((1 - gamma) * centroid.get(j).doubleValue()));
         }
-//        e.clamp(0, 1);
+        e.clamp(0, 1);
         e.setCost(getEvaluator().evaluate(e.getElements()));
         return e;
     }
 
-    public NumericCandidateStructure<E> contracted(NumericCandidateStructure<E> centroid) {
-        NumericCandidateStructure<E> v = (NumericCandidateStructure<E>) newCandidate();
-        NumericCandidateStructure<E> worst = candidates.get(size - 1);
+    public NumericCandidate<E> contracted(NumericCandidate<E> centroid) {
+        NumericCandidate<E> v = (NumericCandidate<E>) newCandidate();
+        NumericCandidate<E> worst = candidates.get(size - 1);
         for (int j = 0; j < getDimension(); ++j) {
             v.set(j, (beta * worst.get(j).doubleValue()) + ((1 - beta) * centroid.get(j).doubleValue()));
         }
-//        v.clamp(0, 1);
+        v.clamp(0, 1);
         v.setCost(getEvaluator().evaluate(v.getElements()));
         return v;
     }
 
-    public void replaceWorst(NumericCandidateStructure<E> newSolution) {
-        candidates.set(size - 1, (NumericCandidateStructure<E>) copy(newSolution));
+    public void replaceWorst(NumericCandidate<E> newSolution) {
+        candidates.set(size - 1, (NumericCandidate<E>) (newSolution)).copy();
         Collections.sort(candidates);
     }
 
@@ -165,7 +166,7 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
         Collections.sort(candidates);
     }
 
-    public boolean isWorseThanAllButWorst(NumericCandidateStructure<E> reflected) {
+    public boolean isWorseThanAllButWorst(NumericCandidate<E> reflected) {
         for (int i = 0; i < size - 1; ++i) {
             if (reflected.getCost() <= candidates.get(i).getCost()) // Found worse solution
             {
@@ -221,12 +222,12 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
         this.gamma = gamma;
     }
 
-    private class Amoeba extends ArrayList<NumericCandidateStructure<E>> {
+    private class Amoeba extends ArrayList<NumericCandidate<E>> {
 
         public Amoeba(int size) {
             super(size);
             for (int i = 0; i < size; i++) {
-                add((NumericCandidateStructure<E>) random());
+                add((NumericCandidate<E>) random());
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College
+ * Copyright (c) 2014, laht
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,66 +23,54 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.util;
-
-import java.util.Random;
+package no.hials.jiop.candidates;
 
 /**
  *
- * @author LarsIvar
+ * @author laht
  */
-public class DoubleArrayCandidateStructure extends DoubleArrayStructure implements CandidateStructure<double[]>, NumericCandidateStructure<double[]> {
+public class DoubleArrayBacteriaCandidate extends DoubleArrayCandidate implements BacteriaCandidate<double[]> {
 
-    private final Random rng = new Random();
-    private double cost = Double.MAX_VALUE;
+    private double prevCost;
+    private double health;
 
-    public DoubleArrayCandidateStructure(int length) {
+    public DoubleArrayBacteriaCandidate(int length) {
         super(length);
     }
 
-    public DoubleArrayCandidateStructure(double[] elements) {
+    public DoubleArrayBacteriaCandidate(double[] elements) {
         super(elements);
     }
 
-    public DoubleArrayCandidateStructure(double[] elements, double cost) {
-        super(elements);
-        this.cost = cost;
+    public DoubleArrayBacteriaCandidate(double[] elements, double cost) {
+        super(elements, cost);
     }
 
     @Override
-    public DoubleArrayCandidateStructure neighbor(double proximity) {
-        double[] arr = new double[size()];
-        for (int i = 0; i < arr.length; i++) {
-            double val = get(i).doubleValue() + rng.nextDouble() * Math.abs(proximity - (-proximity)) + (-proximity);
-            if (val < 0) {
-                val = 0;
-            } else if (val > 1) {
-                val = 1;
-            }
-            arr[i] = val;
-        }
-        return new DoubleArrayCandidateStructure(arr);
+    public double getPrevCost() {
+        return prevCost;
     }
 
     @Override
-    public synchronized double getCost() {
-        return cost;
+    public void setPrevCost(double prevCost) {
+        this.prevCost = prevCost;
     }
 
     @Override
-    public synchronized void setCost(double cost) {
-        this.cost = cost;
+    public double getHealth() {
+        return health;
     }
 
     @Override
-    public int compareTo(CandidateStructure o) {
-        if (getCost() == o.getCost()) {
-            return 0;
-        } else if (getCost() < o.getCost()) {
-            return -1;
-        } else {
-            return 1;
-        }
+    public void setHealth(double health) {
+        this.health = health;
     }
+
+    @Override
+    public DoubleArrayBacteriaCandidate copy() {
+        return new DoubleArrayBacteriaCandidate(elements.clone(), cost);
+    }
+    
+    
 
 }

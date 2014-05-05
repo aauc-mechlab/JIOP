@@ -32,7 +32,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.Algorithm;
-import no.hials.jiop.util.NumericCandidateStructure;
+import no.hials.jiop.candidates.Candidate;
+import no.hials.jiop.candidates.NumericCandidate;
 
 /**
  *
@@ -45,7 +46,7 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
     private Candidates candidates;
 
     private boolean multiCore;
-    private NumericCandidateStructure<E> bestCandidate;
+    private NumericCandidate<E> bestCandidate;
 
     public DifferentialEvolution(Class<?> clazz, int NP, double F, double CR) {
         this(clazz, NP, F, CR, false);
@@ -63,28 +64,28 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
     public void subInit() {
         this.candidates = new Candidates(NP);
         Collections.sort(candidates);
-        this.bestCandidate = (NumericCandidateStructure<E>) copy(candidates.get(0));
+        this.bestCandidate = (NumericCandidate<E>) (candidates.get(0)).copy();
     }
 
     @Override
     public void subInit(List<E> seeds) {
         this.candidates = new Candidates(NP - seeds.size());
         for (E seed : seeds) {
-            candidates.add((NumericCandidateStructure<E>) newCandidate(seed));
+            candidates.add((NumericCandidate<E>) newCandidate(seed));
         }
 
         Collections.sort(candidates);
-        this.bestCandidate = (NumericCandidateStructure<E>) copy(candidates.get(0));
+        this.bestCandidate = (NumericCandidate<E>) (candidates.get(0)).copy();
     }
 
     @Override
-    protected NumericCandidateStructure<E> singleIteration() {
+    protected Candidate<E> singleIteration() {
 
         if (multiCore) {
-            for (final NumericCandidateStructure<E> c : candidates) {
+            for (final NumericCandidate<E> c : candidates) {
                 getCompletionService().submit(() -> {
-                    NumericCandidateStructure<E> c1;
-                    NumericCandidateStructure<E> c2, c3;
+                    NumericCandidate<E> c1;
+                    NumericCandidate<E> c2, c3;
                     do {
                         int rand = rng.nextInt(candidates.size());
                         c1 = candidates.get(rand);
@@ -98,7 +99,7 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
                         c3 = candidates.get(rand);
                     } while (c3 == c && c3 == c1 && c3 == c2);
                     int R = rng.nextInt(getDimension());
-                    NumericCandidateStructure<E> sample = (NumericCandidateStructure<E>) newCandidate();
+                    NumericCandidate<E> sample = (NumericCandidate<E>) newCandidate();
                     for (int i = 0; i < sample.size(); i++) {
                         if ((rng.nextDouble() < CR) || (i == R)) {
                             double value = c1.get(i).doubleValue() + F * (c2.get(i).doubleValue() - c3.get(i).doubleValue());
@@ -119,7 +120,7 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
                     }
                 }, null);
             }
-            for (NumericCandidateStructure<E> c : candidates) {
+            for (NumericCandidate<E> c : candidates) {
                 try {
                     getCompletionService().take().get();
                 } catch (InterruptedException | ExecutionException ex) {
@@ -128,10 +129,10 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
             }
         } else {
 
-            for (NumericCandidateStructure<E> c : candidates) {
+            for (NumericCandidate<E> c : candidates) {
 
-                NumericCandidateStructure<E> c1;
-                NumericCandidateStructure<E> c2, c3;
+                NumericCandidate<E> c1;
+                NumericCandidate<E> c2, c3;
                 do {
                     int rand = rng.nextInt(candidates.size());
                     c1 = candidates.get(rand);
@@ -145,7 +146,7 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
                     c3 = candidates.get(rand);
                 } while (c3 == c && c3 == c1 && c3 == c2);
                 int R = rng.nextInt(c.size());
-                NumericCandidateStructure<E> sample = (NumericCandidateStructure<E>) newCandidate();
+                NumericCandidate<E> sample = (NumericCandidate<E>) newCandidate();
                 for (int i = 0; i < sample.size(); i++) {
                     if ((rng.nextDouble() < CR) || (i == R)) {
                         double value = c1.get(i).doubleValue() + F * (c2.get(i).doubleValue() - c3.get(i).doubleValue());
@@ -167,7 +168,7 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
             }
         }
 
-        return (NumericCandidateStructure<E>) copy(bestCandidate);
+        return (bestCandidate).copy();
     }
 
     public int getNP() {
@@ -210,12 +211,12 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
 //    public DoubleArray getFreeParameters() {
 //        return new DoubleArray(NP, F, CR);
 //    }
-    private class Candidates extends ArrayList<NumericCandidateStructure<E>> {
+    private class Candidates extends ArrayList<NumericCandidate<E>> {
 
         public Candidates(int size) {
             super(size);
             for (int i = 0; i < size; i++) {
-                add((NumericCandidateStructure<E>) random());
+                add((NumericCandidate<E>) random());
             }
         }
  

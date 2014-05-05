@@ -32,7 +32,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.Algorithm;
-import no.hials.jiop.util.NumericBacteriaStructrue;
+import no.hials.jiop.candidates.BacteriaCandidate;
+import no.hials.jiop.candidates.Candidate;
 
 /**
  * Bacterial Foraging Optimization based on an article by James McCaffrey:
@@ -50,7 +51,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
     private double ci = 0.05; //basic swim length for each bacterium
 
     private Colony colony;
-    private NumericBacteriaStructrue<E> bestCandidate;
+    private Candidate<E> bestCandidate;
 
     private final boolean multiCore;
 
@@ -64,33 +65,33 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
     public void subInit() {
         this.colony = new Colony(size);
         Collections.sort(colony);
-        this.bestCandidate = (NumericBacteriaStructrue<E>) copy(colony.get(0));
+        this.bestCandidate = (colony.get(0)).copy();
     }
 
     @Override
     public void subInit(List<E> seeds) {
         this.colony = new Colony(size - seeds.size());
         for (E seed : seeds) {
-            colony.add((NumericBacteriaStructrue<E>) newCandidate(seed));
+            colony.add((BacteriaCandidate<E>) newCandidate(seed));
         }
         Collections.sort(colony);
-        this.bestCandidate = (NumericBacteriaStructrue<E>) copy(colony.get(0));
+        this.bestCandidate = (colony.get(0)).copy();
     }
 
     @Override
-    protected NumericBacteriaStructrue<E> singleIteration() {
+    protected Candidate<E> singleIteration() {
         for (int k = 0; k < nre; k++) // reproduce-eliminate loop
-        {
+                {
             for (int j = 0; j < nc; j++) // chemotactic loop; the lifespan of each bacterium
-            {
+                        {
                 // reset the health of each bacterium to 0.0 
                 for (int i = 0; i < size; i++) {
                     colony.get(i).setHealth(0);
                 }
 
                 if (multiCore) {
-                    for (final NumericBacteriaStructrue<E> b : colony) // each bacterium
-                    {
+                    for (final BacteriaCandidate<E> b : colony) // each bacterium
+                                        {
                         getCompletionService().submit(() -> {
                             double[] tumble = new double[getDimension()]; // tumble (point in a new direction)
                             for (int p = 0; p < getDimension(); p++) {
@@ -120,7 +121,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                             synchronized (this) {
                                 if (b.getCost() < bestCandidate.getCost()) // did we find a new best?
                                 {
-                                    bestCandidate = (NumericBacteriaStructrue<E>) copy(b);
+                                    bestCandidate = b.copy();
                                 }
                             }
 
@@ -143,13 +144,13 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                                 synchronized (this) {
                                     if (b.getCost() < bestCandidate.getCost()) // did we find a new best?
                                     {
-                                        bestCandidate = (NumericBacteriaStructrue<E>) copy(b);
+                                        bestCandidate = b.copy();
                                     }
                                 }
                             }
                         }, null);
                     }
-                    for (NumericBacteriaStructrue<E> b : colony) {
+                    for (BacteriaCandidate<E> b : colony) {
                         try {
                             getCompletionService().take().get();
                         } catch (InterruptedException | ExecutionException ex) {
@@ -157,8 +158,8 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                         }
                     }
                 } else {
-                    for (NumericBacteriaStructrue<E> b : colony) // each bacterium
-                    {
+                    for (BacteriaCandidate<E> b : colony) // each bacterium
+                                        {
                         double[] tumble = new double[getDimension()]; // tumble (point in a new direction)
                         for (int p = 0; p < getDimension(); p++) {
                             tumble[p] = 2.0 * rng.nextDouble() - 1.0;
@@ -185,7 +186,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
 
                         // new best?
                         if (b.getCost() < bestCandidate.getCost()) {
-                            bestCandidate = (NumericBacteriaStructrue<E>) copy(b);
+                            bestCandidate = b.copy();
                         }
 
                         int m = 0; // swim or not based on prev and curr costs
@@ -206,7 +207,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                             evaluateAndUpdate(b);
                             if (b.getCost() < bestCandidate.getCost()) // did we find a new best?
                             {
-                                bestCandidate = (NumericBacteriaStructrue<E>) copy(b);
+                                bestCandidate = b.copy();
                             }
                         } // while improving
 
@@ -216,7 +217,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
             } // j, chemotactic loop
 
             // reproduce the healthiest half of bacteria, eliminate the other half
-            Collections.sort(colony, (NumericBacteriaStructrue<E> o1, NumericBacteriaStructrue<E> o2) -> {
+            Collections.sort(colony, (BacteriaCandidate<E> o1, BacteriaCandidate<E> o2) -> {
                 if (o1.getHealth() == o2.getHealth()) {
                     return 0;
                 } else if (o1.getHealth() < o2.getHealth()) {
@@ -226,15 +227,15 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                 }
             }); // sort from smallest health (best) to highest health (worst)
             for (int left = 0; left < size / 2; left++) // left points to a bacterium that will reproduce
-            {
+                        {
                 int right = left + size / 2; // right points to a bad bacterium in the rigt side of array that will die
-                colony.set(right, (NumericBacteriaStructrue<E>) copy(colony.get(left)));
+                colony.set(right, colony.get(left).copy());
             }
 
         } // k, reproduction loop
 
         if (multiCore) {
-            for (final NumericBacteriaStructrue<E> b : colony) {
+            for (final BacteriaCandidate<E> b : colony) {
                 getCompletionService().submit(() -> {
                     double prob = rng.nextDouble();
                     if (prob < ped) // disperse this bacterium to a random position
@@ -252,13 +253,13 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                         synchronized (this) {
                             // new best by pure luck?
                             if (b.getCost() < bestCandidate.getCost()) {
-                                bestCandidate = (NumericBacteriaStructrue<E>) copy(b);
+                                bestCandidate = b.copy();
                             }
                         }
                     }
                 }, null);
             }
-            for (NumericBacteriaStructrue<E> b : colony) {
+            for (BacteriaCandidate<E> b : colony) {
                 try {
                     getCompletionService().take().get();
                 } catch (InterruptedException | ExecutionException ex) {
@@ -267,7 +268,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
             }
         } else {
             // eliminate-disperse
-            for (NumericBacteriaStructrue<E> b : colony) {
+            for (BacteriaCandidate<E> b : colony) {
                 double prob = rng.nextDouble();
                 if (prob < ped) // disperse this bacterium to a random position
                 {
@@ -283,13 +284,13 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
 
                     // new best by pure luck?
                     if (b.getCost() < bestCandidate.getCost()) {
-                        bestCandidate = (NumericBacteriaStructrue<E>) copy(b);
+                        bestCandidate = b.copy();
                     }
                 }
             }
         }
 
-        return (NumericBacteriaStructrue<E>) copy(bestCandidate);
+        return bestCandidate.copy();
     }
 
     public int getNc() {
@@ -358,12 +359,12 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
 //    public DoubleArray getFreeParameters() {
 //        return new DoubleArray(size, nc, nre, ns, ped, ci);
 //    }
-    private class Colony extends ArrayList<NumericBacteriaStructrue<E>> {
+    private class Colony extends ArrayList<BacteriaCandidate<E>> {
 
         public Colony(int size) {
             super(size);
             for (int i = 0; i < size; i++) {
-                add((NumericBacteriaStructrue<E>) random());
+                add((BacteriaCandidate<E>) random());
             }
         }
     }

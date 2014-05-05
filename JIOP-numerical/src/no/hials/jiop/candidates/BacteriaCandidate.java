@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, LarsIvar
+ * Copyright (c) 2014, laht
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,52 +23,24 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.util;
+package no.hials.jiop.candidates;
 
 /**
  *
- * @author LarsIvar
+ * @author Lars Ivar Hatledal
+ * @param <E>
  */
-public class DoubleArrayBacteriaStructure extends DoubleArrayCandidateStructure implements NumericBacteriaStructrue<double[]> {
+public interface BacteriaCandidate<E> extends NumericCandidate<E> {
 
-    private double prevCost;
-    private double health;
+    public double getPrevCost();
 
-    public DoubleArrayBacteriaStructure(int length) {
-        super(length);
-        this.prevCost = getCost();
-    }
+    public void setPrevCost(double prevCost);
 
-    public DoubleArrayBacteriaStructure(double[] elements) {
-        super(elements);
-        this.prevCost = getCost();
-        this.health = 0;
-    }
+    public double getHealth();
 
-    public DoubleArrayBacteriaStructure(double[] elements, double cost) {
-        super(elements, cost);
-        this.prevCost = getCost();
-        this.health = 0;
-    }
+    public void setHealth(double health);
 
     @Override
-    public double getPrevCost() {
-        return prevCost;
-    }
-
-    @Override
-    public void setPrevCost(double prevCost) {
-        this.prevCost = prevCost;
-    }
-
-    @Override
-    public double getHealth() {
-        return health;
-    }
-
-    @Override
-    public void setHealth(double health) {
-        this.health = health;
-    }
+    public BacteriaCandidate<E> copy();
 
 }

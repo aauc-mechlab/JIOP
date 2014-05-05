@@ -27,8 +27,8 @@ package no.hials.jiop.physical;
 
 import java.util.List;
 import no.hials.jiop.Algorithm;
-import no.hials.jiop.util.CandidateStructure;
-import no.hials.jiop.util.NumericCandidateStructure;
+import no.hials.jiop.candidates.Candidate;
+import no.hials.jiop.candidates.NumericCandidate;
 
 /**
  *
@@ -38,7 +38,7 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
 
     private double startingTemperature;
     private double temperature, alpha;
-    private NumericCandidateStructure current, bestCandidate;
+    private Candidate<E> current, bestCandidate;
 
     public SimulatedAnnealing(Class<?> clazz, double startingTemperature, double alpha) {
         super(clazz, "Simulated Annealing");
@@ -49,29 +49,29 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
     @Override
     public void subInit() {
         this.temperature = startingTemperature;
-        this.current = (NumericCandidateStructure<E>) random();
-        this.bestCandidate = (NumericCandidateStructure<E>) copy(current);
+        this.current = (NumericCandidate<E>) random();
+        this.bestCandidate = (NumericCandidate<E>) (current).copy();
     }
 
     @Override
     protected void subInit(List<E> seeds) {
         this.temperature = startingTemperature;
-        this.current = (NumericCandidateStructure<E>) newCandidate(seeds.get(0));
-        this.bestCandidate = (NumericCandidateStructure<E>) copy(current);
+        this.current = newCandidate(seeds.get(0));
+        this.bestCandidate =  (current).copy();
     }
 
     @Override
-    protected NumericCandidateStructure<E> singleIteration() {
-         double prox = rng.nextDouble()*Math.abs(0.2 - 0.00001) + 0.00001;
-        NumericCandidateStructure<E> newSample = (NumericCandidateStructure<E>) evaluateAndUpdate(current.neighbor(prox));
+    protected Candidate<E> singleIteration() {
+        double prox = rng.nextDouble() * Math.abs(0.2 - 0.00001) + 0.00001;
+        Candidate<E> newSample = evaluateAndUpdate(current.neighbor(prox));
         if (doAccept(current, newSample)) {
-            current = (NumericCandidateStructure<E>) copy(newSample);
+            current = (NumericCandidate<E>) (newSample);
         }
         if (newSample.getCost() < bestCandidate.getCost()) {
-            bestCandidate = (NumericCandidateStructure<E>) copy(newSample);
+            bestCandidate = (NumericCandidate<E>) (newSample);
         }
         temperature *= alpha;
-        return (NumericCandidateStructure<E>) copy(bestCandidate);
+        return bestCandidate;
     }
 
     /**
@@ -81,7 +81,7 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
      * @param newSample the new solution
      * @return whether or not the new solution should be accepted
      */
-    private boolean doAccept(CandidateStructure<E> current, CandidateStructure<E> newSample) {
+    private boolean doAccept(Candidate<E> current, Candidate<E> newSample) {
         return newSample.getCost() < current.getCost() | Math.exp(-(newSample.getCost() - current.getCost()) / temperature) > Math.random();
     }
 
@@ -100,7 +100,6 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
 //    public DoubleArray getFreeParameters() {
 //        return new DoubleArray(startingTemperature, alpha);
 //    }
-
     public double getStartingTemperature() {
         return startingTemperature;
     }
