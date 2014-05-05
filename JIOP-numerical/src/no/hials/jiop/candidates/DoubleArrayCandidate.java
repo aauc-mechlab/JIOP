@@ -46,7 +46,7 @@ public class DoubleArrayCandidate extends GeneralCandidate<double[]> implements 
     }
 
     @Override
-    public GeneralCandidate<double[]> copy() {
+    public Candidate<double[]> copy() {
         return new DoubleArrayCandidate(getElements().clone(), getCost());
     }
 

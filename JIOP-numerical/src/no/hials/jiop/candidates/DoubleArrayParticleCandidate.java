@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, laht
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,56 +27,59 @@ package no.hials.jiop.candidates;
 
 /**
  *
- * @author laht
+ * @author LarsIvar
  */
-public class DoubleArrayBacteriaCandidate extends DoubleArrayCandidate implements BacteriaCandidate<double[]> {
+public class DoubleArrayParticleCandidate extends DoubleArrayCandidate implements ParticleCandidate<double[]> {
 
-    private double prevCost = Double.MAX_VALUE;
-    private double health;
+    private double[] localBestPosition;
+    private double localBestCost;
+    private final double[] velocity;
 
-    public DoubleArrayBacteriaCandidate(int length) {
+    public DoubleArrayParticleCandidate(int length) {
         super(length);
+        this.localBestPosition = elements.clone();
+        this.localBestCost = cost;
+        this.velocity = new double[length];
     }
 
-    public DoubleArrayBacteriaCandidate(double[] elements) {
+    public DoubleArrayParticleCandidate(double[] elements) {
         super(elements);
+        this.localBestPosition = elements.clone();
+        this.localBestCost = cost;
+        this.velocity = new double[elements.length];
     }
 
-    public DoubleArrayBacteriaCandidate(double[] elements, double cost) {
+    public DoubleArrayParticleCandidate(double[] elements, double cost) {
         super(elements, cost);
-    }
-    
-    private DoubleArrayBacteriaCandidate(double[] elements, double cost, double prevCost, double health) {
-        super(elements, cost);
-        this.prevCost = prevCost;
-        this.health = health;
+        this.localBestPosition = elements.clone();
+        this.localBestCost = cost;
+        this.velocity = new double[elements.length];
     }
 
     @Override
-    public double getPrevCost() {
-        return prevCost;
+    public Number getVelocityAt(int index) {
+        return velocity[index];
     }
 
     @Override
-    public void setPrevCost(double prevCost) {
-        this.prevCost = prevCost;
+    public void setVelocityAt(int index, Number value) {
+        velocity[index] = value.doubleValue();
     }
 
     @Override
-    public double getHealth() {
-        return health;
+    public DoubleArrayParticleCandidate copy() {
+        return new DoubleArrayParticleCandidate(elements.clone(), cost);
     }
 
     @Override
-    public void setHealth(double health) {
-        this.health = health;
+    public NumericCandidate<double[]> getLocalBest() {
+        return new DoubleArrayParticleCandidate(localBestPosition, localBestCost);
     }
 
     @Override
-    public DoubleArrayBacteriaCandidate copy() {
-        return new DoubleArrayBacteriaCandidate(elements.clone(), cost, prevCost, health);
+    public void setLocalBest(NumericCandidate<double[]> localBest) {
+       this.localBestPosition = localBest.getElements();
+       this.localBestCost = localBest.getCost();
     }
-    
-    
 
 }

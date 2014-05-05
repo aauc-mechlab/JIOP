@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import no.hials.jiop.Algorithm;
+import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 
 /**
@@ -42,6 +43,7 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
     private int numOutlookers;
 
     private Colony colony;
+    private Candidate<E> bestCandidate;
 
     public ArtificialBeeColony(Class<?> clazz, int size, int numOutlookers) {
         super(clazz, "Artificial Bee Colony");
@@ -57,6 +59,7 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
     public void subInit() {
         this.colony = new Colony(size);
         Collections.sort(colony);
+        this.bestCandidate = colony.get(0).copy();
 
 //        System.out.println("");
 //        Candidate<E> copy = colony.get(0).copy();
@@ -72,11 +75,11 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
         }
 
         Collections.sort(colony);
-
+        this.bestCandidate = colony.get(0).copy();
     }
 
     @Override
-    protected NumericCandidate<E> singleIteration() {
+    protected Candidate<E> singleIteration() {
         final List<NumericCandidate<E>> bestCandidates = colony.subList(0, numOutlookers - 1);
         final List<NumericCandidate<E>> newPop = new ArrayList<>(size);
         for (final NumericCandidate<E> c : bestCandidates) {
@@ -98,7 +101,8 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
         this.colony.clear();
         this.colony.addAll(newPop);
         Collections.sort(colony);
-        return (NumericCandidate<E>) (colony.get(0)).copy();
+        this.bestCandidate = colony.get(0).copy();
+        return bestCandidate;
     }
 
     public int getSize() {

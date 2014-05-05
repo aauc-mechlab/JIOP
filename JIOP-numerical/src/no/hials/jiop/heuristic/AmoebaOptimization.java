@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import no.hials.jiop.Algorithm;
+import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 
 /**
@@ -68,7 +69,7 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
     }
 
     @Override
-    protected NumericCandidate<E> singleIteration() {
+    protected Candidate<E> singleIteration() {
         NumericCandidate<E> centroid = centroid();
         NumericCandidate<E> reflected = reflected(centroid);
         if (reflected.getCost() < candidates.get(0).getCost()) {
@@ -78,7 +79,7 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
             } else {
                 replaceWorst(reflected);
             }
-           return (NumericCandidate<E>) (candidates.get(0)).copy();  // Best solution
+           return (candidates.get(0)).copy();  // Best solution
         }
         if (isWorseThanAllButWorst(reflected) == true) {
             if (reflected.getCost() <= candidates.get(size - 1).getCost()) {
@@ -90,10 +91,10 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
             } else {
                 replaceWorst(contracted);
             }
-            return (NumericCandidate<E>) (candidates.get(0)).copy();  // Best solution
+            return  (candidates.get(0)).copy();  // Best solution
         }
         replaceWorst(reflected);
-        return (NumericCandidate<E>) (candidates.get(0)).copy();  // Best solution
+        return  (candidates.get(0)).copy();  // Best solution
     }
 
     public NumericCandidate<E> centroid() {
@@ -108,7 +109,7 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
             c.set(j, c.get(j).doubleValue() / (size - 1));
         }
         c.clamp(0, 1);
-        c.setCost(getEvaluator().evaluate(c.getElements()));
+        evaluateAndUpdate(c);
         return c;
     }
 
@@ -119,7 +120,7 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
             r.set(j, ((1 + alpha) * centroid.get(j).doubleValue()) - (alpha * worst.get(j).doubleValue()));
         }
         r.clamp(0, 1);
-        r.setCost(getEvaluator().evaluate(r.getElements()));
+        evaluateAndUpdate(r);
         return r;
     }
 
@@ -129,7 +130,7 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
             e.set(j, (gamma * reflected.get(j).doubleValue()) + ((1 - gamma) * centroid.get(j).doubleValue()));
         }
         e.clamp(0, 1);
-        e.setCost(getEvaluator().evaluate(e.getElements()));
+        evaluateAndUpdate(e);
         return e;
     }
 
@@ -140,7 +141,7 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
             v.set(j, (beta * worst.get(j).doubleValue()) + ((1 - beta) * centroid.get(j).doubleValue()));
         }
         v.clamp(0, 1);
-        v.setCost(getEvaluator().evaluate(v.getElements()));
+        evaluateAndUpdate(v);
         return v;
     }
 
@@ -161,7 +162,7 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
                 }
                 candidates.get(i).set(j, value);
             }
-            candidates.get(i).setCost(getEvaluator().evaluate(candidates.get(i).getElements()));
+            evaluateAndUpdate(candidates.get(i));
         }
         Collections.sort(candidates);
     }

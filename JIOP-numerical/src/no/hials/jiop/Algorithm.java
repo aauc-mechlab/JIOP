@@ -120,7 +120,7 @@ public abstract class Algorithm<E> implements Serializable {
     public Candidate<E> newCandidate() {
         try {
             Constructor<?> constructor = templateClass.getConstructor(int.class);
-            GeneralCandidate<E> newInstance = (GeneralCandidate) constructor.newInstance(getEvaluator().getDimension());
+            Candidate<E> newInstance = (Candidate) constructor.newInstance(getEvaluator().getDimension());
             return newInstance;
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
@@ -131,7 +131,7 @@ public abstract class Algorithm<E> implements Serializable {
     public Candidate<E> newCandidate(E e) {
         try {
             Constructor<?> constructor = templateClass.getConstructor(e.getClass(), double.class);
-            GeneralCandidate<E> newInstance = (GeneralCandidate) constructor.newInstance(e, getEvaluator().evaluate(e));
+            Candidate<E> newInstance = (Candidate) constructor.newInstance(e, getEvaluator().evaluate(e));
             return newInstance;
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);

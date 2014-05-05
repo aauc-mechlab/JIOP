@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, laht
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,56 +27,16 @@ package no.hials.jiop.candidates;
 
 /**
  *
- * @author laht
+ * @author LarsIvar
  */
-public class DoubleArrayBacteriaCandidate extends DoubleArrayCandidate implements BacteriaCandidate<double[]> {
+public interface ParticleCandidate<E> extends NumericCandidate<E> {
 
-    private double prevCost = Double.MAX_VALUE;
-    private double health;
+    public NumericCandidate<E> getLocalBest();
 
-    public DoubleArrayBacteriaCandidate(int length) {
-        super(length);
-    }
+    public void setLocalBest(NumericCandidate<E> localBest);
 
-    public DoubleArrayBacteriaCandidate(double[] elements) {
-        super(elements);
-    }
+    public Number getVelocityAt(int index);
 
-    public DoubleArrayBacteriaCandidate(double[] elements, double cost) {
-        super(elements, cost);
-    }
-    
-    private DoubleArrayBacteriaCandidate(double[] elements, double cost, double prevCost, double health) {
-        super(elements, cost);
-        this.prevCost = prevCost;
-        this.health = health;
-    }
-
-    @Override
-    public double getPrevCost() {
-        return prevCost;
-    }
-
-    @Override
-    public void setPrevCost(double prevCost) {
-        this.prevCost = prevCost;
-    }
-
-    @Override
-    public double getHealth() {
-        return health;
-    }
-
-    @Override
-    public void setHealth(double health) {
-        this.health = health;
-    }
-
-    @Override
-    public DoubleArrayBacteriaCandidate copy() {
-        return new DoubleArrayBacteriaCandidate(elements.clone(), cost, prevCost, health);
-    }
-    
-    
+    public void setVelocityAt(int index, Number value);
 
 }

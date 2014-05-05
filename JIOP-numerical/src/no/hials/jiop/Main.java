@@ -30,11 +30,14 @@ import java.util.ArrayList;
 import java.util.List;
 import no.hials.jiop.candidates.DoubleArrayBacteriaCandidate;
 import no.hials.jiop.candidates.DoubleArrayCandidate;
+import no.hials.jiop.candidates.DoubleArrayParticleCandidate;
 import no.hials.jiop.evolutionary.DifferentialEvolution;
 import no.hials.jiop.heuristic.AmoebaOptimization;
 import no.hials.jiop.physical.SimulatedAnnealing;
 import no.hials.jiop.swarm.ArtificialBeeColony;
 import no.hials.jiop.swarm.BacterialForagingOptimization;
+import no.hials.jiop.swarm.MultiSwarmOptimization;
+import no.hials.jiop.swarm.ParticleSwarmOptimization;
 import no.hials.jiop.util.SolutionData;
 import no.hials.utilities.NormUtil;
 import org.jfree.chart.ChartFactory;
@@ -57,16 +60,16 @@ public class Main {
 
         algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, false));
         algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, true));
-//        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticle.class, 40, false));
-//        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticle.class, 40, true));
-//        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticle.class, 5, 30, false));
-//        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticle.class, 5, 30, true));
+        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, false));
+        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, true));
+        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, false));
+        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, true));
         algorithms.add(new ArtificialBeeColony(DoubleArrayCandidate.class, 30, 6));
         algorithms.add(new AmoebaOptimization(DoubleArrayCandidate.class, 50));
         algorithms.add(new SimulatedAnnealing(DoubleArrayCandidate.class, 20, 0.995));
         algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, false));
-//        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaStructure.class, 100, true));
-
+        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, true));
+        
         for (Algorithm alg : algorithms) {
             alg.setEvaluator(new ExampleEvaluator(5));
             alg.init();
