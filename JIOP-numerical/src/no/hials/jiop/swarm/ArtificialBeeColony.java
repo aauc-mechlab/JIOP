@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import no.hials.jiop.Algorithm;
+import no.hials.jiop.Evaluator;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 
@@ -44,10 +45,18 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
 
     private Colony colony;
 
-    public ArtificialBeeColony(Class<?> clazz, int size, int numScouts) {
-        super(clazz, "Artificial Bee Colony");
+    public ArtificialBeeColony(Class<?> clazz, int size, int numScouts, Evaluator<E> evaluator, String name) {
+        super(clazz, evaluator, name);
         this.size = size;
         this.numScouts = numScouts;
+    }
+
+    public ArtificialBeeColony(Class<?> clazz, int size, int numScouts, String name) {
+        this(clazz, size, numScouts, null, name);
+    }
+
+    public ArtificialBeeColony(Class<?> clazz, int size, int numScouts) {
+        this(clazz, size, numScouts, "Artificial Bee Colony");
     }
 
     public ArtificialBeeColony(Class<?> clazz, int size, double numScouts) {
@@ -74,28 +83,29 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
 
     @Override
     protected Candidate<E> singleIteration() {
-        Collections.sort(colony);
-        final List<NumericCandidate<E>> scouts = colony.subList(0, numScouts-1);
-        scouts.add((NumericCandidate<E>) getBestCandidate());
-        final List<NumericCandidate<E>> newPop = new ArrayList<>(size);
-        for (final NumericCandidate<E> c : scouts) {
-            int neighborHoodSize = size / (numScouts);
-            final List<NumericCandidate<E>> neighborhood = new ArrayList<>(neighborHoodSize);
+
+        List<NumericCandidate<E>> newPop = new ArrayList<>(size);
+        List<NumericCandidate<E>> bestCandidates = colony.subList(0, numScouts - 1);
+        bestCandidates.add((NumericCandidate<E>) getBestCandidate());
+        int neighborHoodSize = size / (numScouts);
+        bestCandidates.stream().forEach((c) -> {
+            List<NumericCandidate<E>> neighborhood = new ArrayList<>(neighborHoodSize);
             neighborhood.add(c);
             int remaining = neighborHoodSize - 1;
             for (int i = 0; i < remaining; i++) {
-                double prox = rng.nextDouble() * Math.abs(0.1 - 0.00001) + 0.00001;
-                NumericCandidate<E> neighbor = (NumericCandidate<E>) evaluateAndUpdate(c.neighbor(prox));
-                neighborhood.add(neighbor);
+                 double prox = rng.nextDouble() * Math.abs(0.25 - 0.000001) + 0.000001;
+                neighborhood.add((NumericCandidate<E>) evaluateAndUpdate(c.neighbor(prox)));
             }
+
             Collections.sort(neighborhood);
-            NumericCandidate<E> best = neighborhood.get(0);
+            NumericCandidate<E> best = (NumericCandidate<E>) neighborhood.get(0);
             newPop.add(best);
-            Colony randoms = new Colony(remaining);
-            newPop.addAll(randoms);
-        }
-        this.colony.clear();
-        this.colony.addAll(newPop);
+            for (int i = 0; i < remaining; i++) {
+                newPop.add((NumericCandidate<E>) newCandidate());
+            }
+        });
+        colony.clear();
+        colony.addAll(newPop);
         Collections.sort(colony);
         return colony.get(0);
     }

@@ -47,6 +47,8 @@ import org.jfree.data.xy.XYSeries;
  */
 public abstract class Algorithm<E> implements Serializable {
 
+    protected final static int availableProcessors = Runtime.getRuntime().availableProcessors();
+
     private String name;
     private Evaluator<E> evaluator;
     private final Class<?> templateClass;
@@ -123,11 +125,13 @@ public abstract class Algorithm<E> implements Serializable {
     }
 
     public final void init() {
+        this.bestCandidate = null;
         this.timeSeries = new XYSeries(name);
         setBestCandidateIfBetter(subInit());
     }
 
     public final void init(List<E> seeds) {
+        this.bestCandidate = null;
         if (seeds == null || seeds.isEmpty()) {
             init();
         } else {

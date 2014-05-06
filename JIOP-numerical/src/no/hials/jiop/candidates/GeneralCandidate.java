@@ -38,7 +38,7 @@ public abstract class GeneralCandidate<E> implements Candidate<E> {
     protected final Random rng = new Random();
 
     protected double cost = Double.MAX_VALUE;
-    protected final E elements;
+    protected E elements;
 
     public GeneralCandidate(int length) {
         this.elements = randomElements(length);
@@ -49,6 +49,12 @@ public abstract class GeneralCandidate<E> implements Candidate<E> {
     }
 
     public GeneralCandidate(E elements, double cost) {
+        this.elements = elements;
+        this.cost = cost;
+    }
+
+    @Override
+    public void setElements(E elements, double cost) {
         this.elements = elements;
         this.cost = cost;
     }
@@ -98,7 +104,7 @@ public abstract class GeneralCandidate<E> implements Candidate<E> {
         } else if (getCost() < c.getCost()) {
             return -1;
         } else {
-            return -1;
+            return 1;
         }
     }
 

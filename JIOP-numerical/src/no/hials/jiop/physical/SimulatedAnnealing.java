@@ -40,6 +40,7 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
     private double temperature, alpha;
     private Candidate<E> current;
 
+
     public SimulatedAnnealing(Class<?> clazz, double startingTemperature, double alpha) {
         super(clazz, "Simulated Annealing");
         this.startingTemperature = startingTemperature;
@@ -62,7 +63,7 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
 
     @Override
     protected Candidate<E> singleIteration() {
-        double prox = rng.nextDouble() * Math.abs(0.5 - 0.00001) + 0.00001;
+        double prox = rng.nextDouble() * Math.abs(0.25 - 0.00001) + 0.00001;
         Candidate<E> newSample = evaluateAndUpdate(current.neighbor(prox));
         if (doAccept(current, newSample)) {
             current = newSample;

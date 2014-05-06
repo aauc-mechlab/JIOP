@@ -62,7 +62,7 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
 
     @Override
     public Candidate<E> subInit() {
-      Candidate<E> bestCandidate = null;
+        Candidate<E> bestCandidate = null;
         this.swarms = new ArrayList<>(numSwarms);
         for (int i = 0; i < numSwarms; i++) {
             Swarm swarm = new Swarm(numParticles);
@@ -90,114 +90,68 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
 
     @Override
     protected Candidate<E> singleIteration() {
-        if (multiCore) {
-            for (final Swarm swarm : swarms) {
-                getCompletionService().submit(() -> {
-                    for (ParticleCandidate<E> particle : swarm) {
-                        for (int i = 0; i < getDimension(); i++) {
-                            double li = particle.getLocalBest().get(i).doubleValue();
-                            double si = swarm.swarmBest.get(i).doubleValue();
-                            double gi = ((NumericCandidate<E>) getBestCandidate()).get(i).doubleValue();
-                            double pi = particle.get(i).doubleValue();
-                            double vi = particle.getVelocityAt(i).doubleValue();
 
-                            double newVel = (omega * vi)
-                                    + (rng.nextDouble() * c1 * (li - pi))
-                                    + (rng.nextDouble() * c2 * (si - pi))
-                                    + (rng.nextDouble() * c3 * (gi - pi));
-
-                            if (Math.abs(newVel) > maxVel) {
-                                newVel = newVel > 0 ? maxVel : -maxVel;
-                            }
-
-                            double newPos = pi + newVel;
-                            if (newPos < 0) {
-                                newPos = 0;
-                            } else if (newPos > 1) {
-                                newPos = 1;
-                            }
-                            particle.set(i, newPos);
-                            particle.setVelocityAt(i, newVel);
-                        }
-                        double cost = evaluate(particle);
-                        particle.setCost(cost);
-                        if (cost < particle.getLocalBest().getCost()) {
-                            particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
-                        }
-                        if (cost < swarm.swarmBest.getCost()) {
-                            swarm.swarmBest = (ParticleCandidate<E>) (particle).copy();
-                        }
-                         setBestCandidateIfBetter(particle);
-
-                    }
-                }, null);
+        swarms.stream().forEach((swarm) -> {
+            if (multiCore) {
+                getCompletionService().submit(() -> threadingTask(swarm), null);
+            } else {
+                threadingTask(swarm);
             }
-
-            for (final Swarm swarm : swarms) {
+        });
+        if (multiCore) {
+            swarms.stream().forEach((_item) -> {
                 try {
                     getCompletionService().take().get();
                 } catch (InterruptedException | ExecutionException ex) {
                     Logger.getLogger(MultiSwarmOptimization.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }
-        } else {
-            for (final Swarm swarm : swarms) {
-                for (ParticleCandidate<E> particle : swarm) {
-                    for (int i = 0; i < getDimension(); i++) {
-                        double li = particle.getLocalBest().get(i).doubleValue();
-                        double si = swarm.swarmBest.get(i).doubleValue();
-                        double gi = ((NumericCandidate<E>) getBestCandidate()).get(i).doubleValue();
-                        double pi = particle.get(i).doubleValue();
-                        double vi = particle.getVelocityAt(i).doubleValue();
-
-                        double newVel = (omega * vi)
-                                + (rng.nextDouble() * c1 * (li - pi))
-                                + (rng.nextDouble() * c2 * (si - pi))
-                                + (rng.nextDouble() * c3 * (gi - pi));
-
-                        if (Math.abs(newVel) > maxVel) {
-                            newVel = newVel > 0 ? maxVel : -maxVel;
-                        }
-
-                        double newPos = pi + newVel;
-                        if (newPos < 0) {
-                            newPos = 0;
-                        } else if (newPos > 1) {
-                            newPos = 1;
-                        }
-                        particle.set(i, newPos);
-                        particle.setVelocityAt(i, newVel);
-                    }
-                    double cost = evaluate(particle);
-                    particle.setCost(cost);
-                    if (cost < particle.getLocalBest().getCost()) {
-                        particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
-                    }
-                    if (cost < swarm.swarmBest.getCost()) {
-                        swarm.swarmBest = (ParticleCandidate<E>) (particle).copy();
-                    }
-                    setBestCandidateIfBetter(particle);
-                }
-            }
+            });
         }
         return getBestCandidate();
     }
-//
-//    private Candidate<E> getBestFromAllSwarms() {
-//        Candidate<E> bestCandidate = null;
-//
-//        for (Swarm swarm : swarms) {
-//            if (bestCandidate == null) {
-//                bestCandidate = (swarm.get(0));
-//            } else {
-//                if (swarm.get(0).getCost() < bestCandidate.getCost()) {
-//                    bestCandidate = (swarm.get(0));
-//                }
-//            }
-//            swarms.add(swarm);
-//        }
-//        return bestCandidate;
-//    }
+
+    private void threadingTask(final Swarm swarm) {
+        swarm.stream().map((particle) -> {
+            for (int i = 0; i < getDimension(); i++) {
+                double li = particle.getLocalBest().get(i).doubleValue();
+                double si = swarm.swarmBest.get(i).doubleValue();
+                double gi = ((NumericCandidate<E>) getBestCandidate()).get(i).doubleValue();
+                double pi = particle.get(i).doubleValue();
+                double vi = particle.getVelocityAt(i).doubleValue();
+
+                double newVel = (omega * vi)
+                        + (rng.nextDouble() * c1 * (li - pi))
+                        + (rng.nextDouble() * c2 * (si - pi))
+                        + (rng.nextDouble() * c3 * (gi - pi));
+
+                if (Math.abs(newVel) > maxVel) {
+                    newVel = newVel > 0 ? maxVel : -maxVel;
+                }
+
+                double newPos = pi + newVel;
+                if (newPos < 0) {
+                    newPos = 0;
+                } else if (newPos > 1) {
+                    newPos = 1;
+                }
+                particle.set(i, newPos);
+                particle.setVelocityAt(i, newVel);
+            }
+            return particle;
+        }).map((particle) -> {
+            double cost = evaluate(particle);
+            particle.setCost(cost);
+            if (cost < particle.getLocalBest().getCost()) {
+                particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
+            }
+            if (cost < swarm.swarmBest.getCost()) {
+                swarm.swarmBest = (ParticleCandidate<E>) (particle).copy();
+            }
+            return particle;
+        }).forEach((particle) -> {
+            setBestCandidateIfBetter(particle);
+        });
+    }
 
 //    @Override
 //    public int getNumberOfFreeParameters() {

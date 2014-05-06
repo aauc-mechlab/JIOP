@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, laht
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,32 +23,47 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
 
-import java.io.Serializable;
+package no.hials.jiop.metaheuristic;
+
+import java.util.List;
+import no.hials.jiop.Algorithm;
+import no.hials.jiop.Evaluator;
+import no.hials.jiop.candidates.Candidate;
 
 /**
  *
- * @author laht
- * @param <E>
+ * @author LarsIvar
  */
-public interface Candidate<E> extends Serializable, Iterable, Comparable<Candidate> {
+public class NeighborhoodSearch<E> extends Algorithm<E>{
+    
+    private int size;
 
-    public int size();
+    public NeighborhoodSearch(Class<?> clazz) {
+        super(clazz, "Neighborhood Search");
+    }
+    
+    public NeighborhoodSearch(Class<?> clazz, String name) {
+        super(clazz, name);
+    }
 
-    public double getCost();
+    public NeighborhoodSearch(Class<?> templateClass, Evaluator<E> evaluator, String name) {
+        super(templateClass, evaluator, name);
+    }
+    
+    @Override
+    protected Candidate<E> subInit() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-    public void setCost(double cost);
+    @Override
+    protected Candidate<E> subInit(List<E> seeds) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-    public Candidate<E> copy();
-
-    public E getElements();
-
-    public void setElements(E elements, double cost);
-
-    public Object get(int index);
-
-    public E randomElements(int length);
-
-    public Candidate<E> neighbor(double proximity);
+    @Override
+    protected Candidate<E> singleIteration() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
 }

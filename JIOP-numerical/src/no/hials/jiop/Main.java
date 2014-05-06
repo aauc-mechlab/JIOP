@@ -27,6 +27,8 @@ package no.hials.jiop;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import no.hials.jiop.candidates.DoubleArrayBacteriaCandidate;
 import no.hials.jiop.candidates.DoubleArrayCandidate;
@@ -58,22 +60,30 @@ public class Main {
         XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
         List<Algorithm<double[]>> algorithms = new ArrayList<>();
 
-        algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, false));
         algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, true));
+        algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, false));
         algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, false));
         algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, true));
         algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, false));
         algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, true));
-        algorithms.add(new ArtificialBeeColony(DoubleArrayCandidate.class, 30, 6));
+        algorithms.add(new ArtificialBeeColony(DoubleArrayCandidate.class, 60, 12));
         algorithms.add(new AmoebaOptimization(DoubleArrayCandidate.class, 50));
         algorithms.add(new SimulatedAnnealing(DoubleArrayCandidate.class, 20, 0.995));
         algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, false));
         algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, true));
         
+        //Warming up the JVM
         for (Algorithm alg : algorithms) {
             alg.setEvaluator(new ExampleEvaluator(5));
             alg.init();
-            CandidateSolution<double[]> compute = alg.compute(0d, 500l);
+            alg.compute(100l);
+        }
+        
+        //The actual run
+        for (Algorithm alg : algorithms) {
+            alg.setEvaluator(new ExampleEvaluator(5));
+            alg.init();
+            CandidateSolution<double[]> compute = alg.compute(100l);
             System.out.println(alg.toString() + "\n" + compute);
             xySeriesCollection.addSeries(alg.getSeries());
         }

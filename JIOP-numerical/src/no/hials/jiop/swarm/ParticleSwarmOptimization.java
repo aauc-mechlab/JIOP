@@ -29,9 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.Algorithm;
@@ -44,10 +41,6 @@ import no.hials.jiop.candidates.ParticleCandidate;
  * @author Lars Ivar Hatledal
  */
 public class ParticleSwarmOptimization<E> extends Algorithm<E> {
-
-    private final Object mutex = new Object();
-    private final ExecutorService pool = Executors.newCachedThreadPool();
-    private final ExecutorCompletionService completionService = new ExecutorCompletionService(pool);
 
     public int size;
     private Swarm swarm;
@@ -89,78 +82,53 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
 
     @Override
     protected Candidate<E> singleIteration() {
-        if (multiCore) {
-            for (final ParticleCandidate<E> particle : swarm) {
-                completionService.submit(() -> {
-                    for (int i = 0; i < getDimension(); i++) {
-                        double li = particle.getLocalBest().get(i).doubleValue();
-                        double gi = ((NumericCandidate<E>) getBestCandidate()).get(i).doubleValue();
-                        double pi = particle.get(i).doubleValue();
-                        double vi = particle.getVelocityAt(i).doubleValue();
-
-                        double newVel = (omega * vi) + (rng.nextDouble() * c1 * (li - pi)) + (rng.nextDouble() * c2 * (gi - pi));
-
-                        if (Math.abs(newVel) > maxVel) {
-                            newVel = newVel > 0 ? maxVel : -maxVel;
-                        }
-
-                        double newPos = pi + newVel;
-                        if (newPos < 0) {
-                            newPos = 0;
-                        } else if (newPos > 1) {
-                            newPos = 1;
-                        }
-                        particle.set(i, newPos);
-                        particle.setVelocityAt(i, newVel);
-                    }
-                    double cost = evaluate(particle);
-                    particle.setCost(cost);
-                    if (cost < particle.getLocalBest().getCost()) {
-                        particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
-                    }
-                    setBestCandidateIfBetter(particle);
-                }, true);
-
+        for (ParticleCandidate<E> p : swarm) {
+            if (multiCore) {
+                getCompletionService().submit(() -> threadingTask(p), null);
+            } else {
+                threadingTask(p);
             }
+        }
+        if (multiCore) {
             for (ParticleCandidate<E> p : swarm) {
                 try {
-                    completionService.take().get();
+                    getCompletionService().take().get();
                 } catch (InterruptedException | ExecutionException ex) {
-                    Logger.getLogger(MultiSwarmOptimization.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(ParticleSwarmOptimization.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }
-        } else {
-            for (ParticleCandidate<E> particle : swarm) {
-                for (int i = 0; i < getDimension(); i++) {
-                    double li = particle.getLocalBest().get(i).doubleValue();
-                    double gi = ((NumericCandidate<E>) getBestCandidate()).get(i).doubleValue();
-                    double pi = particle.get(i).doubleValue();
-                    double vi = particle.getVelocityAt(i).doubleValue();
-
-                    double newVel = (omega * vi) + (rng.nextDouble() * c1 * (li - pi)) + (rng.nextDouble() * c2 * (gi - pi));
-
-                    if (Math.abs(newVel) > maxVel) {
-                        newVel = newVel > 0 ? maxVel : -maxVel;
-                    }
-
-                    double newPos = pi + newVel;
-                    if (newPos < 0) {
-                        newPos = 0;
-                    } else if (newPos > 1) {
-                        newPos = 1;
-                    }
-                    particle.set(i, newPos);
-                    particle.setVelocityAt(i, newVel);
-                }
-                double cost = evaluate(particle);
-                particle.setCost(cost);
-                if (cost < particle.getLocalBest().getCost()) {
-                    particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
-                }
-                setBestCandidateIfBetter(particle);
             }
         }
         return getBestCandidate();
+    }
+
+    private void threadingTask(final ParticleCandidate<E> particle) {
+        for (int i = 0; i < getDimension(); i++) {
+            double li = particle.getLocalBest().get(i).doubleValue();
+            double gi = ((NumericCandidate<E>) getBestCandidate()).get(i).doubleValue();
+            double pi = particle.get(i).doubleValue();
+            double vi = particle.getVelocityAt(i).doubleValue();
+
+            double newVel = (omega * vi) + (rng.nextDouble() * c1 * (li - pi)) + (rng.nextDouble() * c2 * (gi - pi));
+
+            if (Math.abs(newVel) > maxVel) {
+                newVel = newVel > 0 ? maxVel : -maxVel;
+            }
+
+            double newPos = pi + newVel;
+            if (newPos < 0) {
+                newPos = 0;
+            } else if (newPos > 1) {
+                newPos = 1;
+            }
+            particle.set(i, newPos);
+            particle.setVelocityAt(i, newVel);
+        }
+        double cost = evaluate(particle);
+        particle.setCost(cost);
+        if (cost < particle.getLocalBest().getCost()) {
+            particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
+        }
+        setBestCandidateIfBetter(particle);
     }
 
     public double getOmega() {
@@ -193,6 +161,7 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
 
     public void setMaxVel(double maxVel) {
         this.maxVel = maxVel;
+
     }
 
 //    @Override

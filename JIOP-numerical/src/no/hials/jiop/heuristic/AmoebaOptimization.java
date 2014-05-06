@@ -81,7 +81,7 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
             } else {
                 replaceWorst(reflected);
             }
-           return (candidates.get(0)).copy();  // Best solution
+           return (candidates.get(0));  // Best solution
         }
         if (isWorseThanAllButWorst(reflected) == true) {
             if (reflected.getCost() <= candidates.get(size - 1).getCost()) {
@@ -93,10 +93,10 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
             } else {
                 replaceWorst(contracted);
             }
-            return  (candidates.get(0)).copy();  // Best solution
+            return  (candidates.get(0));  // Best solution
         }
         replaceWorst(reflected);
-        return  (candidates.get(0)).copy();  // Best solution
+        return  (candidates.get(0));  // Best solution
     }
 
     public NumericCandidate<E> centroid() {

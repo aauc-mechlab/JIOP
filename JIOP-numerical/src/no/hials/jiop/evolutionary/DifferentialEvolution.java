@@ -79,88 +79,56 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
 
     @Override
     protected Candidate<E> singleIteration() {
-
-        if (multiCore) {
-            for (final NumericCandidate<E> c : candidates) {
-                getCompletionService().submit(() -> {
-                    NumericCandidate<E> c1;
-                    NumericCandidate<E> c2, c3;
-                    do {
-                        int rand = rng.nextInt(candidates.size());
-                        c1 = candidates.get(rand);
-                    } while (c1 == c);
-                    do {
-                        int rand = rng.nextInt(candidates.size());
-                        c2 = candidates.get(rand);
-                    } while (c2 == c && c2 == c1);
-                    do {
-                        int rand = rng.nextInt(candidates.size());
-                        c3 = candidates.get(rand);
-                    } while (c3 == c && c3 == c1 && c3 == c2);
-                    int R = rng.nextInt(getDimension());
-                    NumericCandidate<E> sample = (NumericCandidate<E>) newCandidate();
-                    for (int i = 0; i < sample.size(); i++) {
-                        if ((rng.nextDouble() < CR) || (i == R)) {
-                            double value = c1.get(i).doubleValue() + F * (c2.get(i).doubleValue() - c3.get(i).doubleValue());
-                            sample.set(i, value);
-                        } else {
-                            sample.set(i, c.get(i));
-                        }
-                    }
-                    sample.clamp(0, 1);
-                    evaluateAndUpdate(sample);
-                    if (sample.getCost() < c.getCost()) {
-                        candidates.set(candidates.indexOf(c), sample);
-                        setBestCandidateIfBetter(sample);
-                    }
-                }, null);
+        candidates.stream().forEach((c) -> {
+            if (multiCore) {
+                getCompletionService().submit(() -> threadingTask(c), null);
+            } else {
+                threadingTask(c);
             }
-            for (NumericCandidate<E> c : candidates) {
+        });
+        if (multiCore) {
+            candidates.stream().forEach((_item) -> {
                 try {
                     getCompletionService().take().get();
                 } catch (InterruptedException | ExecutionException ex) {
                     Logger.getLogger(DifferentialEvolution.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }
-        } else {
+            });
+        }
+        return getBestCandidate();
+    }
 
-            for (NumericCandidate<E> c : candidates) {
-
-                NumericCandidate<E> c1;
-                NumericCandidate<E> c2, c3;
-                do {
-                    int rand = rng.nextInt(candidates.size());
-                    c1 = candidates.get(rand);
-                } while (c1 == c);
-                do {
-                    int rand = rng.nextInt(candidates.size());
-                    c2 = candidates.get(rand);
-                } while (c2 == c && c2 == c1);
-                do {
-                    int rand = rng.nextInt(candidates.size());
-                    c3 = candidates.get(rand);
-                } while (c3 == c && c3 == c1 && c3 == c2);
-                int R = rng.nextInt(c.size());
-                NumericCandidate<E> sample = (NumericCandidate<E>) newCandidate();
-                for (int i = 0; i < sample.size(); i++) {
-                    if ((rng.nextDouble() < CR) || (i == R)) {
-                        double value = c1.get(i).doubleValue() + F * (c2.get(i).doubleValue() - c3.get(i).doubleValue());
-                        sample.set(i, value);
-                    } else {
-                        sample.set(i, c.get(i));
-                    }
-                }
-                sample.clamp(0, 1);
-                evaluateAndUpdate(sample);
-
-                if (sample.getCost() < c.getCost()) {
-                    candidates.set(candidates.indexOf(c), sample);
-                    setBestCandidateIfBetter(sample);
-                }
+    private void threadingTask(final NumericCandidate<E> c) {
+        NumericCandidate<E> c1;
+        NumericCandidate<E> c2, c3;
+        do {
+            int rand = rng.nextInt(candidates.size());
+            c1 = candidates.get(rand);
+        } while (c1 == c);
+        do {
+            int rand = rng.nextInt(candidates.size());
+            c2 = candidates.get(rand);
+        } while (c2 == c && c2 == c1);
+        do {
+            int rand = rng.nextInt(candidates.size());
+            c3 = candidates.get(rand);
+        } while (c3 == c && c3 == c1 && c3 == c2);
+        int R = rng.nextInt(getDimension());
+        NumericCandidate<E> sample = (NumericCandidate<E>) newCandidate();
+        for (int i = 0; i < sample.size(); i++) {
+            if ((rng.nextDouble() < CR) || (i == R)) {
+                double value = c1.get(i).doubleValue() + F * (c2.get(i).doubleValue() - c3.get(i).doubleValue());
+                sample.set(i, value);
+            } else {
+                sample.set(i, c.get(i));
             }
         }
-
-        return getBestCandidate();
+        sample.clamp(0, 1);
+        evaluateAndUpdate(sample);
+        if (sample.getCost() < c.getCost()) {
+            c.setElements(sample.getElements(), sample.getCost());
+            setBestCandidateIfBetter(c);
+        }
     }
 
     public int getNP() {

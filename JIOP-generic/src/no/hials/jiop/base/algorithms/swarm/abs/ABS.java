@@ -70,6 +70,7 @@ public class ABS<E> extends PopulationBasedMLAlgorithm<E> {
         });
         submitJobs(jobs);
         getContainer().clearAndAddAll(newPop);
+        System.out.println(getContainer().sort().get(0).getCost());
         setBestCandidate(getContainer().sort().get(0));
     }
 
