@@ -39,4 +39,9 @@ public interface ParticleCandidate<E> extends NumericCandidate<E> {
 
     public void setVelocityAt(int index, Number value);
 
+    @Override
+    public Candidate<E> copy();
+    
+    
+
 }

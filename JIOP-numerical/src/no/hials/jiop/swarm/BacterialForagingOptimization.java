@@ -78,7 +78,7 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
     }
 
     @Override
-    protected Candidate<E> singleIteration() {
+    protected void singleIteration() {
         for (int k = 0; k < nre; k++) // reproduce-eliminate loop
                 {
             for (int j = 0; j < nc; j++) // chemotactic loop; the lifespan of each bacterium
@@ -265,8 +265,6 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
                 }
             }
         }
-
-        return getBestCandidate();
     }
 
     public int getNc() {

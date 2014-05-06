@@ -33,13 +33,13 @@ import no.hials.jiop.candidates.NumericCandidate;
 /**
  *
  * @author Lars Ivar Hatledal
+ * @param <E>
  */
 public class SimulatedAnnealing<E> extends Algorithm<E> {
 
     private double startingTemperature;
     private double temperature, alpha;
     private Candidate<E> current;
-
 
     public SimulatedAnnealing(Class<?> clazz, double startingTemperature, double alpha) {
         super(clazz, "Simulated Annealing");
@@ -58,18 +58,20 @@ public class SimulatedAnnealing<E> extends Algorithm<E> {
     protected Candidate<E> subInit(List<E> seeds) {
         this.temperature = startingTemperature;
         this.current = newCandidate(seeds.get(0));
+        
         return current;
     }
 
     @Override
-    protected Candidate<E> singleIteration() {
+    protected void singleIteration() {
         double prox = rng.nextDouble() * Math.abs(0.25 - 0.00001) + 0.00001;
         Candidate<E> newSample = evaluateAndUpdate(current.neighbor(prox));
         if (doAccept(current, newSample)) {
             current = newSample;
         }
+        setBestCandidateIfBetter(newSample);
         temperature *= alpha;
-        return newSample;
+
     }
 
     /**

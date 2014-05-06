@@ -23,31 +23,24 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
-import no.hials.jiop.candidates.Candidate;
+
+package no.hials.jiop.temination;
 
 /**
- * 
- * @author Lars Ivar Hatledal
+ *
+ * @author LarsIvar
  */
-public class CandidateSolution<E> {
+public class TimeElapsedCriteria implements TerminationCriteria<Long>{
+    
+    private final long maxTime;
 
-    public final long millis;
-    public final double cost;
-    public final int iterations;
-    public final Candidate<E>  solution;
-
-    public CandidateSolution(Candidate<E>  solution, double cost, int iterations, long millis) {
-        this.cost = cost;
-        this.millis = millis;
-        this.solution = solution;
-        this.iterations = iterations;
+    public TimeElapsedCriteria(long maxTime) {
+        this.maxTime = maxTime;
     }
 
     @Override
-    public String toString() {
-        return "SolutionData{" + "#cost=" + cost + ", \t#iterations=" + iterations + ", \t#time=" + millis + ", \t#solution=" + solution + '}';
+    public boolean souldTerminate(TerminationData data) {
+        return data.timeElapsed >= maxTime;
     }
-    
     
 }

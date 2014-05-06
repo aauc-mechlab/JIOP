@@ -27,8 +27,6 @@ package no.hials.jiop;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import no.hials.jiop.candidates.DoubleArrayBacteriaCandidate;
 import no.hials.jiop.candidates.DoubleArrayCandidate;
@@ -41,6 +39,8 @@ import no.hials.jiop.swarm.BacterialForagingOptimization;
 import no.hials.jiop.swarm.MultiSwarmOptimization;
 import no.hials.jiop.swarm.ParticleSwarmOptimization;
 import no.hials.jiop.candidates.CandidateSolution;
+import no.hials.jiop.temination.CostCriteria;
+import no.hials.jiop.temination.TimeElapsedCriteria;
 import no.hials.utilities.NormUtil;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -71,19 +71,19 @@ public class Main {
         algorithms.add(new SimulatedAnnealing(DoubleArrayCandidate.class, 20, 0.995));
         algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, false));
         algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, true));
-        
+
         //Warming up the JVM
         for (Algorithm alg : algorithms) {
-            alg.setEvaluator(new ExampleEvaluator(5));
+            alg.setEvaluator(new ExampleEvaluator(4));
             alg.init();
-            alg.compute(100l);
+            alg.compute(new TimeElapsedCriteria(100l));
         }
-        
+
         //The actual run
         for (Algorithm alg : algorithms) {
             alg.setEvaluator(new ExampleEvaluator(5));
             alg.init();
-            CandidateSolution<double[]> compute = alg.compute(100l);
+            CandidateSolution<double[]> compute = alg.compute(new TimeElapsedCriteria(100l), new CostCriteria(0d));
             System.out.println(alg.toString() + "\n" + compute);
             xySeriesCollection.addSeries(alg.getSeries());
         }
@@ -116,7 +116,7 @@ public class Main {
         public double evaluate(double[] elements) {
             double cost = 0;
             for (int i = 0; i < elements.length; i++) {
-                double xi = new NormUtil(1, 0, 5, -5).normalize(elements[i]);
+                double xi = new NormUtil(1, 0, 100, -100).normalize(elements[i]);
                 cost += (xi * xi) - (10 * Math.cos(2 * Math.PI * xi)) + 10;
             }
 

@@ -89,7 +89,7 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
     }
 
     @Override
-    protected Candidate<E> singleIteration() {
+    protected void singleIteration() {
 
         swarms.stream().forEach((swarm) -> {
             if (multiCore) {
@@ -107,7 +107,6 @@ public class MultiSwarmOptimization<E> extends Algorithm<E> {
                 }
             });
         }
-        return getBestCandidate();
     }
 
     private void threadingTask(final Swarm swarm) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, LarsIvar
+ * Copyright (c) 2014, Aalesund University College 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,47 +23,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-package no.hials.jiop.metaheuristic;
-
-import java.util.List;
-import no.hials.jiop.Algorithm;
-import no.hials.jiop.Evaluator;
-import no.hials.jiop.candidates.Candidate;
+package no.hials.jiop.temination;
 
 /**
  *
  * @author LarsIvar
  */
-public class NeighborhoodSearch<E> extends Algorithm<E>{
-    
-    private int size;
+public class CostCriteria implements TerminationCriteria<Double> {
 
-    public NeighborhoodSearch(Class<?> clazz) {
-        super(clazz, "Neighborhood Search");
-    }
-    
-    public NeighborhoodSearch(Class<?> clazz, String name) {
-        super(clazz, name);
-    }
+    private final double lowCost;
 
-    public NeighborhoodSearch(Class<?> templateClass, Evaluator<E> evaluator, String name) {
-        super(templateClass, evaluator, name);
-    }
-    
-    @Override
-    protected Candidate<E> subInit() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public CostCriteria(double lowError) {
+        this.lowCost = lowError;
     }
 
     @Override
-    protected Candidate<E> subInit(List<E> seeds) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean souldTerminate(TerminationData data) {
+        return data.bestCost <= lowCost;
     }
 
-    @Override
-    protected Candidate<E> singleIteration() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
 }

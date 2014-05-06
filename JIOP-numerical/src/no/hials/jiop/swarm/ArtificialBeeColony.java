@@ -82,7 +82,7 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
     }
 
     @Override
-    protected Candidate<E> singleIteration() {
+    protected void singleIteration() {
 
         List<NumericCandidate<E>> newPop = new ArrayList<>(size);
         List<NumericCandidate<E>> bestCandidates = colony.subList(0, numScouts - 1);
@@ -107,7 +107,7 @@ public class ArtificialBeeColony<E> extends Algorithm<E> {
         colony.clear();
         colony.addAll(newPop);
         Collections.sort(colony);
-        return colony.get(0);
+        setBestCandidateIfBetter(colony.get(0));
     }
 
     public int getSize() {

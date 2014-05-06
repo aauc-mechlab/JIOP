@@ -38,6 +38,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.CandidateSolution;
+import no.hials.jiop.temination.TerminationData;
+import no.hials.jiop.temination.TerminationCriteria;
+import no.hials.jiop.temination.TimeElapsedCriteria;
 import org.jfree.data.xy.XYSeries;
 
 /**
@@ -71,6 +74,12 @@ public abstract class Algorithm<E> implements Serializable {
         this.evaluator = evaluator;
         this.timeSeries = new XYSeries(name);
     }
+
+    protected abstract void singleIteration();
+
+    protected abstract Candidate<E> subInit();
+
+    protected abstract Candidate<E> subInit(List<E> seeds);
 
     /**
      * Evaluates the cost of the given candidate and returns it This is the same
@@ -146,19 +155,13 @@ public abstract class Algorithm<E> implements Serializable {
 
     public synchronized void setBestCandidateIfBetter(Candidate<E> candidate) {
         if (bestCandidate == null) {
-            bestCandidate = candidate;
+            bestCandidate = candidate.copy();
         } else {
             if (candidate.getCost() < bestCandidate.getCost()) {
                 this.bestCandidate = candidate.copy();
             }
         }
     }
-
-    protected abstract Candidate<E> subInit();
-
-    protected abstract Candidate<E> subInit(List<E> seeds);
-
-    protected abstract Candidate<E> singleIteration();
 
     protected CompletionService<Candidate<E>> getCompletionService() {
         if (pool == null) {
@@ -168,60 +171,31 @@ public abstract class Algorithm<E> implements Serializable {
         return completionService;
     }
 
-    public CandidateSolution compute(long timeOut) {
+    public CandidateSolution compute(TerminationCriteria... criterias) {
+        if (criterias == null) {
+            criterias = new TerminationCriteria[]{new TimeElapsedCriteria(100l)};
+        } else if (criterias.length == 0) {
+            criterias = new TerminationCriteria[]{new TimeElapsedCriteria(100l)};
+        }
         long t0 = System.currentTimeMillis();
-        long t;
-        int it = 0;
-        do {
-            setBestCandidateIfBetter(singleIteration().copy());
-            double x = (double) (System.currentTimeMillis() - t0) / 1000;
-            double y = getBestCandidate().getCost();
-            timeSeries.add(x, y);
-            it++;
-        } while ((t = System.currentTimeMillis() - t0) < timeOut);
+        long timeElapsed = 0;
+        double bestCost;
+        int numIterations = 0;
+        boolean terminate = false;
+        while (!terminate) {
+            singleIteration();
+            timeElapsed = (System.currentTimeMillis() - t0);
+            bestCost = getBestCandidate().getCost();
+            numIterations++;
+            timeSeries.add(timeElapsed, bestCost);
+            for (TerminationCriteria tc : criterias) {
+                if (tc.souldTerminate(new TerminationData(bestCost, timeElapsed, numIterations))) {
+                    terminate = true;
+                }
+            }
+        }
 
-        return new CandidateSolution(getBestCandidate(), getBestCandidate().getCost(), it, t);
-    }
-
-    public CandidateSolution compute(double error, long timeOut) {
-        long t;
-        long t0 = System.currentTimeMillis();
-        int it = 0;
-        do {
-            setBestCandidateIfBetter(singleIteration().copy());
-            double x = (double) (System.currentTimeMillis() - t0) / 1000;
-            double y = getBestCandidate().getCost();
-            timeSeries.add(x, y);
-            it++;
-        } while (((t = System.currentTimeMillis() - t0) < timeOut) && (getBestCandidate().getCost() > error));
-
-        return new CandidateSolution(getBestCandidate(), getBestCandidate().getCost(), it, t);
-    }
-
-    public CandidateSolution compute(int iterations) {
-        long t0 = System.currentTimeMillis();
-        int it = 0;
-        do {
-            setBestCandidateIfBetter(singleIteration().copy());
-            double x = (double) (System.currentTimeMillis() - t0) / 1000;
-            double y = getBestCandidate().getCost();
-            timeSeries.add(x, y);
-        } while (it++ < iterations);
-
-        return new CandidateSolution(getBestCandidate(), getBestCandidate().getCost(), it, System.currentTimeMillis() - t0);
-    }
-
-    public CandidateSolution compute(int iterations, long timeOut) {
-        long t0 = System.currentTimeMillis();
-        int it = 0;
-        do {
-            setBestCandidateIfBetter(singleIteration().copy());
-            double x = (double) (System.currentTimeMillis() - t0) / 1000;
-            double y = getBestCandidate().getCost();
-            timeSeries.add(x, y);
-        } while (((System.currentTimeMillis() - t0) < timeOut) && (it++ < iterations));
-
-        return new CandidateSolution(getBestCandidate(), getBestCandidate().getCost(), it, System.currentTimeMillis() - t0);
+        return new CandidateSolution(getBestCandidate(), getBestCandidate().getCost(), numIterations, timeElapsed);
     }
 
 //    /**

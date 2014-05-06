@@ -71,7 +71,7 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
     }
 
     @Override
-    protected Candidate<E> singleIteration() {
+    protected void singleIteration() {
         NumericCandidate<E> centroid = centroid();
         NumericCandidate<E> reflected = reflected(centroid);
         if (reflected.getCost() < candidates.get(0).getCost()) {
@@ -81,7 +81,8 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
             } else {
                 replaceWorst(reflected);
             }
-           return (candidates.get(0));  // Best solution
+            setBestCandidateIfBetter(candidates.get(0));
+            return;
         }
         if (isWorseThanAllButWorst(reflected) == true) {
             if (reflected.getCost() <= candidates.get(size - 1).getCost()) {
@@ -93,10 +94,11 @@ public class AmoebaOptimization<E> extends Algorithm<E> {
             } else {
                 replaceWorst(contracted);
             }
-            return  (candidates.get(0));  // Best solution
+            setBestCandidateIfBetter(candidates.get(0));
+            return;
         }
         replaceWorst(reflected);
-        return  (candidates.get(0));  // Best solution
+        setBestCandidateIfBetter(candidates.get(0));
     }
 
     public NumericCandidate<E> centroid() {

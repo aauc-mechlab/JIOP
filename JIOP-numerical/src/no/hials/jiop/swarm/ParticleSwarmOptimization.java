@@ -81,7 +81,7 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
     }
 
     @Override
-    protected Candidate<E> singleIteration() {
+    protected void singleIteration() {
         for (ParticleCandidate<E> p : swarm) {
             if (multiCore) {
                 getCompletionService().submit(() -> threadingTask(p), null);
@@ -98,7 +98,6 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
                 }
             }
         }
-        return getBestCandidate();
     }
 
     private void threadingTask(final ParticleCandidate<E> particle) {

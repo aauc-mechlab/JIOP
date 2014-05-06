@@ -36,7 +36,7 @@ import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 
 /**
- *
+ * A Differential Evolution implementation
  * @author Lars Ivar Hatledal
  */
 public class DifferentialEvolution<E> extends Algorithm<E> {
@@ -78,7 +78,7 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
     }
 
     @Override
-    protected Candidate<E> singleIteration() {
+    protected void singleIteration() {
         candidates.stream().forEach((c) -> {
             if (multiCore) {
                 getCompletionService().submit(() -> threadingTask(c), null);
@@ -95,7 +95,6 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
                 }
             });
         }
-        return getBestCandidate();
     }
 
     private void threadingTask(final NumericCandidate<E> c) {
