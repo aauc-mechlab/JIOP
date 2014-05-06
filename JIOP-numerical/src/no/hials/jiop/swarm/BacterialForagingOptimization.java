@@ -25,13 +25,8 @@
  */
 package no.hials.jiop.swarm;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import no.hials.jiop.Algorithm;
+import no.hials.jiop.PopulationBasedAlgorithm;
 import no.hials.jiop.candidates.BacteriaCandidate;
 import no.hials.jiop.candidates.Candidate;
 
@@ -41,229 +36,117 @@ import no.hials.jiop.candidates.Candidate;
  *
  * @author Lars Ivar Hatledal
  */
-public class BacterialForagingOptimization<E> extends Algorithm<E> {
+public class BacterialForagingOptimization<E> extends PopulationBasedAlgorithm<E> {
 
-    private int size;
     private int nc = 8; //chemotactic steps
     private int ns = 3; //maximum number of times a bacterium will swim in the same direction
     private int nre = 3; //the number of reproduction steps
     private double ped = 0.25; // probability of a particular bacterium being dispersed
     private double ci = 0.05; //basic swim length for each bacterium
 
-    private Colony colony;
-
-    private final boolean multiCore;
-
     public BacterialForagingOptimization(Class<?> clazz, int size, boolean multiCore) {
-        super(clazz, "Bacterial Foraging Optimization " + multiCore);
-        this.multiCore = multiCore;
-        this.size = size;
-    }
-
-    @Override
-    public Candidate<E> subInit() {
-        this.colony = new Colony(size);
-        Collections.sort(colony);
-        return colony.get(0);
-    }
-
-    @Override
-    public Candidate<E> subInit(List<E> seeds) {
-        this.colony = new Colony(size - seeds.size());
-        for (E seed : seeds) {
-            colony.add((BacteriaCandidate<E>) newCandidate(seed));
-        }
-        Collections.sort(colony);
-        return colony.get(0);
+        super(clazz, size, "Bacterial Foraging Optimization " + multiCore);
     }
 
     @Override
     protected void singleIteration() {
         for (int k = 0; k < nre; k++) // reproduce-eliminate loop
-                {
+        {
             for (int j = 0; j < nc; j++) // chemotactic loop; the lifespan of each bacterium
-                        {
+            {
                 // reset the health of each bacterium to 0.0 
                 for (int i = 0; i < size; i++) {
-                    colony.get(i).setHealth(0);
+                    ((BacteriaCandidate<E>)population.get(i)).setHealth(0);
                 }
 
-                if (multiCore) {
-                    for (final BacteriaCandidate<E> b : colony) // each bacterium
-                                        {
-                        getCompletionService().submit(() -> {
-                            double[] tumble = new double[getDimension()]; // tumble (point in a new direction)
-                            for (int p = 0; p < getDimension(); p++) {
-                                tumble[p] = 2.0 * rng.nextDouble() - 1.0;
-                            } // (hi - lo) * r + lo => random i [-1, +1]
-                            double rootProduct = 0.0;
-                            for (int p = 0; p < getDimension(); p++) {
-                                rootProduct += (tumble[p] * tumble[p]);
-                            }
-
-                            for (int p = 0; p < getDimension(); p++) {
-                                double value = b.get(p).doubleValue() + (ci * tumble[p]) / rootProduct;
-                                if (value < 0) {
-                                    value = 0;
-                                } else if (value > 1) {
-                                    value = 1;
-                                }
-                                b.set(p, value);
-                            } // move in new direction
-
-                            // update costs of new position
-                            b.setPrevCost(b.getCost());
-                            evaluateAndUpdate(b);
-                            b.setHealth(b.getHealth() + b.getCost()); // health is an accumulation of costs during bacterium's life
-
-                            // new best?
-                            setBestCandidateIfBetter(b);
-
-                            int m = 0; // swim or not based on prev and curr costs
-                            while (m < ns && b.getCost() < b.getPrevCost()) // we are improving
-                            {
-                                m++; // swim counter
-                                for (int p = 0; p < getDimension(); p++) {
-                                    double value = b.get(p).doubleValue() + (ci * tumble[p]) / rootProduct;
-                                    if (value < 0) {
-                                        value = 0;
-                                    } else if (value > 1) {
-                                        value = 1;
-                                    }
-                                    b.set(p, value);
-
-                                } // move in current direction
-                                b.setPrevCost(b.getCost()); // update costs
-                                evaluateAndUpdate(b);
-                                setBestCandidateIfBetter(b);
-                            }
-                        }, null);
+                for (Candidate<E> c : population) // each bacterium
+                {
+                    BacteriaCandidate<E> b = (BacteriaCandidate<E>) c;
+                    double[] tumble = new double[getDimension()]; // tumble (point in a new direction)
+                    for (int p = 0; p < getDimension(); p++) {
+                        tumble[p] = 2.0 * rng.nextDouble() - 1.0;
+                    } // (hi - lo) * r + lo => random i [-1, +1]
+                    double rootProduct = 0.0;
+                    for (int p = 0; p < getDimension(); p++) {
+                        rootProduct += (tumble[p] * tumble[p]);
                     }
-                    for (BacteriaCandidate<E> b : colony) {
-                        try {
-                            getCompletionService().take().get();
-                        } catch (InterruptedException | ExecutionException ex) {
-                            Logger.getLogger(BacterialForagingOptimization.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                } else {
-                    for (BacteriaCandidate<E> b : colony) // each bacterium
-                                        {
-                        double[] tumble = new double[getDimension()]; // tumble (point in a new direction)
-                        for (int p = 0; p < getDimension(); p++) {
-                            tumble[p] = 2.0 * rng.nextDouble() - 1.0;
-                        } // (hi - lo) * r + lo => random i [-1, +1]
-                        double rootProduct = 0.0;
-                        for (int p = 0; p < getDimension(); p++) {
-                            rootProduct += (tumble[p] * tumble[p]);
-                        }
 
+                    for (int p = 0; p < getDimension(); p++) {
+                        double value = b.get(p).doubleValue() + (ci * tumble[p]) / rootProduct;
+                        if (value < 0) {
+                            value = 0;
+                        } else if (value > 1) {
+                            value = 1;
+                        }
+                        b.set(p, value);
+                    } // move in new direction
+
+                    // update costs of new position
+                    b.setPrevCost(b.getCost());
+                    evaluateAndUpdate(b);
+                    b.setHealth(b.getHealth() + b.getCost()); // health is an accumulation of costs during bacterium's life
+
+                    // new best?
+                    setBestCandidateIfBetter(b);
+
+                    int m = 0; // swim or not based on prev and curr costs
+                    while (m < ns && b.getCost() < b.getPrevCost()) // we are improving
+                    {
+                        m++; // swim counter
                         for (int p = 0; p < getDimension(); p++) {
                             double value = b.get(p).doubleValue() + (ci * tumble[p]) / rootProduct;
-                            if (value < 0) {
-                                value = 0;
-                            } else if (value > 1) {
-                                value = 1;
-                            }
                             b.set(p, value);
-                        } // move in new direction
 
-                        // update costs of new position
-                        b.setPrevCost(b.getCost());
+                        } // move in current direction
+                        b.clamp(0, 1);
+                        b.setPrevCost(b.getCost()); // update costs
                         evaluateAndUpdate(b);
-                        b.setHealth(b.getHealth() + b.getCost()); // health is an accumulation of costs during bacterium's life
-
-                        // new best?
                         setBestCandidateIfBetter(b);
+                    } // while improving
 
-                        int m = 0; // swim or not based on prev and curr costs
-                        while (m < ns && b.getCost() < b.getPrevCost()) // we are improving
-                        {
-                            m++; // swim counter
-                            for (int p = 0; p < getDimension(); p++) {
-                                double value = b.get(p).doubleValue() + (ci * tumble[p]) / rootProduct;
-                                if (value < 0) {
-                                    value = 0;
-                                } else if (value > 1) {
-                                    value = 1;
-                                }
-                                b.set(p, value);
-
-                            } // move in current direction
-                            b.setPrevCost(b.getCost()); // update costs
-                            evaluateAndUpdate(b);
-                            setBestCandidateIfBetter(b);
-                        } // while improving
-
-                    } // i, each bacterium in the chemotactic loop
-                }
+                } // i, each bacterium in the chemotactic loop
 
             } // j, chemotactic loop
 
             // reproduce the healthiest half of bacteria, eliminate the other half
-            Collections.sort(colony, (BacteriaCandidate<E> o1, BacteriaCandidate<E> o2) -> {
-                if (o1.getHealth() == o2.getHealth()) {
+            Collections.sort(population, (Candidate<E> c1, Candidate<E> c2) -> {
+                BacteriaCandidate<E> b1 = (BacteriaCandidate<E>) c1;
+                BacteriaCandidate<E> b2 = (BacteriaCandidate<E>) c2;
+                if (b1.getHealth() == b2.getHealth()) {
                     return 0;
-                } else if (o1.getHealth() < o2.getHealth()) {
+                } else if (b1.getHealth() < b2.getHealth()) {
                     return -1;
                 } else {
                     return 1;
                 }
             }); // sort from smallest health (best) to highest health (worst)
             for (int left = 0; left < size / 2; left++) // left points to a bacterium that will reproduce
-                        {
+            {
                 int right = left + size / 2; // right points to a bad bacterium in the rigt side of array that will die
-                colony.set(right, colony.get(left).copy());
+                population.set(right, population.get(left).copy());
             }
 
         } // k, reproduction loop
 
-        if (multiCore) {
-            for (final BacteriaCandidate<E> b : colony) {
-                getCompletionService().submit(() -> {
-                    double prob = rng.nextDouble();
-                    if (prob < ped) // disperse this bacterium to a random position
-                    {
-                        for (int p = 0; p < getDimension(); p++) {
-                            double x = rng.nextDouble();
-                            b.set(p, x);
-                        }
-                        // update costs
-                        double cost = evaluate(b); // compute
-                        b.setCost(cost);
-                        b.setPrevCost(cost);
-                        b.setHealth(0);
-
-                        setBestCandidateIfBetter(b);
-                    }
-                }, null);
-            }
-            for (BacteriaCandidate<E> b : colony) {
-                try {
-                    getCompletionService().take().get();
-                } catch (InterruptedException | ExecutionException ex) {
-                    Logger.getLogger(BacterialForagingOptimization.class.getName()).log(Level.SEVERE, null, ex);
+        // eliminate-disperse
+        for (Candidate<E> c : population) {
+            BacteriaCandidate<E> b = (BacteriaCandidate<E>) c;
+            double prob = rng.nextDouble();
+            if (prob < ped) // disperse this bacterium to a random position
+            {
+                for (int p = 0; p < getDimension(); p++) {
+                    double x = rng.nextDouble();
+                    b.set(p, x);
                 }
-            }
-        } else {
-            // eliminate-disperse
-            for (BacteriaCandidate<E> b : colony) {
-                double prob = rng.nextDouble();
-                if (prob < ped) // disperse this bacterium to a random position
-                {
-                    for (int p = 0; p < getDimension(); p++) {
-                        double x = rng.nextDouble();
-                        b.set(p, x);
-                    }
-                    // update costs
-                    double cost = evaluate(b); // compute
-                    b.setCost(cost);
-                    b.setPrevCost(cost);
-                    b.setHealth(0);
+                // update costs
+                double cost = evaluate(b); // compute
+                b.setCost(cost);
+                b.setPrevCost(cost);
+                b.setHealth(0);
 
-                    setBestCandidateIfBetter(b);
-                }
+                setBestCandidateIfBetter(b);
             }
+
         }
     }
 
@@ -307,14 +190,6 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
         this.ci = ci;
     }
 
-    public int getSize() {
-        return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
 //    @Override
 //    public int getNumberOfFreeParameters() {
 //        return 6;
@@ -333,13 +208,4 @@ public class BacterialForagingOptimization<E> extends Algorithm<E> {
 //    public DoubleArray getFreeParameters() {
 //        return new DoubleArray(size, nc, nre, ns, ped, ci);
 //    }
-    private class Colony extends ArrayList<BacteriaCandidate<E>> {
-
-        public Colony(int size) {
-            super(size);
-            for (int i = 0; i < size; i++) {
-                add((BacteriaCandidate<E>) newCandidate());
-            }
-        }
-    }
 }

@@ -26,7 +26,7 @@
 package no.hials.jiop.physical;
 
 import java.util.List;
-import no.hials.jiop.Algorithm;
+import no.hials.jiop.AbstractAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 
@@ -35,7 +35,7 @@ import no.hials.jiop.candidates.NumericCandidate;
  * @author Lars Ivar Hatledal
  * @param <E>
  */
-public class SimulatedAnnealing<E> extends Algorithm<E> {
+public class SimulatedAnnealing<E> extends AbstractAlgorithm<E> {
 
     private double startingTemperature;
     private double temperature, alpha;

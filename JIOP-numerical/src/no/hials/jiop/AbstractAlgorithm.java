@@ -48,7 +48,7 @@ import org.jfree.data.xy.XYSeries;
  * @author Lars Ivar Hatledal
  * @param <E>
  */
-public abstract class Algorithm<E> implements Serializable {
+public abstract class AbstractAlgorithm<E> implements Serializable {
 
     protected final static int availableProcessors = Runtime.getRuntime().availableProcessors();
 
@@ -64,11 +64,11 @@ public abstract class Algorithm<E> implements Serializable {
 
     private Candidate<E> bestCandidate;
 
-    public Algorithm(Class<?> clazz, String name) {
+    public AbstractAlgorithm(Class<?> clazz, String name) {
         this(clazz, null, name);
     }
 
-    public Algorithm(Class<?> templateClass, Evaluator<E> evaluator, String name) {
+    public AbstractAlgorithm(Class<?> templateClass, Evaluator<E> evaluator, String name) {
         this.name = name;
         this.templateClass = templateClass;
         this.evaluator = evaluator;
@@ -117,7 +117,7 @@ public abstract class Algorithm<E> implements Serializable {
             Candidate<E> newInstance = (Candidate) constructor.newInstance(getEvaluator().getDimension());
             return evaluateAndUpdate(newInstance);
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -128,7 +128,7 @@ public abstract class Algorithm<E> implements Serializable {
             Candidate<E> newInstance = (Candidate) constructor.newInstance(e, getEvaluator().evaluate(e));
             return newInstance;
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }

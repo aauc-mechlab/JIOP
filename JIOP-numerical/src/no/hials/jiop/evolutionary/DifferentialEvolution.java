@@ -25,25 +25,19 @@
  */
 package no.hials.jiop.evolutionary;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.hials.jiop.Algorithm;
-import no.hials.jiop.candidates.Candidate;
+import no.hials.jiop.PopulationBasedAlgorithm;
 import no.hials.jiop.candidates.NumericCandidate;
 
 /**
  * A Differential Evolution implementation
  * @author Lars Ivar Hatledal
  */
-public class DifferentialEvolution<E> extends Algorithm<E> {
+public class DifferentialEvolution<E> extends PopulationBasedAlgorithm<E> {
 
-    private int NP;
     private double F, CR;
-    private Candidates candidates;
 
     private boolean multiCore;
 
@@ -52,42 +46,24 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
     }
 
     public DifferentialEvolution(Class<?> clazz, int NP, double F, double CR, boolean multiCore) {
-        super(clazz, "Differential Evolution " + multiCore);
+        super(clazz, NP, "Differential Evolution " + multiCore);
         this.F = F;
         this.CR = CR;
-        this.NP = NP;
         this.multiCore = multiCore;
     }
 
-    @Override
-    public Candidate<E> subInit() {
-        this.candidates = new Candidates(NP);
-        Collections.sort(candidates);
-        return candidates.get(0);
-    }
-
-    @Override
-    public Candidate<E> subInit(List<E> seeds) {
-        this.candidates = new Candidates(NP - seeds.size());
-        for (E seed : seeds) {
-            candidates.add((NumericCandidate<E>) newCandidate(seed));
-        }
-
-        Collections.sort(candidates);
-        return candidates.get(0);
-    }
 
     @Override
     protected void singleIteration() {
-        candidates.stream().forEach((c) -> {
+        population.stream().forEach((c) -> {
             if (multiCore) {
-                getCompletionService().submit(() -> threadingTask(c), null);
+                getCompletionService().submit(() -> threadingTask((NumericCandidate<E>) c), null);
             } else {
-                threadingTask(c);
+                threadingTask((NumericCandidate<E>) c);
             }
         });
         if (multiCore) {
-            candidates.stream().forEach((_item) -> {
+            population.stream().forEach((_item) -> {
                 try {
                     getCompletionService().take().get();
                 } catch (InterruptedException | ExecutionException ex) {
@@ -101,16 +77,16 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
         NumericCandidate<E> c1;
         NumericCandidate<E> c2, c3;
         do {
-            int rand = rng.nextInt(candidates.size());
-            c1 = candidates.get(rand);
+            int rand = rng.nextInt(population.size());
+            c1 = (NumericCandidate<E>) population.get(rand);
         } while (c1 == c);
         do {
-            int rand = rng.nextInt(candidates.size());
-            c2 = candidates.get(rand);
+            int rand = rng.nextInt(population.size());
+            c2 = (NumericCandidate<E>) population.get(rand);
         } while (c2 == c && c2 == c1);
         do {
-            int rand = rng.nextInt(candidates.size());
-            c3 = candidates.get(rand);
+            int rand = rng.nextInt(population.size());
+            c3 = (NumericCandidate<E>) population.get(rand);
         } while (c3 == c && c3 == c1 && c3 == c2);
         int R = rng.nextInt(getDimension());
         NumericCandidate<E> sample = (NumericCandidate<E>) newCandidate();
@@ -128,14 +104,6 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
             c.setElements(sample.getElements(), sample.getCost());
             setBestCandidateIfBetter(c);
         }
-    }
-
-    public int getNP() {
-        return NP;
-    }
-
-    public void setNP(int NP) {
-        this.NP = NP;
     }
 
     public double getF() {
@@ -170,14 +138,4 @@ public class DifferentialEvolution<E> extends Algorithm<E> {
 //    public DoubleArray getFreeParameters() {
 //        return new DoubleArray(NP, F, CR);
 //    }
-    private class Candidates extends ArrayList<NumericCandidate<E>> {
-
-        public Candidates(int size) {
-            super(size);
-            for (int i = 0; i < size; i++) {
-                add((NumericCandidate<E>) newCandidate());
-            }
-        }
-
-    }
 }

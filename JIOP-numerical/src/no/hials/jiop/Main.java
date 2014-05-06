@@ -58,7 +58,7 @@ public class Main {
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
-        List<Algorithm<double[]>> algorithms = new ArrayList<>();
+        List<AbstractAlgorithm<double[]>> algorithms = new ArrayList<>();
 
         algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, true));
         algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, false));
@@ -73,14 +73,14 @@ public class Main {
         algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, true));
 
         //Warming up the JVM
-        for (Algorithm alg : algorithms) {
+        for (AbstractAlgorithm alg : algorithms) {
             alg.setEvaluator(new ExampleEvaluator(4));
             alg.init();
             alg.compute(new TimeElapsedCriteria(100l));
         }
 
         //The actual run
-        for (Algorithm alg : algorithms) {
+        for (AbstractAlgorithm alg : algorithms) {
             alg.setEvaluator(new ExampleEvaluator(5));
             alg.init();
             CandidateSolution<double[]> compute = alg.compute(new TimeElapsedCriteria(100l), new CostCriteria(0d));
@@ -116,7 +116,7 @@ public class Main {
         public double evaluate(double[] elements) {
             double cost = 0;
             for (int i = 0; i < elements.length; i++) {
-                double xi = new NormUtil(1, 0, 100, -100).normalize(elements[i]);
+                double xi = new NormUtil(1, 0, 10, -10).normalize(elements[i]);
                 cost += (xi * xi) - (10 * Math.cos(2 * Math.PI * xi)) + 10;
             }
 

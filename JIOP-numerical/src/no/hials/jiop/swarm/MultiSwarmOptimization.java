@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.hials.jiop.Algorithm;
+import no.hials.jiop.AbstractAlgorithm;
 import no.hials.jiop.Evaluator;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
@@ -41,7 +41,7 @@ import no.hials.jiop.candidates.ParticleCandidate;
  *
  * @author Lars Ivar Hatledal
  */
-public class MultiSwarmOptimization<E> extends Algorithm<E> {
+public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
 
     private List<Swarm> swarms;
     public int numSwarms, numParticles;

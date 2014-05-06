@@ -28,7 +28,7 @@ package no.hials.jiop.heuristic;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import no.hials.jiop.Algorithm;
+import no.hials.jiop.AbstractAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 
@@ -39,7 +39,7 @@ import no.hials.jiop.candidates.NumericCandidate;
  * @author Lars Ivar Hatledal
  * @param <E>
  */
-public class AmoebaOptimization<E> extends Algorithm<E> {
+public class AmoebaOptimization<E> extends AbstractAlgorithm<E> {
 
     private int size;
     private double alpha = 1.0;  // Reflection

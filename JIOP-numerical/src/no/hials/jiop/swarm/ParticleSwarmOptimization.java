@@ -25,13 +25,10 @@
  */
 package no.hials.jiop.swarm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.hials.jiop.Algorithm;
+import no.hials.jiop.PopulationBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 import no.hials.jiop.candidates.ParticleCandidate;
@@ -39,18 +36,16 @@ import no.hials.jiop.candidates.ParticleCandidate;
 /**
  *
  * @author Lars Ivar Hatledal
+ * @param <E>
  */
-public class ParticleSwarmOptimization<E> extends Algorithm<E> {
+public class ParticleSwarmOptimization<E> extends PopulationBasedAlgorithm<E> {
 
-    public int size;
-    private Swarm swarm;
     public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, maxVel = 0.5;
 
     private boolean multiCore;
 
     public ParticleSwarmOptimization(Class<?> clazz, int size, boolean multiCore) {
-        super(clazz, "Particle Swarm Optimization " + multiCore);
-        this.size = size;
+        super(clazz, size, "Particle Swarm Optimization " + multiCore);
         this.multiCore = multiCore;
     }
 
@@ -63,34 +58,16 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
     }
 
     @Override
-    public Candidate<E> subInit() {
-        this.swarm = new Swarm(size);
-        Collections.sort(swarm);
-        return swarm.get(0);
-    }
-
-    @Override
-    public Candidate<E> subInit(List<E> seeds) {
-        this.swarm = new Swarm(size - seeds.size());
-        for (E seed : seeds) {
-            swarm.add((ParticleCandidate<E>) newCandidate(seed));
-        }
-
-        Collections.sort(swarm);
-        return swarm.get(0);
-    }
-
-    @Override
     protected void singleIteration() {
-        for (ParticleCandidate<E> p : swarm) {
+        for (Candidate<E> p : population) {
             if (multiCore) {
-                getCompletionService().submit(() -> threadingTask(p), null);
+                getCompletionService().submit(() -> threadingTask((ParticleCandidate<E>) p), null);
             } else {
-                threadingTask(p);
+                threadingTask((ParticleCandidate<E>) p);
             }
         }
         if (multiCore) {
-            for (ParticleCandidate<E> p : swarm) {
+            for (Candidate<E> p : population) {
                 try {
                     getCompletionService().take().get();
                 } catch (InterruptedException | ExecutionException ex) {
@@ -180,14 +157,4 @@ public class ParticleSwarmOptimization<E> extends Algorithm<E> {
 //    public DoubleArray getFreeParameters() {
 //        return new DoubleArray(omega,c1,c2,maxVel);
 //    }
-    private class Swarm extends ArrayList<ParticleCandidate<E>> {
-
-        public Swarm(int size) {
-            super(size);
-            for (int i = 0; i < size; i++) {
-                add((ParticleCandidate<E>) newCandidate());
-            }
-        }
-    }
-
 }
