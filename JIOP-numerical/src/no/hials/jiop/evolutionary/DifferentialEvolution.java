@@ -28,41 +28,42 @@ package no.hials.jiop.evolutionary;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import no.hials.jiop.Evaluator;
 import no.hials.jiop.PopulationBasedAlgorithm;
 import no.hials.jiop.candidates.NumericCandidate;
 
 /**
  * A Differential Evolution implementation
+ *
  * @author Lars Ivar Hatledal
  */
 public class DifferentialEvolution<E> extends PopulationBasedAlgorithm<E> {
 
     private double F, CR;
 
-    private boolean multiCore;
+    private boolean multiThreaded;
 
-    public DifferentialEvolution(Class<?> clazz, int NP, double F, double CR) {
-        this(clazz, NP, F, CR, false);
-    }
-
-    public DifferentialEvolution(Class<?> clazz, int NP, double F, double CR, boolean multiCore) {
-        super(clazz, NP, "Differential Evolution " + multiCore);
+    public DifferentialEvolution(Class<?> clazz, int size, double F, double CR, Evaluator<E> evaluator, String name, boolean multiThreaded) {
+        super(clazz, size, evaluator, name);
         this.F = F;
         this.CR = CR;
-        this.multiCore = multiCore;
+        this.multiThreaded = multiThreaded;
     }
 
+    public DifferentialEvolution(Class<?> clazz, int size, double F, double CR, Evaluator<E> evalutor, boolean multiThreaded) {
+        this(clazz, size, F, CR, evalutor, multiThreaded ? "MultiThreaded Differential Evolution" : "SingleThreaded Differential Evolution", multiThreaded);
+    }
 
     @Override
     protected void singleIteration() {
         population.stream().forEach((c) -> {
-            if (multiCore) {
+            if (multiThreaded) {
                 getCompletionService().submit(() -> threadingTask((NumericCandidate<E>) c), null);
             } else {
                 threadingTask((NumericCandidate<E>) c);
             }
         });
-        if (multiCore) {
+        if (multiThreaded) {
             population.stream().forEach((_item) -> {
                 try {
                     getCompletionService().take().get();

@@ -26,6 +26,7 @@
 package no.hials.jiop.swarm;
 
 import java.util.Collections;
+import no.hials.jiop.Evaluator;
 import no.hials.jiop.PopulationBasedAlgorithm;
 import no.hials.jiop.candidates.BacteriaCandidate;
 import no.hials.jiop.candidates.Candidate;
@@ -44,8 +45,8 @@ public class BacterialForagingOptimization<E> extends PopulationBasedAlgorithm<E
     private double ped = 0.25; // probability of a particular bacterium being dispersed
     private double ci = 0.05; //basic swim length for each bacterium
 
-    public BacterialForagingOptimization(Class<?> clazz, int size, boolean multiCore) {
-        super(clazz, size, "Bacterial Foraging Optimization " + multiCore);
+    public BacterialForagingOptimization(Class<?> clazz, int size, Evaluator<E> evaluator) {
+        super(clazz, size, evaluator, "Bacterial Foraging Optimization");
     }
 
     @Override
@@ -73,15 +74,11 @@ public class BacterialForagingOptimization<E> extends PopulationBasedAlgorithm<E
 
                     for (int p = 0; p < getDimension(); p++) {
                         double value = b.get(p).doubleValue() + (ci * tumble[p]) / rootProduct;
-                        if (value < 0) {
-                            value = 0;
-                        } else if (value > 1) {
-                            value = 1;
-                        }
                         b.set(p, value);
                     } // move in new direction
 
                     // update costs of new position
+                    b.clamp(0, 1);
                     b.setPrevCost(b.getCost());
                     evaluateAndUpdate(b);
                     b.setHealth(b.getHealth() + b.getCost()); // health is an accumulation of costs during bacterium's life

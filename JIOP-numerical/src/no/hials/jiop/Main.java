@@ -28,9 +28,11 @@ package no.hials.jiop;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import no.hials.jiop.candidates.CandidateSolution;
 import no.hials.jiop.candidates.DoubleArrayBacteriaCandidate;
 import no.hials.jiop.candidates.DoubleArrayCandidate;
 import no.hials.jiop.candidates.DoubleArrayParticleCandidate;
+import no.hials.jiop.candidates.FloatArrayCandidate;
 import no.hials.jiop.evolutionary.DifferentialEvolution;
 import no.hials.jiop.heuristic.AmoebaOptimization;
 import no.hials.jiop.physical.SimulatedAnnealing;
@@ -38,7 +40,6 @@ import no.hials.jiop.swarm.ArtificialBeeColony;
 import no.hials.jiop.swarm.BacterialForagingOptimization;
 import no.hials.jiop.swarm.MultiSwarmOptimization;
 import no.hials.jiop.swarm.ParticleSwarmOptimization;
-import no.hials.jiop.candidates.CandidateSolution;
 import no.hials.jiop.temination.CostCriteria;
 import no.hials.jiop.temination.TimeElapsedCriteria;
 import no.hials.utilities.NormUtil;
@@ -57,31 +58,33 @@ public class Main {
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
+        Feval feval = new Feval(5);
+        Deval deval = new Deval(5);
+
         XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
         List<AbstractAlgorithm<double[]>> algorithms = new ArrayList<>();
 
-        algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, true));
-        algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, false));
-        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, false));
-        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, true));
-        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, false));
-        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, true));
-        algorithms.add(new ArtificialBeeColony(DoubleArrayCandidate.class, 60, 12));
-        algorithms.add(new AmoebaOptimization(DoubleArrayCandidate.class, 50));
-        algorithms.add(new SimulatedAnnealing(DoubleArrayCandidate.class, 20, 0.995));
-        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, false));
-        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, true));
+        algorithms.add(new DifferentialEvolution(FloatArrayCandidate.class, 30, 0.9, 0.7, feval, true));
+        algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, deval, false));
+        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, deval, false));
+        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, deval, true));
+        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, deval, false));
+        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, deval, true));
+        algorithms.add(new ArtificialBeeColony(DoubleArrayCandidate.class, 60, 12, deval));
+        algorithms.add(new AmoebaOptimization(DoubleArrayCandidate.class, 50, deval));
+        algorithms.add(new SimulatedAnnealing(DoubleArrayCandidate.class, 20, 0.995, deval));
+        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, deval));
 
         //Warming up the JVM
         for (AbstractAlgorithm alg : algorithms) {
-            alg.setEvaluator(new ExampleEvaluator(4));
+//            alg.setEvaluator(new Deval(4));
             alg.init();
             alg.compute(new TimeElapsedCriteria(100l));
         }
 
         //The actual run
         for (AbstractAlgorithm alg : algorithms) {
-            alg.setEvaluator(new ExampleEvaluator(5));
+//            alg.setEvaluator(new Deval(5));
             alg.init();
             CandidateSolution<double[]> compute = alg.compute(new TimeElapsedCriteria(100l), new CostCriteria(0d));
             System.out.println(alg.toString() + "\n" + compute);
@@ -99,11 +102,11 @@ public class Main {
         }
     }
 
-    public static class ExampleEvaluator implements Evaluator<double[]> {
+    public static class Deval implements Evaluator<double[]> {
 
         private final int dimension;
 
-        public ExampleEvaluator(int dimension) {
+        public Deval(int dimension) {
             this.dimension = dimension;
         }
 
@@ -114,6 +117,32 @@ public class Main {
 
         @Override
         public double evaluate(double[] elements) {
+            double cost = 0;
+            for (int i = 0; i < elements.length; i++) {
+                double xi = new NormUtil(1, 0, 10, -10).normalize(elements[i]);
+                cost += (xi * xi) - (10 * Math.cos(2 * Math.PI * xi)) + 10;
+            }
+
+            return cost;
+        }
+
+    }
+
+    public static class Feval implements Evaluator<float[]> {
+
+        private final int dimension;
+
+        public Feval(int dimension) {
+            this.dimension = dimension;
+        }
+
+        @Override
+        public int getDimension() {
+            return dimension;
+        }
+
+        @Override
+        public double evaluate(float[] elements) {
             double cost = 0;
             for (int i = 0; i < elements.length; i++) {
                 double xi = new NormUtil(1, 0, 10, -10).normalize(elements[i]);

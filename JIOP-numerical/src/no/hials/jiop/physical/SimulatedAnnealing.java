@@ -27,6 +27,7 @@ package no.hials.jiop.physical;
 
 import java.util.List;
 import no.hials.jiop.AbstractAlgorithm;
+import no.hials.jiop.Evaluator;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 
@@ -41,10 +42,14 @@ public class SimulatedAnnealing<E> extends AbstractAlgorithm<E> {
     private double temperature, alpha;
     private Candidate<E> current;
 
-    public SimulatedAnnealing(Class<?> clazz, double startingTemperature, double alpha) {
-        super(clazz, "Simulated Annealing");
+    public SimulatedAnnealing(Class<?> clazz, double startingTemperature, double alpha, Evaluator<E> evaluator, String name) {
+        super(clazz, evaluator, name);
         this.startingTemperature = startingTemperature;
         this.alpha = alpha;
+    }
+
+    public SimulatedAnnealing(Class<?> clazz, double startingTemperature, double alpha, Evaluator<E> evaluator) {
+        this(clazz, startingTemperature, alpha, evaluator, "Simulated Annealing");
     }
 
     @Override
@@ -58,7 +63,7 @@ public class SimulatedAnnealing<E> extends AbstractAlgorithm<E> {
     protected Candidate<E> subInit(List<E> seeds) {
         this.temperature = startingTemperature;
         this.current = newCandidate(seeds.get(0));
-        
+
         return current;
     }
 

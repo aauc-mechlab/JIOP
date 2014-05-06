@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
-import no.hials.jiop.evolutionary.DifferentialEvolution;
 
 /**
  *
@@ -41,17 +40,10 @@ public abstract class PopulationBasedAlgorithm<E> extends AbstractAlgorithm<E> {
     protected int size;
     protected Population population;
 
-    public PopulationBasedAlgorithm(Class<?> clazz, int size, String name) {
-        super(clazz, name);
-        this.size = size;
-    }
-
-    public PopulationBasedAlgorithm( Class<?> templateClass,int size, Evaluator<E> evaluator, String name) {
+    public PopulationBasedAlgorithm(Class<?> templateClass, int size, Evaluator<E> evaluator, String name) {
         super(templateClass, evaluator, name);
         this.size = size;
     }
-    
-    
 
     @Override
     public Candidate<E> subInit() {

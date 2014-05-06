@@ -47,17 +47,17 @@ public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
     public int numSwarms, numParticles;
     public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, c3 = 0.3645, maxVel = 0.1;
 
-    boolean multiCore = false;
+    boolean multiThreaded = false;
 
-    public MultiSwarmOptimization(Class<?> clazz, int numSwarms, int numParticles, boolean multiCore) {
-        this(clazz, numSwarms, numParticles, null, multiCore);
-    }
-
-    public MultiSwarmOptimization(Class<?> clazz, int numSwarms, int numParticles, Evaluator<E> evalutor, boolean multiCore) {
-        super(clazz, evalutor, "Multi Swarm Optimization " + multiCore);
+    public MultiSwarmOptimization(Class<?> clazz, int numSwarms, int numParticles, Evaluator<E> evalutor, String name, boolean multiCore) {
+        super(clazz, evalutor, name);
         this.numSwarms = numSwarms;
         this.numParticles = numParticles;
-        this.multiCore = multiCore;
+        this.multiThreaded = multiCore;
+    }
+    
+    public MultiSwarmOptimization(Class<?> clazz, int numSwarms, int numParticles, Evaluator<E> evalutor, boolean multiThreaded) {
+        this(clazz, numSwarms, numParticles, evalutor, multiThreaded ? "MultiThreaded Multi Swarm Optimization" : "SingleThreaded Multi Swarm Optimization",  multiThreaded);
     }
 
     @Override
@@ -92,13 +92,13 @@ public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
     protected void singleIteration() {
 
         swarms.stream().forEach((swarm) -> {
-            if (multiCore) {
+            if (multiThreaded) {
                 getCompletionService().submit(() -> threadingTask(swarm), null);
             } else {
                 threadingTask(swarm);
             }
         });
-        if (multiCore) {
+        if (multiThreaded) {
             swarms.stream().forEach((_item) -> {
                 try {
                     getCompletionService().take().get();

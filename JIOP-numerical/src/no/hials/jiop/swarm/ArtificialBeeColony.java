@@ -28,7 +28,6 @@ package no.hials.jiop.swarm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import no.hials.jiop.AbstractAlgorithm;
 import no.hials.jiop.Evaluator;
 import no.hials.jiop.PopulationBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
@@ -49,16 +48,12 @@ public class ArtificialBeeColony<E> extends PopulationBasedAlgorithm<E> {
         this.numScouts = numScouts;
     }
 
-    public ArtificialBeeColony(Class<?> clazz, int size, int numScouts, String name) {
-        this(clazz, size, numScouts, null, name);
+    public ArtificialBeeColony(Class<?> clazz, int size, int numScouts, Evaluator<E> evalutor) {
+        this(clazz, size, numScouts, evalutor, "Artificial Bee Colony");
     }
 
-    public ArtificialBeeColony(Class<?> clazz, int size, int numScouts) {
-        this(clazz, size, numScouts, "Artificial Bee Colony");
-    }
-
-    public ArtificialBeeColony(Class<?> clazz, int size, double numScouts) {
-        this(clazz, size, (int) (size * numScouts));
+    public ArtificialBeeColony(Class<?> clazz, int size, double numScouts, Evaluator<E> evaluator) {
+        this(clazz, size, (int) (size * numScouts), evaluator);
     }
 
     @Override

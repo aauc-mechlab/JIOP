@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import no.hials.jiop.AbstractAlgorithm;
+import no.hials.jiop.Evaluator;
+import no.hials.jiop.PopulationBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 
@@ -39,73 +41,53 @@ import no.hials.jiop.candidates.NumericCandidate;
  * @author Lars Ivar Hatledal
  * @param <E>
  */
-public class AmoebaOptimization<E> extends AbstractAlgorithm<E> {
+public class AmoebaOptimization<E> extends PopulationBasedAlgorithm<E> {
 
-    private int size;
     private double alpha = 1.0;  // Reflection
     private double beta = 0.5;   // Contraction
     private double gamma = 2.0;  // Expansion
 
-    private Amoeba candidates;
 
-    public AmoebaOptimization(Class<?> clazz, int size) {
-        super(clazz, "Amoeba Optimization");
-        this.size = size;
-    }
-
-    @Override
-    public Candidate<E> subInit() {
-        this.candidates = new Amoeba(size);
-        Collections.sort(candidates);
-        return candidates.get(0);
-    }
-
-    @Override
-    public Candidate<E> subInit(List<E> seeds) {
-        this.candidates = new Amoeba(size - seeds.size());
-        for (E seed : seeds) {
-            candidates.add((NumericCandidate< E>) newCandidate(seed));
-        }
-        Collections.sort(candidates);
-        return candidates.get(0);
+    public AmoebaOptimization(Class<?> clazz, int size, Evaluator<E> evaluator) {
+        super(clazz, size, evaluator, "Amoeba Optimization");
     }
 
     @Override
     protected void singleIteration() {
         NumericCandidate<E> centroid = centroid();
         NumericCandidate<E> reflected = reflected(centroid);
-        if (reflected.getCost() < candidates.get(0).getCost()) {
+        if (reflected.getCost() < population.get(0).getCost()) {
             NumericCandidate<E> expanded = expanded(reflected, centroid);
-            if (expanded.getCost() < candidates.get(0).getCost()) {
+            if (expanded.getCost() < population.get(0).getCost()) {
                 replaceWorst(expanded);
             } else {
                 replaceWorst(reflected);
             }
-            setBestCandidateIfBetter(candidates.get(0));
+            setBestCandidateIfBetter(population.get(0));
             return;
         }
         if (isWorseThanAllButWorst(reflected) == true) {
-            if (reflected.getCost() <= candidates.get(size - 1).getCost()) {
+            if (reflected.getCost() <= population.get(size - 1).getCost()) {
                 replaceWorst(reflected);
             }
             NumericCandidate<E> contracted = contracted(centroid);
-            if (contracted.getCost() > candidates.get(size - 1).getCost()) {
+            if (contracted.getCost() > population.get(size - 1).getCost()) {
                 shrink();
             } else {
                 replaceWorst(contracted);
             }
-            setBestCandidateIfBetter(candidates.get(0));
+            setBestCandidateIfBetter(population.get(0));
             return;
         }
         replaceWorst(reflected);
-        setBestCandidateIfBetter(candidates.get(0));
+        setBestCandidateIfBetter(population.get(0));
     }
 
     public NumericCandidate<E> centroid() {
         NumericCandidate<E> c = (NumericCandidate<E>) newCandidate();
         for (int i = 0; i < size - 1; ++i) {
             for (int j = 0; j < getDimension(); ++j) {
-                c.set(j, c.get(j).doubleValue() + candidates.get(i).get(j).doubleValue());
+                c.set(j, c.get(j).doubleValue() + ((NumericCandidate<E>)population.get(i)).get(j).doubleValue());
             }
         }
         // Accumulate sum of each component
@@ -119,7 +101,7 @@ public class AmoebaOptimization<E> extends AbstractAlgorithm<E> {
 
     public NumericCandidate<E> reflected(NumericCandidate<E> centroid) {
         NumericCandidate<E> r = (NumericCandidate<E>) newCandidate();
-        NumericCandidate<E> worst = candidates.get(size - 1);
+        NumericCandidate<E> worst = (NumericCandidate<E>) population.get(size - 1);
         for (int j = 0; j < getDimension(); ++j) {
             r.set(j, ((1 + alpha) * centroid.get(j).doubleValue()) - (alpha * worst.get(j).doubleValue()));
         }
@@ -140,7 +122,7 @@ public class AmoebaOptimization<E> extends AbstractAlgorithm<E> {
 
     public NumericCandidate<E> contracted(NumericCandidate<E> centroid) {
         NumericCandidate<E> v = (NumericCandidate<E>) newCandidate();
-        NumericCandidate<E> worst = candidates.get(size - 1);
+        NumericCandidate<E> worst = (NumericCandidate<E>) population.get(size - 1);
         for (int j = 0; j < getDimension(); ++j) {
             v.set(j, (beta * worst.get(j).doubleValue()) + ((1 - beta) * centroid.get(j).doubleValue()));
         }
@@ -150,30 +132,30 @@ public class AmoebaOptimization<E> extends AbstractAlgorithm<E> {
     }
 
     public void replaceWorst(NumericCandidate<E> newSolution) {
-        candidates.set(size - 1, (NumericCandidate<E>) (newSolution)).copy();
-        Collections.sort(candidates);
+        population.set(size - 1, (NumericCandidate<E>) (newSolution)).copy();
+        Collections.sort(population);
     }
 
     public void shrink() {
         for (int i = 1; i < size; ++i) // start at [1]
         {
             for (int j = 0; j < getDimension(); ++j) {
-                double value = (candidates.get(i).get(j).doubleValue() + candidates.get(0).get(j).doubleValue()) / 2d;
+                double value = (((NumericCandidate<E>)population.get(i)).get(j).doubleValue() + ((NumericCandidate<E>)population.get(0)).get(j).doubleValue()) / 2d;
                 if (value < 0) {
                     value = 0;
                 } else if (value > 1) {
                     value = 1;
                 }
-                candidates.get(i).set(j, value);
+                ((NumericCandidate<E>)population.get(i)).set(j, value);
             }
-            evaluateAndUpdate(candidates.get(i));
+            evaluateAndUpdate(population.get(i));
         }
-        Collections.sort(candidates);
+        Collections.sort(population);
     }
 
     public boolean isWorseThanAllButWorst(NumericCandidate<E> reflected) {
         for (int i = 0; i < size - 1; ++i) {
-            if (reflected.getCost() <= candidates.get(i).getCost()) // Found worse solution
+            if (reflected.getCost() <= population.get(i).getCost()) // Found worse solution
             {
                 return false;
             }
@@ -195,13 +177,6 @@ public class AmoebaOptimization<E> extends AbstractAlgorithm<E> {
 //    public DoubleArray getFreeParameters() {
 //        return new DoubleArray(size, alpha, beta, gamma);
 //    }
-    public int getSize() {
-        return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
 
     public double getAlpha() {
         return alpha;

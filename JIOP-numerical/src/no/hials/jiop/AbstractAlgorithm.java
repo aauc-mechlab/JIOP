@@ -64,9 +64,6 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
 
     private Candidate<E> bestCandidate;
 
-    public AbstractAlgorithm(Class<?> clazz, String name) {
-        this(clazz, null, name);
-    }
 
     public AbstractAlgorithm(Class<?> templateClass, Evaluator<E> evaluator, String name) {
         this.name = name;

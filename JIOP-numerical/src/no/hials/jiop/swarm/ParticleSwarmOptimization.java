@@ -28,6 +28,7 @@ package no.hials.jiop.swarm;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import no.hials.jiop.Evaluator;
 import no.hials.jiop.PopulationBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
@@ -42,31 +43,30 @@ public class ParticleSwarmOptimization<E> extends PopulationBasedAlgorithm<E> {
 
     public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, maxVel = 0.5;
 
-    private boolean multiCore;
+    private boolean multiThreaded;
 
-    public ParticleSwarmOptimization(Class<?> clazz, int size, boolean multiCore) {
-        super(clazz, size, "Particle Swarm Optimization " + multiCore);
-        this.multiCore = multiCore;
-    }
-
-    public ParticleSwarmOptimization(Class<?> clazz, int size, double omega, double c1, double c2, boolean multiCore) {
-        this(clazz, size, multiCore);
-        this.size = size;
+    public ParticleSwarmOptimization(Class<?> clazz, int size, double omega, double c1, double c2, Evaluator<E> evaluator, String name, boolean multiThreaded) {
+        super(clazz, size, evaluator, name);
+        this.multiThreaded = multiThreaded;
         this.omega = omega;
         this.c1 = c1;
         this.c2 = c2;
     }
 
+    public ParticleSwarmOptimization(Class<?> clazz, int size, Evaluator<E> evaluator, boolean multiThreaded) {
+        super(clazz, size, evaluator, multiThreaded ? "MultiThreaded Particle Swarm Optimization" : "SingleThreaded Particle Swarm Optimization");
+    }
+
     @Override
     protected void singleIteration() {
         for (Candidate<E> p : population) {
-            if (multiCore) {
+            if (multiThreaded) {
                 getCompletionService().submit(() -> threadingTask((ParticleCandidate<E>) p), null);
             } else {
                 threadingTask((ParticleCandidate<E>) p);
             }
         }
-        if (multiCore) {
+        if (multiThreaded) {
             for (Candidate<E> p : population) {
                 try {
                     getCompletionService().take().get();
