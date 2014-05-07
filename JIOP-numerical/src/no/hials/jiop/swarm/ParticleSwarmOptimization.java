@@ -43,7 +43,7 @@ public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> {
 
     public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, maxVel = 0.5;
 
-    private boolean multiThreaded;
+    private final boolean multiThreaded;
 
     public ParticleSwarmOptimization(Class<?> clazz, int size, double omega, double c1, double c2, Evaluator<E> evaluator, String name, boolean multiThreaded) {
         super(clazz, size, evaluator, name);
@@ -55,6 +55,7 @@ public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> {
 
     public ParticleSwarmOptimization(Class<?> clazz, int size, Evaluator<E> evaluator, boolean multiThreaded) {
         super(clazz, size, evaluator, multiThreaded ? "MultiThreaded Particle Swarm Optimization" : "SingleThreaded Particle Swarm Optimization");
+        this.multiThreaded = multiThreaded;
     }
 
     @Override
@@ -103,8 +104,9 @@ public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> {
         particle.setCost(cost);
         if (cost < particle.getLocalBest().getCost()) {
             particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
+            setBestCandidateIfBetter(particle);
         }
-        setBestCandidateIfBetter(particle);
+        
     }
 
     public double getOmega() {

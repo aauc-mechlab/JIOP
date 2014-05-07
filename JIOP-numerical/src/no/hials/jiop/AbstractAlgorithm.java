@@ -56,7 +56,7 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
     private Evaluator<E> evaluator;
     private final Class<?> templateClass;
 
-    private XYSeries timeSeries;
+    private MLHistory timeSeries;
     protected final Random rng = new Random();
 
     private ExecutorService pool;
@@ -64,12 +64,11 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
 
     private Candidate<E> bestCandidate;
 
-
     public AbstractAlgorithm(Class<?> templateClass, Evaluator<E> evaluator, String name) {
         this.name = name;
         this.templateClass = templateClass;
         this.evaluator = evaluator;
-        this.timeSeries = new XYSeries(name);
+        this.timeSeries = new MLHistory();
     }
 
     protected abstract void singleIteration();
@@ -83,7 +82,7 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
      * as to call getEvaluator().evaluate(candidate) Note: This call does not
      * update the candidates affiliated cost.
      *
-     * @param candidate the candidate to evalaute
+     * @param candidate the candidate to evaluate
      * @return the candidates cost
      */
     public double evaluate(Candidate<E> candidate) {
@@ -95,7 +94,7 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
      * as to call candidate.setCost(getEvaluator().evaluate(candidate))
      *
      * @param candidate the candidate to evaluate
-     * @return the updated candidate intance
+     * @return the updated candidate instance
      */
     public Candidate<E> evaluateAndUpdate(Candidate<E> candidate) {
         candidate.setCost(getEvaluator().evaluate(candidate.getElements()));
@@ -121,18 +120,21 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
 
     public Candidate<E> newCandidate(E e) {
         try {
-            Constructor<?> constructor = templateClass.getConstructor(e.getClass(), double.class);
-            Candidate<E> newInstance = (Candidate) constructor.newInstance(e, getEvaluator().evaluate(e));
-            return newInstance;
+            Constructor<?> constructor = templateClass.getConstructor(e.getClass());
+            Candidate<E> newInstance = (Candidate) constructor.newInstance(e);
+            return evaluateAndUpdate(newInstance);
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(AbstractAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
 
+    public void clearHistory() {
+        this.timeSeries = new MLHistory();
+    }
+
     public final void init() {
         this.bestCandidate = null;
-        this.timeSeries = new XYSeries(name);
         setBestCandidateIfBetter(subInit());
     }
 
@@ -141,13 +143,16 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
         if (seeds == null || seeds.isEmpty()) {
             init();
         } else {
-            this.timeSeries = new XYSeries(name);
             setBestCandidateIfBetter(subInit(seeds));
         }
     }
 
     public synchronized Candidate<E> getBestCandidate() {
         return bestCandidate.copy();
+    }
+    
+    public synchronized double getBestCost() {
+        return bestCandidate.getCost();
     }
 
     public synchronized void setBestCandidateIfBetter(Candidate<E> candidate) {
@@ -162,7 +167,8 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
 
     protected CompletionService<Candidate<E>> getCompletionService() {
         if (pool == null) {
-            pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+//            pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            pool = Executors.newCachedThreadPool();
             completionService = new ExecutorCompletionService(pool);
         }
         return completionService;
@@ -180,11 +186,13 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
         int numIterations = 0;
         boolean terminate = false;
         while (!terminate) {
+            long start = System.nanoTime();
             singleIteration();
+            double end = (double)(System.nanoTime()-start)/1000000000;
             timeElapsed = (System.currentTimeMillis() - t0);
             bestCost = getBestCandidate().getCost();
             numIterations++;
-            timeSeries.add(timeElapsed, bestCost);
+            timeSeries.add(end, bestCost);
             for (TerminationCriteria tc : criterias) {
                 if (tc.souldTerminate(new TerminationData(bestCost, timeElapsed, numIterations))) {
                     terminate = true;
@@ -243,7 +251,13 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
 //
 //    }
     public XYSeries getSeries() {
-        return timeSeries;
+        XYSeries series = new XYSeries(getName());
+        double[] timestamps = timeSeries.getTimestamps();
+        double[] costs = timeSeries.getCosts();
+        for (int i = 0; i < timeSeries.size(); i++) {
+            series.add(timestamps[i], costs[i]);
+        }
+        return series;
     }
 
     public Evaluator<E> getEvaluator() {

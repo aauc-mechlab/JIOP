@@ -55,9 +55,9 @@ public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
         this.numParticles = numParticles;
         this.multiThreaded = multiCore;
     }
-    
+
     public MultiSwarmOptimization(Class<?> clazz, int numSwarms, int numParticles, Evaluator<E> evalutor, boolean multiThreaded) {
-        this(clazz, numSwarms, numParticles, evalutor, multiThreaded ? "MultiThreaded Multi Swarm Optimization" : "SingleThreaded Multi Swarm Optimization",  multiThreaded);
+        this(clazz, numSwarms, numParticles, evalutor, multiThreaded ? "MultiThreaded Multi Swarm Optimization" : "SingleThreaded Multi Swarm Optimization", multiThreaded);
     }
 
     @Override
@@ -110,7 +110,7 @@ public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
     }
 
     private void threadingTask(final Swarm swarm) {
-        swarm.stream().map((particle) -> {
+        for (ParticleCandidate<E> particle : swarm) {
             for (int i = 0; i < getDimension(); i++) {
                 double li = particle.getLocalBest().get(i).doubleValue();
                 double si = swarm.swarmBest.get(i).doubleValue();
@@ -136,8 +136,7 @@ public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
                 particle.set(i, newPos);
                 particle.setVelocityAt(i, newVel);
             }
-            return particle;
-        }).map((particle) -> {
+
             double cost = evaluate(particle);
             particle.setCost(cost);
             if (cost < particle.getLocalBest().getCost()) {
@@ -145,11 +144,9 @@ public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
             }
             if (cost < swarm.swarmBest.getCost()) {
                 swarm.swarmBest = (ParticleCandidate<E>) (particle).copy();
+                setBestCandidateIfBetter(particle);
             }
-            return particle;
-        }).forEach((particle) -> {
-            setBestCandidateIfBetter(particle);
-        });
+        }
     }
 
 //    @Override

@@ -30,6 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.Evaluator;
 import no.hials.jiop.GeneralPopBasedAlgorithm;
+import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 
 /**
@@ -56,21 +57,21 @@ public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> {
 
     @Override
     protected void singleIteration() {
-        population.stream().forEach((c) -> {
+       for (Candidate<E> c : population) {
             if (multiThreaded) {
                 getCompletionService().submit(() -> threadingTask((NumericCandidate<E>) c), null);
             } else {
                 threadingTask((NumericCandidate<E>) c);
             }
-        });
+        }
         if (multiThreaded) {
-            population.stream().forEach((_item) -> {
+            for (Candidate<E> c : population) {
                 try {
                     getCompletionService().take().get();
                 } catch (InterruptedException | ExecutionException ex) {
                     Logger.getLogger(DifferentialEvolution.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            });
+            }
         }
     }
 

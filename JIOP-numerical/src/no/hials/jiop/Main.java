@@ -80,6 +80,7 @@ public class Main {
 //            alg.setEvaluator(new Deval(4));
             alg.init();
             alg.compute(new TimeElapsedCriteria(100l));
+            alg.clearHistory();
         }
 
         //The actual run
