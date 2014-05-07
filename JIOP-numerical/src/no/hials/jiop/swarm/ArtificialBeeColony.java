@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import no.hials.jiop.Evaluator;
-import no.hials.jiop.PopulationBasedAlgorithm;
+import no.hials.jiop.GeneralPopBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 
@@ -38,7 +38,7 @@ import no.hials.jiop.candidates.NumericCandidate;
  * @author Lars Ivar Hatledal
  * @param <E>
  */
-public class ArtificialBeeColony<E> extends PopulationBasedAlgorithm<E> {
+public class ArtificialBeeColony<E> extends GeneralPopBasedAlgorithm<E> {
 
     private int numScouts;
 

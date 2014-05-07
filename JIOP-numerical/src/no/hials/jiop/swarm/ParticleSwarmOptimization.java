@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.Evaluator;
-import no.hials.jiop.PopulationBasedAlgorithm;
+import no.hials.jiop.GeneralPopBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 import no.hials.jiop.candidates.ParticleCandidate;
@@ -39,7 +39,7 @@ import no.hials.jiop.candidates.ParticleCandidate;
  * @author Lars Ivar Hatledal
  * @param <E>
  */
-public class ParticleSwarmOptimization<E> extends PopulationBasedAlgorithm<E> {
+public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> {
 
     public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, maxVel = 0.5;
 

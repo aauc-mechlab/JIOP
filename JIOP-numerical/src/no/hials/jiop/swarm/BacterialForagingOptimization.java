@@ -27,7 +27,7 @@ package no.hials.jiop.swarm;
 
 import java.util.Collections;
 import no.hials.jiop.Evaluator;
-import no.hials.jiop.PopulationBasedAlgorithm;
+import no.hials.jiop.GeneralPopBasedAlgorithm;
 import no.hials.jiop.candidates.BacteriaCandidate;
 import no.hials.jiop.candidates.Candidate;
 
@@ -37,7 +37,7 @@ import no.hials.jiop.candidates.Candidate;
  *
  * @author Lars Ivar Hatledal
  */
-public class BacterialForagingOptimization<E> extends PopulationBasedAlgorithm<E> {
+public class BacterialForagingOptimization<E> extends GeneralPopBasedAlgorithm<E> {
 
     private int nc = 8; //chemotactic steps
     private int ns = 3; //maximum number of times a bacterium will swim in the same direction

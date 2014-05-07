@@ -23,63 +23,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import no.hials.jiop.candidates.Candidate;
-import no.hials.jiop.candidates.NumericCandidate;
+package no.hials.jiop;
 
 /**
  *
  * @author LarsIvar
  */
-public abstract class PopulationBasedAlgorithm<E> extends AbstractAlgorithm<E> {
-
-    protected int size;
-    protected Population population;
-
-    public PopulationBasedAlgorithm(Class<?> templateClass, int size, Evaluator<E> evaluator, String name) {
-        super(templateClass, evaluator, name);
-        this.size = size;
-    }
-
-    @Override
-    public Candidate<E> subInit() {
-        this.population = new Population(size);
-        Collections.sort(population);
-        return population.get(0);
-    }
-
-    @Override
-    public Candidate<E> subInit(List<E> seeds) {
-        this.population = new Population(size - seeds.size());
-        for (E seed : seeds) {
-            population.add((NumericCandidate<E>) newCandidate(seed));
-        }
-
-        Collections.sort(population);
-        return population.get(0);
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    protected class Population extends ArrayList<Candidate<E>> {
-
-        public Population(int size) {
-            super(size);
-            for (int i = 0; i < size; i++) {
-                add(newCandidate());
-            }
-        }
-
-    }
-
+public interface PopBasedAlgorithm {
+    
+    public double getAverageCost();
 }

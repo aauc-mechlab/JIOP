@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.Evaluator;
-import no.hials.jiop.PopulationBasedAlgorithm;
+import no.hials.jiop.GeneralPopBasedAlgorithm;
 import no.hials.jiop.candidates.NumericCandidate;
 
 /**
@@ -37,7 +37,7 @@ import no.hials.jiop.candidates.NumericCandidate;
  *
  * @author Lars Ivar Hatledal
  */
-public class DifferentialEvolution<E> extends PopulationBasedAlgorithm<E> {
+public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> {
 
     private double F, CR;
 
