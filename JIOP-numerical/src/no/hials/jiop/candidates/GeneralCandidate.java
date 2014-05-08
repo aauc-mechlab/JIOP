@@ -60,12 +60,12 @@ public abstract class GeneralCandidate<E> implements Candidate<E> {
     }
 
     @Override
-    public double getCost() {
+    public  double getCost() {
         return cost;
     }
 
     @Override
-    public void setCost(double cost) {
+    public  void setCost(double cost) {
         this.cost = cost;
     }
 

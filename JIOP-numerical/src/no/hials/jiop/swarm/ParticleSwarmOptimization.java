@@ -25,7 +25,6 @@
  */
 package no.hials.jiop.swarm;
 
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.Evaluator;
@@ -33,15 +32,17 @@ import no.hials.jiop.GeneralPopBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
 import no.hials.jiop.candidates.ParticleCandidate;
+import no.hials.jiop.tuning.Optimizable;
+import no.hials.utilities.NormUtil;
 
 /**
  *
  * @author Lars Ivar Hatledal
  * @param <E>
  */
-public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> {
+public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> implements Optimizable {
 
-    public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, maxVel = 0.5;
+    public double omega = 0.729, c1 = 1.49445, c2 = 1.49445, maxVel = 0.26;
 
     private final boolean multiThreaded;
 
@@ -52,9 +53,22 @@ public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> {
         this.c1 = c1;
         this.c2 = c2;
     }
+    
+    public ParticleSwarmOptimization(Class<?> clazz, int size, double omega, double c1, double c2, Evaluator<E> evaluator, boolean multiThreaded) {
+        super(clazz, size, evaluator, multiThreaded ? "MultiThreaded Particle Swarm Optimization" : "SingleThreaded Particle Swarm Optimization");
+        this.multiThreaded = multiThreaded;
+        this.omega = omega;
+        this.c1 = c1;
+        this.c2 = c2;
+    }
 
     public ParticleSwarmOptimization(Class<?> clazz, int size, Evaluator<E> evaluator, boolean multiThreaded) {
         super(clazz, size, evaluator, multiThreaded ? "MultiThreaded Particle Swarm Optimization" : "SingleThreaded Particle Swarm Optimization");
+        this.multiThreaded = multiThreaded;
+    }
+
+    public ParticleSwarmOptimization(Class<?> clazz, int size, Evaluator<E> evaluator, String name, boolean multiThreaded) {
+        super(clazz, size, evaluator, name);
         this.multiThreaded = multiThreaded;
     }
 
@@ -70,8 +84,8 @@ public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> {
         if (multiThreaded) {
             for (Candidate<E> p : population) {
                 try {
-                    getCompletionService().take().get();
-                } catch (InterruptedException | ExecutionException ex) {
+                    getCompletionService().take();
+                } catch (InterruptedException ex) {
                     Logger.getLogger(ParticleSwarmOptimization.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -106,7 +120,7 @@ public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> {
             particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
             setBestCandidateIfBetter(particle);
         }
-        
+
     }
 
     public double getOmega() {
@@ -142,21 +156,22 @@ public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> {
 
     }
 
-//    @Override
-//    public int getNumberOfFreeParameters() {
-//        return 4;
-//    }
-//
-//    @Override
-//    public void setFreeParameters(DoubleArray array) {
-//        this.omega = new NormUtil(1, 0, 1, 0.01).normalize(array.get(0));
-//        this.c1 = new NormUtil(1, 0, 2, 0.01).normalize(array.get(1));
-//        this.c2 = new NormUtil(1, 0, 2, 0.01).normalize(array.get(2));
-//        this.maxVel = new NormUtil(1, 0, 1, 0.0001).normalize(array.get(3));
-//    }
-//
-//    @Override
-//    public DoubleArray getFreeParameters() {
-//        return new DoubleArray(omega,c1,c2,maxVel);
-//    }
+    @Override
+    public int getNumberOfFreeParameters() {
+        return 5;
+    }
+
+    @Override
+    public void setFreeParameters(double[] array) {
+        this.size = (int) new NormUtil(1, 0, 60, 10).normalize(array[0]);
+        this.omega = new NormUtil(1, 0, 1, 0.01).normalize(array[1]);
+        this.c1 = new NormUtil(1, 0, 2, 0.01).normalize(array[2]);
+        this.c2 = new NormUtil(1, 0, 2, 0.01).normalize(array[3]);
+        this.maxVel = new NormUtil(1, 0, 1, 0.0001).normalize(array[4]);
+    }
+
+    @Override
+    public double[] getFreeParameters() {
+        return new double[]{size, omega, c1, c2, maxVel};
+    }
 }

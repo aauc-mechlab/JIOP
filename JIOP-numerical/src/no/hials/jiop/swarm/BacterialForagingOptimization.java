@@ -26,10 +26,14 @@
 package no.hials.jiop.swarm;
 
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import no.hials.jiop.Evaluator;
 import no.hials.jiop.GeneralPopBasedAlgorithm;
 import no.hials.jiop.candidates.BacteriaCandidate;
 import no.hials.jiop.candidates.Candidate;
+import no.hials.jiop.candidates.NumericCandidate;
 
 /**
  * Bacterial Foraging Optimization based on an article by James McCaffrey:
@@ -45,8 +49,21 @@ public class BacterialForagingOptimization<E> extends GeneralPopBasedAlgorithm<E
     private double ped = 0.25; // probability of a particular bacterium being dispersed
     private double ci = 0.05; //basic swim length for each bacterium
 
-    public BacterialForagingOptimization(Class<?> clazz, int size, Evaluator<E> evaluator) {
-        super(clazz, size, evaluator, "Bacterial Foraging Optimization");
+    private boolean multiThreaded;
+
+    public BacterialForagingOptimization(Class<?> clazz, int size, Evaluator<E> evaluator, boolean multiThreaded) {
+        super(clazz, size, evaluator, multiThreaded ? "Multi-Threaded Bacterial Foraging Optimization" : "Single-Threaded Bacterial Foraging Optimization");
+        this.multiThreaded = multiThreaded;
+    }
+
+    public BacterialForagingOptimization(Class<?> clazz, int size, int nc, int ns, int nre, double ped, double ci, Evaluator<E> evaluator, boolean multiThreaded) {
+        super(clazz, size, evaluator, multiThreaded ? "Multi-Threaded Bacterial Foraging Optimization" : "Single-Threaded Bacterial Foraging Optimization");
+        this.multiThreaded = multiThreaded;
+        this.ped = ped;
+        this.nre = nre;
+        this.ci = ci;
+        this.nc = nc;
+        this.ns = ns;
     }
 
     @Override
@@ -57,11 +74,16 @@ public class BacterialForagingOptimization<E> extends GeneralPopBasedAlgorithm<E
             {
                 // reset the health of each bacterium to 0.0 
                 for (int i = 0; i < size; i++) {
-                    ((BacteriaCandidate<E>)population.get(i)).setHealth(0);
+                    ((BacteriaCandidate<E>) population.get(i)).setHealth(0);
                 }
 
                 for (Candidate<E> c : population) // each bacterium
                 {
+//                    if (multiThreaded) {
+//                        getCompletionService().submit(() -> threadingTask1((BacteriaCandidate<E>) c), null);
+//                    } else {
+//                        threadingTask1((BacteriaCandidate<E>) c);
+//                    }
                     BacteriaCandidate<E> b = (BacteriaCandidate<E>) c;
                     double[] tumble = new double[getDimension()]; // tumble (point in a new direction)
                     for (int p = 0; p < getDimension(); p++) {
@@ -102,9 +124,17 @@ public class BacterialForagingOptimization<E> extends GeneralPopBasedAlgorithm<E
                     } // while improving
 
                 } // i, each bacterium in the chemotactic loop
-
             } // j, chemotactic loop
 
+//                if (multiThreaded) {
+//                    for (Candidate<E> c : population) {
+//                        try {
+//                            getCompletionService().take().get();
+//                        } catch (InterruptedException | ExecutionException ex) {
+//                            Logger.getLogger(BacterialForagingOptimization.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+//                    }
+//                }
             // reproduce the healthiest half of bacteria, eliminate the other half
             Collections.sort(population, (Candidate<E> c1, Candidate<E> c2) -> {
                 BacteriaCandidate<E> b1 = (BacteriaCandidate<E>) c1;
@@ -127,6 +157,11 @@ public class BacterialForagingOptimization<E> extends GeneralPopBasedAlgorithm<E
 
         // eliminate-disperse
         for (Candidate<E> c : population) {
+//                if (multiThreaded) {
+//                    getCompletionService().submit(() -> threadingTask2((BacteriaCandidate<E>) c), null);
+//                } else {
+//                    threadingTask2((BacteriaCandidate<E>) c);
+//                }
             BacteriaCandidate<E> b = (BacteriaCandidate<E>) c;
             double prob = rng.nextDouble();
             if (prob < ped) // disperse this bacterium to a random position
@@ -145,6 +180,75 @@ public class BacterialForagingOptimization<E> extends GeneralPopBasedAlgorithm<E
             }
 
         }
+
+//        if (multiThreaded) {
+//            for (Candidate<E> c : population) {
+//                try {
+//                    getCompletionService().take().get();
+//                } catch (InterruptedException | ExecutionException ex) {
+//                    Logger.getLogger(BacterialForagingOptimization.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//            }
+//        }
+    }
+
+    private void threadingTask1(BacteriaCandidate<E> b) {
+        double[] tumble = new double[getDimension()]; // tumble (point in a new direction)
+        for (int p = 0; p < getDimension(); p++) {
+            tumble[p] = 2.0 * rng.nextDouble() - 1.0;
+        } // (hi - lo) * r + lo => random i [-1, +1]
+        double rootProduct = 0.0;
+        for (int p = 0; p < getDimension(); p++) {
+            rootProduct += (tumble[p] * tumble[p]);
+        }
+
+        for (int p = 0; p < getDimension(); p++) {
+            double value = b.get(p).doubleValue() + (ci * tumble[p]) / rootProduct;
+            b.set(p, value);
+        } // move in new direction
+
+        // update costs of new position
+        b.clamp(0, 1);
+        b.setPrevCost(b.getCost());
+        evaluateAndUpdate(b);
+        b.setHealth(b.getHealth() + b.getCost()); // health is an accumulation of costs during bacterium's life
+
+        // new best?
+        setBestCandidateIfBetter(b);
+
+        int m = 0; // swim or not based on prev and curr costs
+        while (m < ns && b.getCost() < b.getPrevCost()) // we are improving
+        {
+            m++; // swim counter
+            for (int p = 0; p < getDimension(); p++) {
+                double value = b.get(p).doubleValue() + (ci * tumble[p]) / rootProduct;
+                b.set(p, value);
+
+            } // move in current direction
+            b.clamp(0, 1);
+            b.setPrevCost(b.getCost()); // update costs
+            evaluateAndUpdate(b);
+            setBestCandidateIfBetter(b);
+        } // while improving
+    }
+
+    private void threadingTask2(BacteriaCandidate<E> b) {
+        double prob = rng.nextDouble();
+        if (prob < ped) // disperse this bacterium to a random position
+        {
+            for (int p = 0; p < getDimension(); p++) {
+                double x = rng.nextDouble();
+                b.set(p, x);
+            }
+            // update costs
+            double cost = evaluate(b); // compute
+            b.setCost(cost);
+            b.setPrevCost(cost);
+            b.setHealth(0);
+
+            setBestCandidateIfBetter(b);
+        }
+
     }
 
     public int getNc() {

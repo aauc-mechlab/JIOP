@@ -91,21 +91,21 @@ public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
     @Override
     protected void singleIteration() {
 
-        swarms.stream().forEach((swarm) -> {
+        for (Swarm swarm : swarms) {
             if (multiThreaded) {
                 getCompletionService().submit(() -> threadingTask(swarm), null);
             } else {
                 threadingTask(swarm);
             }
-        });
+        }
         if (multiThreaded) {
-            swarms.stream().forEach((_item) -> {
+            for (Swarm swarm : swarms) {
                 try {
                     getCompletionService().take().get();
                 } catch (InterruptedException | ExecutionException ex) {
                     Logger.getLogger(MultiSwarmOptimization.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            });
+            }
         }
     }
 

@@ -26,13 +26,11 @@
 package no.hials.jiop;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import no.hials.jiop.candidates.CandidateSolution;
 import no.hials.jiop.candidates.DoubleArrayBacteriaCandidate;
 import no.hials.jiop.candidates.DoubleArrayCandidate;
 import no.hials.jiop.candidates.DoubleArrayParticleCandidate;
-import no.hials.jiop.candidates.FloatArrayCandidate;
 import no.hials.jiop.evolutionary.DifferentialEvolution;
 import no.hials.jiop.heuristic.AmoebaOptimization;
 import no.hials.jiop.physical.SimulatedAnnealing;
@@ -40,14 +38,9 @@ import no.hials.jiop.swarm.ArtificialBeeColony;
 import no.hials.jiop.swarm.BacterialForagingOptimization;
 import no.hials.jiop.swarm.MultiSwarmOptimization;
 import no.hials.jiop.swarm.ParticleSwarmOptimization;
-import no.hials.jiop.temination.CostCriteria;
 import no.hials.jiop.temination.TimeElapsedCriteria;
+import no.hials.jiop.tuning.AlgorithmOptimizer;
 import no.hials.utilities.NormUtil;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.ApplicationFrame;
 
 /**
  * Main class
@@ -58,49 +51,32 @@ public class Main {
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
-        Feval feval = new Feval(5);
-        Deval deval = new Deval(5);
+        Evaluator<float[]> feval = new Feval(5);
 
-        XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
-        List<AbstractAlgorithm<double[]>> algorithms = new ArrayList<>();
+        Evaluator<double[]> deval = new Deval(5);
+        AlgorithmCollection<double[]> algorithms = new AlgorithmCollection<>();
 
-        algorithms.add(new DifferentialEvolution(FloatArrayCandidate.class, 30, 0.9, 0.7, feval, true));
         algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, deval, false));
+        algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, deval, true));
         algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, deval, false));
         algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, deval, true));
         algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, deval, false));
         algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, deval, true));
-        algorithms.add(new ArtificialBeeColony(DoubleArrayCandidate.class, 60, 12, deval));
-        algorithms.add(new AmoebaOptimization(DoubleArrayCandidate.class, 50, deval));
-        algorithms.add(new SimulatedAnnealing(DoubleArrayCandidate.class, 20, 0.995, deval));
-        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, deval));
+//        algorithms.add(new ArtificialBeeColony(DoubleArrayCandidate.class, 60, 12, deval));
+//        algorithms.add(new AmoebaOptimization(DoubleArrayCandidate.class, 50, deval));
+//        algorithms.add(new SimulatedAnnealing(DoubleArrayCandidate.class, 20, 0.995, deval));
+        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, deval, false));
+        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, deval, true));
+//        DifferentialEvolution de = new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, deval, "DE - Optimized", false);
+//        CandidateSolution optimize = new AlgorithmOptimizer(de).optimize(0, 20000);
+//        de.setFreeParameters((double[]) optimize.solution.getElements());
+//        System.out.println(Arrays.toString(de.getFreeParameters()));
+//        algorithms.add(de);
 
-        //Warming up the JVM
-        for (AbstractAlgorithm alg : algorithms) {
-//            alg.setEvaluator(new Deval(4));
-            alg.init();
-            alg.compute(new TimeElapsedCriteria(100l));
-            alg.clearHistory();
-        }
+        algorithms.warmUp(100l);
+        algorithms.computeAll(new TimeElapsedCriteria(100l));
+        algorithms.plotResults();
 
-        //The actual run
-        for (AbstractAlgorithm alg : algorithms) {
-//            alg.setEvaluator(new Deval(5));
-            alg.init();
-            CandidateSolution<double[]> compute = alg.compute(new TimeElapsedCriteria(100l), new CostCriteria(0d));
-            System.out.println(alg.toString() + "\n" + compute);
-            xySeriesCollection.addSeries(alg.getSeries());
-        }
-
-        if (xySeriesCollection.getSeriesCount() > 0) {
-            ApplicationFrame frame = new ApplicationFrame("");
-            final JFreeChart chart = ChartFactory.createXYLineChart("", "Time[s]", "Cost", xySeriesCollection);
-            final ChartPanel chartPanel = new ChartPanel(chart);
-            chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
-            frame.setContentPane(chartPanel);
-            frame.setVisible(true);
-            frame.pack();
-        }
     }
 
     public static class Deval implements Evaluator<double[]> {

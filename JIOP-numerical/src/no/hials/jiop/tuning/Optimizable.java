@@ -25,7 +25,9 @@
  */
 
 package no.hials.jiop.tuning;
-import no.hials.utilities.DoubleArray;
+
+import no.hials.jiop.candidates.CandidateSolution;
+import no.hials.jiop.temination.TerminationCriteria;
 
 /**
  *
@@ -34,6 +36,8 @@ import no.hials.utilities.DoubleArray;
 public interface Optimizable {
     
     public int getNumberOfFreeParameters();
-    public void setFreeParameters(DoubleArray array);
-    public DoubleArray getFreeParameters();
+    public void setFreeParameters(double[] array);
+    public double[] getFreeParameters();
+    public void init();
+    public CandidateSolution compute(TerminationCriteria ... criterias);
 }

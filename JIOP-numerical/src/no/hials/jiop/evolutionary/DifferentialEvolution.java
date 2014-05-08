@@ -25,20 +25,21 @@
  */
 package no.hials.jiop.evolutionary;
 
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.Evaluator;
 import no.hials.jiop.GeneralPopBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
+import no.hials.jiop.tuning.Optimizable;
+import no.hials.utilities.NormUtil;
 
 /**
  * A Differential Evolution implementation
  *
  * @author Lars Ivar Hatledal
  */
-public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> {
+public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> implements Optimizable{
 
     private double F, CR;
 
@@ -67,8 +68,8 @@ public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> {
         if (multiThreaded) {
             for (Candidate<E> c : population) {
                 try {
-                    getCompletionService().take().get();
-                } catch (InterruptedException | ExecutionException ex) {
+                    getCompletionService().take();
+                } catch (InterruptedException ex) {
                     Logger.getLogger(DifferentialEvolution.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -124,20 +125,20 @@ public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> {
         this.CR = CR;
     }
 
-//    @Override
-//    public int getNumberOfFreeParameters() {
-//        return 3;
-//    }
-//
-//    @Override
-//    public void setFreeParameters(DoubleArray array) {
-//        this.NP = (int) new NormUtil(1, 0, 60, 10).normalize(array.get(0));
-//        this.F = new NormUtil(1, 0, 2, 0.1).normalize(array.get(1));
-//        this.CR = new NormUtil(1, 0, 1, 0.1).normalize(array.get(2));
-//    }
-//
-//    @Override
-//    public DoubleArray getFreeParameters() {
-//        return new DoubleArray(NP, F, CR);
-//    }
+    @Override
+    public int getNumberOfFreeParameters() {
+        return 3;
+    }
+
+    @Override
+    public void setFreeParameters(double[] array) {
+        this.size = (int) new NormUtil(1, 0, 60, 10).normalize(array[0]);
+        this.F = new NormUtil(1, 0, 2, 0.1).normalize(array[1]);
+        this.CR = new NormUtil(1, 0, 1, 0.1).normalize(array[2]);
+    }
+
+    @Override
+    public double[] getFreeParameters() {
+        return new double[]{size, F, CR};
+    }
 }
