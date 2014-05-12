@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, laht
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,24 +23,33 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
+
+package no.hials.jiop.factories;
+
+import java.util.Random;
+import no.hials.jiop.candidates2.Encoding;
+import no.hials.jiop.candidates2.DoubleArrayEncoding;
 
 /**
  *
- * @author Lars Ivar Hatledal
- * @param <E>
+ * @author LarsIvar
  */
-public interface BacteriaCandidate<E> extends NumericCandidate<E> {
+public class DoubleArrayCandidateFactory extends AbstractEncodingFactory<double[]>{
 
-    public double getPrevCost();
-
-    public void setPrevCost(double prevCost);
-
-    public double getHealth();
-
-    public void setHealth(double health);
+    private final Random rng  = new Random();
+    
+    @Override
+    public Encoding<double[]> generateRandom(int dim) {
+        double[] random = new double[dim];
+        for (int i = 0; i < random.length; i++) {
+            random[i] = rng.nextDouble();
+        }
+        return new DoubleArrayEncoding(random);
+    }
 
     @Override
-    public BacteriaCandidate<E> copy();
-
+    public Encoding<double[]> generate(double[] elements) {
+         return new DoubleArrayEncoding(elements);
+    }
+    
 }

@@ -1,5 +1,5 @@
 ///*
-// * Copyright (c) 2014, Aalesund University College 
+// * Copyright (c) 2014, LarsIvar
 // * All rights reserved.
 // *
 // * Redistribution and use in source and binary forms, with or without
@@ -23,21 +23,47 @@
 // * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // * POSSIBILITY OF SUCH DAMAGE.
 // */
-//
-//package no.hials.jiop.tuning;
-//
-//import no.hials.jiop.candidates.CandidateSolution;
-//import no.hials.jiop.temination.TerminationCriteria;
+//package no.hials.jiop.candidates2;
 //
 ///**
 // *
-// * @author Lars Ivar Hatledal
+// * @author LarsIvar
 // */
-//public interface Optimizable {
-//    
-//    public int getNumberOfFreeParameters();
-//    public void setFreeParameters(double[] array);
-//    public double[] getFreeParameters();
-//    public void init();
-//    public CandidateSolution compute(TerminationCriteria ... criterias);
+//public class DoublearrayParticle implements ParticleEncoding<double[]> {
+//
+//    private Candidate<double[]> localBest;
+//    private double[] position;
+//    private double[] velocity;
+//
+//    public DoublearrayParticle(double[] position) {
+//        this.position = position;
+//        this.localBestPosition = new Candidate<>()
+//        this.velocity = new double[position.length];
+//    }
+//
+//    @Override
+//    public double[] getVelocity() {
+//        return velocity;
+//    }
+//
+//    @Override
+//    public double[] getPosition() {
+//        return position;
+//    }
+//
+//    @Override
+//    public double[] getElements() {
+//        return getPosition();
+//    }
+//
+//    @Override
+//    public int size() {
+//        return position.length;
+//    }
+//
+//    @Override
+//    public Number get(int i) {
+//        return position[i];
+//    }
+//
 //}

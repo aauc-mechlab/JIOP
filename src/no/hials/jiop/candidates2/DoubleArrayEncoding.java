@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,31 +23,68 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
-import no.hials.jiop.candidates.Candidate;
+package no.hials.jiop.candidates2;
+
+import java.util.Arrays;
 
 /**
- * 
- * @author Lars Ivar Hatledal
+ *
+ * @author LarsIvar
  */
-public class CandidateSolution<E> {
+public class DoubleArrayEncoding implements NumericEncoding<double[]> {
 
-    public final long millis;
-    public final double cost;
-    public final int iterations;
-    public final Candidate<E>  solution;
+    private double[] elements;
 
-    public CandidateSolution(Candidate<E>  solution, double cost, int iterations, long millis) {
-        this.cost = cost;
-        this.millis = millis;
-        this.solution = solution;
-        this.iterations = iterations;
+    public DoubleArrayEncoding(double[] elements) {
+        this.elements = elements;
+    }
+
+    @Override
+    public double[] getElements() {
+        return elements;
     }
 
     @Override
     public String toString() {
-        return "SolutionData{" + "#cost=" + cost + ", \t#iterations=" + iterations + ", \t#time=" + millis + ", \t#solution=" + solution + '}';
+        return Arrays.toString(elements);
+    }
+
+    @Override
+    public int size() {
+        return elements.length;
+    }
+
+
+    @Override
+    public Number get(int i) {
+        return elements[i];
+    }
+
+    @Override
+    public double[] clamp(Number low, Number high) {
+        double[] clamped = new double[size()];
+        for (int i = 0; i < clamped.length; i++) {
+            double val = elements[i];
+            if (val < low.doubleValue()) {
+                val = low.doubleValue();
+            } else if (val > high.doubleValue()) {
+                val = low.doubleValue();
+            }
+            clamped[i] = val;
+        }
+        return clamped;
+    }
+
+    @Override
+    public void set(int i, Object o) {
+        elements[i] = (double) o;
+    }
+
+    @Override
+    public void setElements(double[] e) {
+        this.elements = e;
     }
     
     
+
 }

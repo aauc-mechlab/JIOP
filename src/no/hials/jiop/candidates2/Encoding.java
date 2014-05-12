@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, laht
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,60 +23,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
+
+package no.hials.jiop.candidates2;
 
 /**
  *
- * @author laht
+ * @author LarsIvar
  */
-public class DoubleArrayBacteriaCandidate extends DoubleArrayCandidate implements BacteriaCandidate<double[]> {
-
-    private double prevCost = Double.MAX_VALUE;
-    private double health;
-
-    public DoubleArrayBacteriaCandidate(int length) {
-        super(length);
-    }
-
-    public DoubleArrayBacteriaCandidate(double[] elements) {
-        super(elements);
-    }
-
-    public DoubleArrayBacteriaCandidate(double[] elements, double cost) {
-        super(elements, cost);
-    }
+public interface Encoding<E> {
     
-    private DoubleArrayBacteriaCandidate(double[] elements, double cost, double prevCost, double health) {
-        super(elements, cost);
-        this.prevCost = prevCost;
-        this.health = health;
-    }
-
-    @Override
-    public double getPrevCost() {
-        return prevCost;
-    }
-
-    @Override
-    public void setPrevCost(double prevCost) {
-        this.prevCost = prevCost;
-    }
-
-    @Override
-    public double getHealth() {
-        return health;
-    }
-
-    @Override
-    public void setHealth(double health) {
-        this.health = health;
-    }
-
-    @Override
-    public DoubleArrayBacteriaCandidate copy() {
-        return new DoubleArrayBacteriaCandidate(elements.clone(), cost, prevCost, health);
-    }
-    
-    
-
+    public E getElements();
+    public void set(int i, Object o);
+    public void setElements(E e);
+    public Object get(int i);
+    public int size();
 }

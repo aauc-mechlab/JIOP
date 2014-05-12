@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,26 +23,37 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
+package no.hials.jiop.candidates2;
 
 /**
  *
- * @author Lars Ivar Hatledal
- * @param <E>
+ * @author LarsIvar
  */
-public interface  NumericCandidate<E> extends Candidate<E> {
+public class Solution<E> extends Candidate<E> {
 
-    public abstract NumericCandidate plus(Number[] other);
+    private final long millis;
+    private final int iterations;
 
-    public abstract NumericCandidate minus(Number[] other);
+    public Solution(Encoding<E> encoding, double cost, long millis, int iterations) {
+        super(encoding, cost);
+        this.millis = millis;
+        this.iterations = iterations;
+    }
+    
+    public Solution(Candidate<E> candidate, long millis, int iterations) {
+        super(candidate.getEncoding(), candidate.getCost());
+        this.millis = millis;
+        this.iterations = iterations;
+    }
 
-    public abstract NumericCandidate scale(Number scalar);
+    public long getMillis() {
+        return millis;
+    }
 
-    public abstract void clamp(Number min, Number max);
-
-    public abstract void set(int index, Number value);
-
-    @Override
-    public abstract Number get(int index);
+    public int getIterations() {
+        return iterations;
+    }
+    
+    
 
 }

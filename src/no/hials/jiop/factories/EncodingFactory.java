@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, laht
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,32 +23,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
 
-import java.io.Serializable;
+package no.hials.jiop.factories;
+
+import java.util.Collection;
+import java.util.List;
+import no.hials.jiop.candidates2.Encoding;
 
 /**
  *
- * @author laht
- * @param <E>
+ * @author LarsIvar
  */
-public interface Candidate<E> extends Serializable, Iterable, Comparable<Candidate> {
-
-    public int size();
-
-    public double getCost();
-
-    public void setCost(double cost);
-
-    public Candidate<E> copy();
-
-    public E getElements();
-
-    public void setElements(E elements, double cost);
-
-    public Object get(int index);
-
-    public E randomElements(int length);
-
-    public Candidate<E> neighbor(double proximity);
+public interface EncodingFactory<E> {
+    
+    public List<Encoding<E>> generateInitialPopulation(int size, int dim);
+    public List<Encoding<E>> generateInitialPopulation(int size, int dim, Collection<E> seed);
+    public Encoding<E> generateRandom(int dim);
+    public Encoding<E> generate(E elements);
+    
 }

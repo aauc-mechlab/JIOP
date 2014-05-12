@@ -23,25 +23,42 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
+package no.hials.jiop.factories;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import no.hials.jiop.candidates2.Encoding;
 
 /**
  *
- * @author Lars Ivar Hatledal
+ * @author LarsIvar
  */
-public interface ParticleCandidate<E> extends NumericCandidate<E> {
-
-    public NumericCandidate<E> getLocalBest();
-
-    public void setLocalBest(NumericCandidate<E> localBest);
-
-    public Number getVelocityAt(int index);
-
-    public void setVelocityAt(int index, Number value);
+public abstract class AbstractEncodingFactory<E> implements EncodingFactory<E> {
 
     @Override
-    public Candidate<E> copy();
-    
-    
+    public List<Encoding<E>> generateInitialPopulation(int size, int dim) {
+        List<Encoding<E>> population = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            population.add(generateRandom(dim));
+        }
+        return Collections.unmodifiableList(population);
+    }
+
+    @Override
+    public List<Encoding<E>> generateInitialPopulation(int size, int dim, Collection<E> seed) {
+        if (seed.size() > size) {
+            throw new IllegalArgumentException("The number of seeds are greater than the population itself");
+        }
+        List<Encoding<E>> population = new ArrayList<>(size);
+        for (E e : seed) {
+            population.add(generate(e));
+        }
+        for (int i = population.size(); i < size; i++) {
+            population.add(generateRandom(dim));
+        }
+        return Collections.unmodifiableList(population);
+    }
 
 }

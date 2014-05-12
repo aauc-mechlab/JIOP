@@ -26,20 +26,22 @@
 package no.hials.jiop;
 
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.hials.jiop.candidates.Candidate;
-import no.hials.jiop.candidates.CandidateSolution;
-import no.hials.jiop.temination.TerminationData;
+import no.hials.jiop.candidates2.Candidate;
+import no.hials.jiop.candidates2.Encoding;
+import no.hials.jiop.candidates2.Solution;
+import no.hials.jiop.factories.EncodingFactory;
 import no.hials.jiop.temination.TerminationCriteria;
+import no.hials.jiop.temination.TerminationData;
 import no.hials.jiop.temination.TimeElapsedCriteria;
 import org.jfree.data.xy.XYSeries;
 
@@ -54,29 +56,62 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
 
     private String name;
     private Evaluator<E> evaluator;
-    private final Class<?> templateClass;
+    private EncodingFactory<E> encodingFactory;
 
     private MLHistory timeSeries;
-    protected final Random rng = new Random();
 
     private ExecutorService pool;
     private ExecutorCompletionService completionService;
 
     private Candidate<E> bestCandidate;
+    protected int size;
+    protected boolean multiThreaded;
 
-    public AbstractAlgorithm(Class<?> templateClass, Evaluator<E> evaluator, String name) {
-        this.name = name;
-        this.templateClass = templateClass;
-        this.evaluator = evaluator;
-        this.timeSeries = new MLHistory();
+    protected List<Candidate<E>> candidates = new ArrayList<>();
+
+    public AbstractAlgorithm(EncodingFactory<E> encodingFactory, Evaluator<E> evaluator, String name) {
+        this(1, encodingFactory, evaluator, name);
     }
 
-    protected abstract void singleIteration();
+    public AbstractAlgorithm(int size, EncodingFactory<E> encodingFactory, Evaluator<E> evaluator, String name) {
+        this(size, encodingFactory, evaluator, name, false);
+    }
 
-    protected abstract Candidate<E> subInit();
+    public AbstractAlgorithm(int size, EncodingFactory<E> encodingFactory, Evaluator<E> evaluator, String name, boolean multiThreaded) {
+        this.name = name;
+        this.size = size;
+        this.encodingFactory = encodingFactory;
+        this.evaluator = evaluator;
+        this.timeSeries = new MLHistory();
+        this.multiThreaded = multiThreaded;
+    }
 
-    protected abstract Candidate<E> subInit(List<E> seeds);
+    public final void init() {
+        List<Encoding<E>> generateInitialPopulation = encodingFactory.generateInitialPopulation(size, evaluator.getDimension());
+        List<Candidate<E>> evaluate = getEvaluator().evaluate(generateInitialPopulation, true);
+        candidates.addAll(evaluate);
+        Collections.sort(candidates);
+        this.bestCandidate = candidates.get(0);
+    }
 
+    public final void init(List<E> seeds) {
+        if (seeds == null || seeds.isEmpty()) {
+            init();
+        } else {
+            List<Encoding<E>> generateInitialPopulation = encodingFactory.generateInitialPopulation(size, evaluator.getDimension(), seeds);
+            List<Candidate<E>> evaluate = getEvaluator().evaluate(generateInitialPopulation, true);
+            candidates.addAll(evaluate);
+            Collections.sort(candidates);
+            this.bestCandidate = candidates.get(0);
+        }
+    }
+
+//    protected abstract void candidateUpdate();
+    protected abstract void candidateUpdate(Candidate<E> c);
+
+//    protected abstract Candidate<E> subInit();
+//
+//    protected abstract Candidate<E> subInit(List<E> seeds);
     /**
      * Evaluates the cost of the given candidate and returns it This is the same
      * as to call getEvaluator().evaluate(candidate) Note: This call does not
@@ -85,20 +120,19 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
      * @param candidate the candidate to evaluate
      * @return the candidates cost
      */
-    public double evaluate(Candidate<E> candidate) {
-        return getEvaluator().evaluate(candidate.getElements());
+    public double evaluate(E candidate) {
+        return getEvaluator().getCost(candidate);
     }
 
     /**
      * Evaluates and updates the cost of the given candidate. This is the same
      * as to call candidate.setCost(getEvaluator().evaluate(candidate))
      *
-     * @param candidate the candidate to evaluate
+     * @param encoding
      * @return the updated candidate instance
      */
-    public Candidate<E> evaluateAndUpdate(Candidate<E> candidate) {
-        candidate.setCost(getEvaluator().evaluate(candidate.getElements()));
-        return candidate;
+    public Candidate<E> evaluateAndUpdate(Encoding<E> encoding) {
+        return getEvaluator().evaluate(encoding);
     }
 
     /**
@@ -108,64 +142,53 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
      * @return a new Candidate instance initialized with random values
      */
     public Candidate<E> newCandidate() {
-        try {
-            Constructor<?> constructor = templateClass.getConstructor(int.class);
-            Candidate<E> newInstance = (Candidate) constructor.newInstance(getEvaluator().getDimension());
-            return evaluateAndUpdate(newInstance);
-        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Logger.getLogger(AbstractAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+        return evaluator.evaluate(encodingFactory.generateRandom(evaluator.getDimension()));
     }
 
-    public Candidate<E> newCandidate(E e) {
-        try {
-            Constructor<?> constructor = templateClass.getConstructor(e.getClass());
-            Candidate<E> newInstance = (Candidate) constructor.newInstance(e);
-            return evaluateAndUpdate(newInstance);
-        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Logger.getLogger(AbstractAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+    public double getAverage() {
+        if (candidates.isEmpty()) {
+            return 0;
+        } else {
+            double cost = 0;
+            for (Candidate<E> c : candidates) {
+                cost += c.getCost();
+            }
+            return cost / candidates.size();
         }
-        return null;
     }
 
+//    public Candidate<E> newCandidate(E e) {
+//        try {
+//            Constructor<?> constructor = templateClass.getConstructor(e.getClass());
+//            Candidate<E> newInstance = (Candidate) constructor.newInstance(e);
+//            return evaluateAndUpdate(newInstance);
+//        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+//            Logger.getLogger(AbstractAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return null;
+//    }
     public void clearHistory() {
         this.timeSeries = new MLHistory();
     }
 
-    public final void init() {
-        this.bestCandidate = null;
-        setBestCandidateIfBetter(subInit());
+    public Candidate<E> getBestCandidate() {
+        return bestCandidate;
     }
 
-    public final void init(List<E> seeds) {
-        this.bestCandidate = null;
-        if (seeds == null || seeds.isEmpty()) {
-            init();
-        } else {
-            setBestCandidateIfBetter(subInit(seeds));
-        }
-    }
-
-    public synchronized Candidate<E> getBestCandidate() {
-        return bestCandidate.copy();
-    }
-    
-    public synchronized double getBestCost() {
-        return bestCandidate.getCost();
-    }
-
+//    public synchronized double getBestCost() {
+//        return bestCandidate.getCost();
+//    }
     public synchronized void setBestCandidateIfBetter(Candidate<E> candidate) {
         if (bestCandidate == null) {
-            bestCandidate = candidate.copy();
+            bestCandidate = candidate;
         } else {
             if (candidate.getCost() < bestCandidate.getCost()) {
-                this.bestCandidate = candidate.copy();
+                this.bestCandidate = candidate;
             }
         }
     }
 
-    protected CompletionService<Candidate<E>> getCompletionService() {
+    protected CompletionService getCompletionService() {
         if (pool == null) {
 //            pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             pool = Executors.newCachedThreadPool();
@@ -174,7 +197,7 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
         return completionService;
     }
 
-    public CandidateSolution compute(TerminationCriteria... criterias) {
+    public Solution<E> compute(TerminationCriteria... criterias) {
         if (criterias == null) {
             criterias = new TerminationCriteria[]{new TimeElapsedCriteria(100l)};
         } else if (criterias.length == 0) {
@@ -187,8 +210,25 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
         boolean terminate = false;
         while (!terminate) {
             long start = System.nanoTime();
-            singleIteration();
-            double end = (double)(System.nanoTime()-start)/1000000000;
+
+            if (multiThreaded) {
+                for (Candidate<E> c : candidates) {
+                    getCompletionService().submit(() -> candidateUpdate(c), null);
+                }
+                for (Candidate<E> c : candidates) {
+                    try {
+                        getCompletionService().take().get();
+                    } catch (InterruptedException | ExecutionException ex) {
+                        Logger.getLogger(AbstractAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            } else {
+                for (Candidate<E> c : candidates) {
+                    candidateUpdate(c);
+                }
+            }
+
+            double end = (double) (System.nanoTime() - start) / 1000000000;
             timeElapsed = (System.currentTimeMillis() - t0);
             bestCost = getBestCandidate().getCost();
             numIterations++;
@@ -199,8 +239,7 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
                 }
             }
         }
-
-        return new CandidateSolution(getBestCandidate(), getBestCandidate().getCost(), numIterations, timeElapsed);
+        return new Solution<>(getBestCandidate(), timeElapsed, numIterations);
     }
 
 //    /**
