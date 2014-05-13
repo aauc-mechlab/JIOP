@@ -23,7 +23,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
 package no.hials.jiop.candidates;
 
 import java.util.Arrays;
@@ -32,11 +31,7 @@ import java.util.Arrays;
  *
  * @author LarsIvar
  */
-public class FloatArrayCandidate extends GeneralCandidate<float[]> implements NumericCandidate<float[]>{
-
-    public FloatArrayCandidate(int length) {
-        super(length);
-    }
+public class FloatArrayCandidate extends GeneralCandidate<float[]> implements NumericCandidate<float[]> {
 
     public FloatArrayCandidate(float[] elements) {
         super(elements);
@@ -47,14 +42,13 @@ public class FloatArrayCandidate extends GeneralCandidate<float[]> implements Nu
     }
 
     @Override
-    public Candidate<float[]> copy() {
+    public FloatArrayCandidate copy() {
         return new FloatArrayCandidate(getElements().clone(), getCost());
     }
 
-
     @Override
     public FloatArrayCandidate plus(Number[] other) {
-        float[] arr = new float[size()];
+        float[] arr = new float[getDimension()];
         for (int i = 0; i < arr.length; i++) {
             set(i, get(i).floatValue() + other[i].floatValue());
         }
@@ -63,7 +57,7 @@ public class FloatArrayCandidate extends GeneralCandidate<float[]> implements Nu
 
     @Override
     public FloatArrayCandidate minus(Number[] other) {
-        float[] arr = new float[size()];
+        float[] arr = new float[getDimension()];
         for (int i = 0; i < arr.length; i++) {
             set(i, get(i).floatValue() - other[i].floatValue());
         }
@@ -72,7 +66,7 @@ public class FloatArrayCandidate extends GeneralCandidate<float[]> implements Nu
 
     @Override
     public FloatArrayCandidate scale(Number scalar) {
-        float[] arr = new float[size()];
+        float[] arr = new float[getDimension()];
         for (int i = 0; i < arr.length; i++) {
             set(i, get(i).floatValue() * scalar.floatValue());
         }
@@ -81,7 +75,7 @@ public class FloatArrayCandidate extends GeneralCandidate<float[]> implements Nu
 
     @Override
     public void clamp(Number min, Number max) {
-        for (int i = 0; i < size(); i++) {
+        for (int i = 0; i < getDimension(); i++) {
             float val = get(i).floatValue();
             if (val < min.floatValue()) {
                 set(i, min.floatValue());
@@ -92,7 +86,7 @@ public class FloatArrayCandidate extends GeneralCandidate<float[]> implements Nu
     }
 
     @Override
-    public int size() {
+    public int getDimension() {
         return elements.length;
     }
 
@@ -112,18 +106,9 @@ public class FloatArrayCandidate extends GeneralCandidate<float[]> implements Nu
     }
 
     @Override
-    public float[] randomElements(int length) {
-        float[] rand = new float[length];
-        for (int i = 0; i < rand.length; i++) {
-            rand[i] = rng.nextFloat();
-        }
-        return rand;
-    }
-
-    @Override
     public FloatArrayCandidate neighbor(double proximity) {
-        float[] neighbor = new float[size()];
-        for (int i = 0; i < size(); i++) {
+        float[] neighbor = new float[getDimension()];
+        for (int i = 0; i < getDimension(); i++) {
             float val = (float) (elements[i] + (rng.nextFloat() * Math.abs(proximity - (-proximity)) + (-proximity)));
             if (val < 0) {
                 val = 0;

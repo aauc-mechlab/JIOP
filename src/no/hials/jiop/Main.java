@@ -26,20 +26,19 @@
 package no.hials.jiop;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import no.hials.jiop.candidates.CandidateSolution;
-import no.hials.jiop.candidates.DoubleArrayBacteriaCandidate;
-import no.hials.jiop.candidates.DoubleArrayCandidate;
-import no.hials.jiop.candidates.DoubleArrayParticleCandidate;
+import java.util.List;
+import no.hials.jiop.candidates.bacterium.DoubleArrayBacteriaFactory;
+import no.hials.jiop.candidates.particles.DoubleArrayParticleFactory;
 import no.hials.jiop.evolutionary.de.DifferentialEvolution;
-import no.hials.jiop.heuristic.AmoebaOptimization;
-import no.hials.jiop.physical.SimulatedAnnealing;
-import no.hials.jiop.swarm.ArtificialBeeColony;
-import no.hials.jiop.swarm.BacterialForagingOptimization;
-import no.hials.jiop.swarm.MultiSwarmOptimization;
-import no.hials.jiop.swarm.ParticleSwarmOptimization;
+import no.hials.jiop.factories.DoubleArrayCandidateFactory;
+import no.hials.jiop.factories.DoubleListCandidateFactory;
+import no.hials.jiop.heuristic.amoeba.AmoebaOptimization;
+import no.hials.jiop.physical.sa.SimulatedAnnealing;
+import no.hials.jiop.swarm.abs.ArtificialBeeColony;
+import no.hials.jiop.swarm.bfo.BacterialForagingOptimization;
+import no.hials.jiop.swarm.pso.MultiSwarmOptimization;
+import no.hials.jiop.swarm.pso.ParticleSwarmOptimization;
 import no.hials.jiop.temination.TimeElapsedCriteria;
-import no.hials.jiop.tuning.AlgorithmOptimizer;
 import no.hials.utilities.NormUtil;
 
 /**
@@ -51,22 +50,23 @@ public class Main {
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
-        Evaluator<float[]> feval = new Feval(5);
-
         Evaluator<double[]> deval = new Deval(5);
+        Evaluator<List<Double>> deval2 = new Deval2(5);
         AlgorithmCollection<double[]> algorithms = new AlgorithmCollection<>();
 
-        algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, deval, false));
-        algorithms.add(new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, deval, true));
-//        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, deval, false));
-//        algorithms.add(new ParticleSwarmOptimization(DoubleArrayParticleCandidate.class, 40, deval, true));
-//        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, deval, false));
-//        algorithms.add(new MultiSwarmOptimization(DoubleArrayParticleCandidate.class, 5, 30, deval, true));
-//        algorithms.add(new ArtificialBeeColony(DoubleArrayCandidate.class, 60, 12, deval));
-//        algorithms.add(new AmoebaOptimization(DoubleArrayCandidate.class, 50, deval));
-//        algorithms.add(new SimulatedAnnealing(DoubleArrayCandidate.class, 20, 0.995, deval));
-//        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, deval, false));
-//        algorithms.add(new BacterialForagingOptimization(DoubleArrayBacteriaCandidate.class, 100, deval, true));
+        algorithms.add(new DifferentialEvolution(30, 0.9, 0.7, new DoubleArrayCandidateFactory(), deval, false));
+        algorithms.add(new DifferentialEvolution(30, 0.9, 0.7, new DoubleListCandidateFactory(), deval2, "DE -List", false));
+        algorithms.add(new DifferentialEvolution(30, 0.9, 0.7, new DoubleArrayCandidateFactory(), deval, true));
+        algorithms.add(new DifferentialEvolution(30, 0.9, 0.7, new DoubleListCandidateFactory(), deval2, "DE -List2", true));
+        algorithms.add(new ParticleSwarmOptimization(40, new DoubleArrayParticleFactory(), deval, false));
+        algorithms.add(new ParticleSwarmOptimization(40, new DoubleArrayParticleFactory(), deval, true));
+        algorithms.add(new MultiSwarmOptimization(3, 40, new DoubleArrayParticleFactory(), deval, false));
+        algorithms.add(new MultiSwarmOptimization(4, 40, new DoubleArrayParticleFactory(), deval, true));
+        algorithms.add(new ArtificialBeeColony(60, 12, new DoubleArrayCandidateFactory(), deval));
+        algorithms.add(new AmoebaOptimization(50, new DoubleArrayParticleFactory(), deval));
+        algorithms.add(new SimulatedAnnealing(20, 0.995, new DoubleArrayCandidateFactory(), deval));
+        algorithms.add(new BacterialForagingOptimization(100, new DoubleArrayBacteriaFactory(), deval, false));
+        algorithms.add(new BacterialForagingOptimization(100, new DoubleArrayBacteriaFactory(), deval, true));
 //        DifferentialEvolution de = new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, deval, "DE - Optimized", false);
 //        CandidateSolution optimize = new AlgorithmOptimizer(de).optimize(0, 20000);
 //        de.setFreeParameters((double[]) optimize.solution.getElements());
@@ -79,21 +79,14 @@ public class Main {
 
     }
 
-    public static class Deval implements Evaluator<double[]> {
-
-        private final int dimension;
+    public static class Deval extends Evaluator<double[]> {
 
         public Deval(int dimension) {
-            this.dimension = dimension;
+            super(dimension);
         }
 
         @Override
-        public int getDimension() {
-            return dimension;
-        }
-
-        @Override
-        public double evaluate(double[] elements) {
+        public double getCost(double[] elements) {
             double cost = 0;
             for (int i = 0; i < elements.length; i++) {
                 double xi = new NormUtil(1, 0, 10, -10).normalize(elements[i]);
@@ -105,24 +98,17 @@ public class Main {
 
     }
 
-    public static class Feval implements Evaluator<float[]> {
+    public static class Deval2 extends Evaluator<List<Double>> {
 
-        private final int dimension;
-
-        public Feval(int dimension) {
-            this.dimension = dimension;
+        public Deval2(int dimension) {
+            super(dimension);
         }
 
         @Override
-        public int getDimension() {
-            return dimension;
-        }
-
-        @Override
-        public double evaluate(float[] elements) {
+        public double getCost(List<Double> elements) {
             double cost = 0;
-            for (int i = 0; i < elements.length; i++) {
-                double xi = new NormUtil(1, 0, 10, -10).normalize(elements[i]);
+            for (int i = 0; i < elements.size(); i++) {
+                double xi = new NormUtil(1, 0, 10, -10).normalize(elements.get(i));
                 cost += (xi * xi) - (10 * Math.cos(2 * Math.PI * xi)) + 10;
             }
 

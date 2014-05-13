@@ -31,6 +31,7 @@ import no.hials.jiop.Evaluator;
 import no.hials.jiop.GeneralPopBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
+import no.hials.jiop.factories.NumericCandidateFactory;
 import no.hials.jiop.tuning.Optimizable;
 import no.hials.utilities.NormUtil;
 
@@ -39,26 +40,26 @@ import no.hials.utilities.NormUtil;
  *
  * @author Lars Ivar Hatledal
  */
-public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> implements Optimizable{
+public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> implements Optimizable {
 
     private double F, CR;
 
     private boolean multiThreaded;
 
-    public DifferentialEvolution(Class<?> clazz, int size, double F, double CR, Evaluator<E> evaluator, String name, boolean multiThreaded) {
-        super(clazz, size, evaluator, name);
+    public DifferentialEvolution(int size, double F, double CR, NumericCandidateFactory<E> candidateFactory, Evaluator<E> evalutor, boolean multiThreaded) {
+        this(size, F, CR, candidateFactory, evalutor, multiThreaded ? "MultiThreaded Differential Evolution" : "SingleThreaded Differential Evolution", multiThreaded);
+    }
+
+    public DifferentialEvolution(int size, double F, double CR, NumericCandidateFactory<E> candidateFactory, Evaluator<E> evaluator, String name, boolean multiThreaded) {
+        super(size, candidateFactory, evaluator, name);
         this.F = F;
         this.CR = CR;
         this.multiThreaded = multiThreaded;
     }
 
-    public DifferentialEvolution(Class<?> clazz, int size, double F, double CR, Evaluator<E> evalutor, boolean multiThreaded) {
-        this(clazz, size, F, CR, evalutor, multiThreaded ? "MultiThreaded Differential Evolution" : "SingleThreaded Differential Evolution", multiThreaded);
-    }
-
     @Override
     protected void singleIteration() {
-       for (Candidate<E> c : population) {
+        for (Candidate<E> c : getPopulation()) {
             if (multiThreaded) {
                 getCompletionService().submit(() -> threadingTask((NumericCandidate<E>) c), null);
             } else {
@@ -66,7 +67,7 @@ public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> implem
             }
         }
         if (multiThreaded) {
-            for (Candidate<E> c : population) {
+            for (Candidate<E> c : getPopulation()) {
                 try {
                     getCompletionService().take();
                 } catch (InterruptedException ex) {
@@ -80,20 +81,20 @@ public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> implem
         NumericCandidate<E> c1;
         NumericCandidate<E> c2, c3;
         do {
-            int rand = rng.nextInt(population.size());
-            c1 = (NumericCandidate<E>) population.get(rand);
+            int rand = rng.nextInt(size());
+            c1 = (NumericCandidate<E>) getPopulation().get(rand);
         } while (c1 == c);
         do {
-            int rand = rng.nextInt(population.size());
-            c2 = (NumericCandidate<E>) population.get(rand);
+            int rand = rng.nextInt(size());
+            c2 = (NumericCandidate<E>)  getPopulation().get(rand);
         } while (c2 == c && c2 == c1);
         do {
-            int rand = rng.nextInt(population.size());
-            c3 = (NumericCandidate<E>) population.get(rand);
+            int rand = rng.nextInt(size());
+            c3 = (NumericCandidate<E>)  getPopulation().get(rand);
         } while (c3 == c && c3 == c1 && c3 == c2);
         int R = rng.nextInt(getDimension());
-        NumericCandidate<E> sample = (NumericCandidate<E>) newCandidate();
-        for (int i = 0; i < sample.size(); i++) {
+        NumericCandidate<E> sample = (NumericCandidate<E>) randomCandidate();
+        for (int i = 0; i < sample.getDimension(); i++) {
             if ((rng.nextDouble() < CR) || (i == R)) {
                 double value = c1.get(i).doubleValue() + F * (c2.get(i).doubleValue() - c3.get(i).doubleValue());
                 sample.set(i, value);
@@ -102,7 +103,7 @@ public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> implem
             }
         }
         sample.clamp(0, 1);
-        evaluateAndUpdate(sample);
+        evaluate(sample);
         if (sample.getCost() < c.getCost()) {
             c.setElements(sample.getElements(), sample.getCost());
             setBestCandidateIfBetter(c);
@@ -132,13 +133,13 @@ public class DifferentialEvolution<E> extends GeneralPopBasedAlgorithm<E> implem
 
     @Override
     public void setFreeParameters(double[] array) {
-        this.size = (int) new NormUtil(1, 0, 60, 10).normalize(array[0]);
+        setSize((int) new NormUtil(1, 0, 60, 10).normalize(array[0]));
         this.F = new NormUtil(1, 0, 2, 0.1).normalize(array[1]);
         this.CR = new NormUtil(1, 0, 1, 0.1).normalize(array[2]);
     }
 
     @Override
     public double[] getFreeParameters() {
-        return new double[]{size, F, CR};
+        return new double[]{size(), F, CR};
     }
 }

@@ -31,11 +31,7 @@ import java.util.Arrays;
  *
  * @author Lars Ivar Hatledal
  */
-public class DoubleArrayCandidate extends GeneralCandidate<double[]> implements NumericCandidate<double[]>{
-
-    public DoubleArrayCandidate(int length) {
-        super(length);
-    }
+public class DoubleArrayCandidate extends GeneralCandidate<double[]> implements NumericCandidate<double[]> {
 
     public DoubleArrayCandidate(double[] elements) {
         super(elements);
@@ -46,52 +42,51 @@ public class DoubleArrayCandidate extends GeneralCandidate<double[]> implements 
     }
 
     @Override
-    public Candidate<double[]> copy() {
-        return new DoubleArrayCandidate(getElements().clone(), getCost());
+    public DoubleArrayCandidate copy() {
+        return new DoubleArrayCandidate(elements.clone(), getCost());
     }
-
 
     @Override
     public DoubleArrayCandidate plus(Number[] other) {
-        double[] arr = new double[size()];
+        double[] arr = new double[getDimension()];
         for (int i = 0; i < arr.length; i++) {
-            set(i, get(i).doubleValue() + other[i].doubleValue());
+            set(i, elements[i] + other[i].doubleValue());
         }
         return new DoubleArrayCandidate(arr);
     }
 
     @Override
     public DoubleArrayCandidate minus(Number[] other) {
-        double[] arr = new double[size()];
+        double[] arr = new double[getDimension()];
         for (int i = 0; i < arr.length; i++) {
-            set(i, get(i).doubleValue() - other[i].doubleValue());
+            set(i, elements[i] - other[i].doubleValue());
         }
         return new DoubleArrayCandidate(arr);
     }
 
     @Override
     public DoubleArrayCandidate scale(Number scalar) {
-        double[] arr = new double[size()];
+        double[] arr = new double[getDimension()];
         for (int i = 0; i < arr.length; i++) {
-            set(i, get(i).doubleValue() * scalar.doubleValue());
+            set(i, elements[i] * scalar.doubleValue());
         }
         return new DoubleArrayCandidate(arr);
     }
 
     @Override
     public void clamp(Number min, Number max) {
-        for (int i = 0; i < size(); i++) {
-            double val = get(i).doubleValue();
+        for (int i = 0; i < getDimension(); i++) {
+            double val = elements[i];
             if (val < min.doubleValue()) {
-                set(i, min.doubleValue());
+                elements[i] = min.doubleValue();
             } else if (val > max.doubleValue()) {
-                set(i, max.doubleValue());
+                elements[i] = max.doubleValue();
             }
         }
     }
 
     @Override
-    public int size() {
+    public int getDimension() {
         return elements.length;
     }
 
@@ -111,18 +106,9 @@ public class DoubleArrayCandidate extends GeneralCandidate<double[]> implements 
     }
 
     @Override
-    public double[] randomElements(int length) {
-        double[] rand = new double[length];
-        for (int i = 0; i < rand.length; i++) {
-            rand[i] = rng.nextDouble();
-        }
-        return rand;
-    }
-
-    @Override
     public DoubleArrayCandidate neighbor(double proximity) {
-        double[] neighbor = new double[size()];
-        for (int i = 0; i < size(); i++) {
+        double[] neighbor = new double[getDimension()];
+        for (int i = 0; i < getDimension(); i++) {
             double val = elements[i] + (rng.nextDouble() * Math.abs(proximity - (-proximity)) + (-proximity));
             if (val < 0) {
                 val = 0;

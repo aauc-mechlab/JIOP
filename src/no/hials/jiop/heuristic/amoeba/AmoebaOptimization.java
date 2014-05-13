@@ -23,16 +23,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.heuristic;
+package no.hials.jiop.heuristic.amoeba;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import no.hials.jiop.AbstractAlgorithm;
 import no.hials.jiop.Evaluator;
 import no.hials.jiop.GeneralPopBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
+import no.hials.jiop.factories.NumericCandidateFactory;
 
 /**
  * Amoeba Optimization based on an article by James McCaffrey:
@@ -48,114 +45,114 @@ public class AmoebaOptimization<E> extends GeneralPopBasedAlgorithm<E> {
     private double gamma = 2.0;  // Expansion
 
 
-    public AmoebaOptimization(Class<?> clazz, int size, Evaluator<E> evaluator) {
-        super(clazz, size, evaluator, "Amoeba Optimization");
+    public AmoebaOptimization(int size, NumericCandidateFactory<E> candidateFactory, Evaluator<E> evaluator) {
+        super(size, candidateFactory, evaluator, "Amoeba Optimization");
     }
 
     @Override
     protected void singleIteration() {
         NumericCandidate<E> centroid = centroid();
         NumericCandidate<E> reflected = reflected(centroid);
-        if (reflected.getCost() < population.get(0).getCost()) {
+        if (reflected.getCost() < getPopulation().get(0).getCost()) {
             NumericCandidate<E> expanded = expanded(reflected, centroid);
-            if (expanded.getCost() < population.get(0).getCost()) {
+            if (expanded.getCost() < getPopulation().get(0).getCost()) {
                 replaceWorst(expanded);
             } else {
                 replaceWorst(reflected);
             }
-            setBestCandidateIfBetter(population.get(0));
+            setBestCandidateIfBetter(getPopulation().get(0));
             return;
         }
         if (isWorseThanAllButWorst(reflected) == true) {
-            if (reflected.getCost() <= population.get(size - 1).getCost()) {
+            if (reflected.getCost() <= getPopulation().get(size() - 1).getCost()) {
                 replaceWorst(reflected);
             }
             NumericCandidate<E> contracted = contracted(centroid);
-            if (contracted.getCost() > population.get(size - 1).getCost()) {
+            if (contracted.getCost() > getPopulation().get(size() - 1).getCost()) {
                 shrink();
             } else {
                 replaceWorst(contracted);
             }
-            setBestCandidateIfBetter(population.get(0));
+            setBestCandidateIfBetter(getPopulation().get(0));
             return;
         }
         replaceWorst(reflected);
-        setBestCandidateIfBetter(population.get(0));
+        setBestCandidateIfBetter(getPopulation().get(0));
     }
 
     public NumericCandidate<E> centroid() {
-        NumericCandidate<E> c = (NumericCandidate<E>) newCandidate();
-        for (int i = 0; i < size - 1; ++i) {
+        NumericCandidate<E> c = (NumericCandidate<E>) randomCandidate();
+        for (int i = 0; i < size() - 1; ++i) {
             for (int j = 0; j < getDimension(); ++j) {
-                c.set(j, c.get(j).doubleValue() + ((NumericCandidate<E>)population.get(i)).get(j).doubleValue());
+                c.set(j, c.get(j).doubleValue() + ((NumericCandidate<E>)getPopulation().get(i)).get(j).doubleValue());
             }
         }
         // Accumulate sum of each component
         for (int j = 0; j < getDimension(); ++j) {
-            c.set(j, c.get(j).doubleValue() / (size - 1));
+            c.set(j, c.get(j).doubleValue() / (size() - 1));
         }
         c.clamp(0, 1);
-        evaluateAndUpdate(c);
+        evaluate(c);
         return c;
     }
 
     public NumericCandidate<E> reflected(NumericCandidate<E> centroid) {
-        NumericCandidate<E> r = (NumericCandidate<E>) newCandidate();
-        NumericCandidate<E> worst = (NumericCandidate<E>) population.get(size - 1);
+        NumericCandidate<E> r = (NumericCandidate<E>) randomCandidate();
+        NumericCandidate<E> worst = (NumericCandidate<E>) getPopulation().get(size() - 1);
         for (int j = 0; j < getDimension(); ++j) {
             r.set(j, ((1 + alpha) * centroid.get(j).doubleValue()) - (alpha * worst.get(j).doubleValue()));
         }
         r.clamp(0, 1);
-        evaluateAndUpdate(r);
+        evaluate(r);
         return r;
     }
 
     public NumericCandidate<E> expanded(NumericCandidate<E> reflected, NumericCandidate<E> centroid) {
-        NumericCandidate<E> e = (NumericCandidate<E>) newCandidate();
+        NumericCandidate<E> e = (NumericCandidate<E>) randomCandidate();
         for (int j = 0; j < getDimension(); ++j) {
             e.set(j, (gamma * reflected.get(j).doubleValue()) + ((1 - gamma) * centroid.get(j).doubleValue()));
         }
         e.clamp(0, 1);
-        evaluateAndUpdate(e);
+        evaluate(e);
         return e;
     }
 
     public NumericCandidate<E> contracted(NumericCandidate<E> centroid) {
-        NumericCandidate<E> v = (NumericCandidate<E>) newCandidate();
-        NumericCandidate<E> worst = (NumericCandidate<E>) population.get(size - 1);
+        NumericCandidate<E> v = (NumericCandidate<E>) randomCandidate();
+        NumericCandidate<E> worst = (NumericCandidate<E>) getPopulation().get(size() - 1);
         for (int j = 0; j < getDimension(); ++j) {
             v.set(j, (beta * worst.get(j).doubleValue()) + ((1 - beta) * centroid.get(j).doubleValue()));
         }
         v.clamp(0, 1);
-        evaluateAndUpdate(v);
+        evaluate(v);
         return v;
     }
 
-    public void replaceWorst(NumericCandidate<E> newSolution) {
-        population.set(size - 1, (NumericCandidate<E>) (newSolution)).copy();
-        Collections.sort(population);
+    public void replaceWorst(Candidate<E> newSolution) {
+        getPopulation().set(size() - 1,  newSolution.copy());
+        sortCandidates();
     }
 
     public void shrink() {
-        for (int i = 1; i < size; ++i) // start at [1]
+        for (int i = 1; i < size(); ++i) // start at [1]
         {
             for (int j = 0; j < getDimension(); ++j) {
-                double value = (((NumericCandidate<E>)population.get(i)).get(j).doubleValue() + ((NumericCandidate<E>)population.get(0)).get(j).doubleValue()) / 2d;
+                double value = (((NumericCandidate<E>)getPopulation().get(i)).get(j).doubleValue() + ((NumericCandidate<E>)getPopulation().get(0)).get(j).doubleValue()) / 2d;
                 if (value < 0) {
                     value = 0;
                 } else if (value > 1) {
                     value = 1;
                 }
-                ((NumericCandidate<E>)population.get(i)).set(j, value);
+                ((NumericCandidate<E>)getPopulation().get(i)).set(j, value);
             }
-            evaluateAndUpdate(population.get(i));
+            evaluate(getPopulation().get(i));
         }
-        Collections.sort(population);
+        sortCandidates();
     }
 
     public boolean isWorseThanAllButWorst(NumericCandidate<E> reflected) {
-        for (int i = 0; i < size - 1; ++i) {
-            if (reflected.getCost() <= population.get(i).getCost()) // Found worse solution
+        for (int i = 0; i < size() - 1; ++i) {
+            if (reflected.getCost() <= getPopulation().get(i).getCost()) // Found worse solution
             {
                 return false;
             }
@@ -200,15 +197,5 @@ public class AmoebaOptimization<E> extends GeneralPopBasedAlgorithm<E> {
 
     public void setGamma(double gamma) {
         this.gamma = gamma;
-    }
-
-    private class Amoeba extends ArrayList<NumericCandidate<E>> {
-
-        public Amoeba(int size) {
-            super(size);
-            for (int i = 0; i < size; i++) {
-                add((NumericCandidate<E>) newCandidate());
-            }
-        }
     }
 }

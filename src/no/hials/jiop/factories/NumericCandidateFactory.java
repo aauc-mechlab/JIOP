@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,39 +24,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop;
+package no.hials.jiop.factories;
 
 import java.util.List;
-import no.hials.jiop.candidates.Candidate;
-
+import no.hials.jiop.candidates.NumericCandidate;
 
 /**
- * Interface used for evaluating performance of the candidates
- * @author Lars Ivar Hatledal
- * @param <E>
+ *
+ * @author LarsIvar
  */
-public abstract class Evaluator<E> {
-    private final int dimension;
+public interface NumericCandidateFactory<E> extends CandidateFactory<E>{
 
-    public Evaluator(int dimension) {
-        this.dimension = dimension;
-    }
+    @Override
+    public NumericCandidate<E> generateFromElements(E e);
 
-    public int getDimension() {
-        return dimension;
-    }
-    
-    public Candidate<E> evaluate(Candidate<E> candidate) {
-        candidate.setCost(getCost(candidate.getElements()));
-        return candidate;
-    }
-    
-    public List<Candidate<E>> evaluateAll(List<Candidate<E>> candidates) {
-        for (Candidate<E> c : candidates) {
-            evaluate(c);
-        }
-        return candidates;
-    }
-    
-    public abstract double getCost(E elements);
+    @Override
+    public NumericCandidate<E> generateRandom(int dimension);
+
+//    @Override
+//    public List<NumericCandidate<E>> generatePopulation(int size, int dimension, List<E> seed);
+//
+//    @Override
+//    public List<NumericCandidate<E>> generatePopulation(int size, int dimension);
+//    
 }

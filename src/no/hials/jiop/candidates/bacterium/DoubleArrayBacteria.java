@@ -23,30 +23,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
+package no.hials.jiop.candidates.bacterium;
+
+import no.hials.jiop.candidates.DoubleArrayCandidate;
+import no.hials.jiop.candidates.bacterium.BacteriaCandidate;
 
 /**
  *
  * @author laht
  */
-public class DoubleArrayBacteriaCandidate extends DoubleArrayCandidate implements BacteriaCandidate<double[]> {
+public class DoubleArrayBacteria extends DoubleArrayCandidate implements BacteriaCandidate<double[]> {
 
     private double prevCost = Double.MAX_VALUE;
     private double health;
 
-    public DoubleArrayBacteriaCandidate(int length) {
-        super(length);
-    }
-
-    public DoubleArrayBacteriaCandidate(double[] elements) {
+    public DoubleArrayBacteria(double[] elements) {
         super(elements);
     }
 
-    public DoubleArrayBacteriaCandidate(double[] elements, double cost) {
+    public DoubleArrayBacteria(double[] elements, double cost) {
         super(elements, cost);
     }
     
-    private DoubleArrayBacteriaCandidate(double[] elements, double cost, double prevCost, double health) {
+    private DoubleArrayBacteria(double[] elements, double cost, double prevCost, double health) {
         super(elements, cost);
         this.prevCost = prevCost;
         this.health = health;
@@ -73,10 +72,7 @@ public class DoubleArrayBacteriaCandidate extends DoubleArrayCandidate implement
     }
 
     @Override
-    public DoubleArrayBacteriaCandidate copy() {
-        return new DoubleArrayBacteriaCandidate(elements.clone(), cost, prevCost, health);
-    }
-    
-    
-
+    public DoubleArrayBacteria copy() {
+        return new DoubleArrayBacteria(elements.clone(), cost, prevCost, health);
+    } 
 }

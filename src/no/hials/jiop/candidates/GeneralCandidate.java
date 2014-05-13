@@ -40,10 +40,6 @@ public abstract class GeneralCandidate<E> implements Candidate<E> {
     protected double cost = Double.MAX_VALUE;
     protected E elements;
 
-    public GeneralCandidate(int length) {
-        this.elements = randomElements(length);
-    }
-
     public GeneralCandidate(E elements) {
         this.elements = elements;
     }
@@ -88,9 +84,9 @@ public abstract class GeneralCandidate<E> implements Candidate<E> {
      */
     public String toString(String delimiter) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < size(); i++) {
+        for (int i = 0; i < getDimension(); i++) {
             sb.append(get(i));
-            if (i != size() - 1) {
+            if (i != getDimension() - 1) {
                 sb.append(delimiter);
             }
         }
@@ -124,7 +120,7 @@ public abstract class GeneralCandidate<E> implements Candidate<E> {
 
         @Override
         public boolean hasNext() {
-            return index != size();
+            return index != getDimension();
         }
 
         @Override

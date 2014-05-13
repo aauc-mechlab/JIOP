@@ -23,7 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.swarm;
+package no.hials.jiop.swarm.pso;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +31,8 @@ import no.hials.jiop.Evaluator;
 import no.hials.jiop.GeneralPopBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
-import no.hials.jiop.candidates.ParticleCandidate;
+import no.hials.jiop.candidates.particles.ParticleCandidate;
+import no.hials.jiop.factories.NumericCandidateFactory;
 import no.hials.jiop.tuning.Optimizable;
 import no.hials.utilities.NormUtil;
 
@@ -46,30 +47,27 @@ public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> im
 
     private final boolean multiThreaded;
 
-    public ParticleSwarmOptimization(Class<?> clazz, int size, double omega, double c1, double c2, Evaluator<E> evaluator, String name, boolean multiThreaded) {
-        super(clazz, size, evaluator, name);
+    public ParticleSwarmOptimization(int size, NumericCandidateFactory<E> candidateFactory, Evaluator<E> evaluator, boolean multiThreaded) {
+        super(size, candidateFactory, evaluator, multiThreaded ? "MultiThreaded Particle Swarm Optimization" : "SingleThreaded Particle Swarm Optimization");
+        this.multiThreaded = multiThreaded;
+    }
+
+    public ParticleSwarmOptimization(int size, NumericCandidateFactory<E> candidateFactory, Evaluator<E> evaluator, String name, boolean multiThreaded) {
+        super(size, candidateFactory, evaluator, name);
+        this.multiThreaded = multiThreaded;
+    }
+
+    public ParticleSwarmOptimization(int size, double omega, double c1, double c2, double maxVel, NumericCandidateFactory<E> candidateFactory, Evaluator<E> evaluator, boolean multiThreaded) {
+        this(size, candidateFactory, evaluator, multiThreaded ? "MultiThreaded Particle Swarm Optimization" : "SingleThreaded Particle Swarm Optimization", multiThreaded);
+    }
+
+    public ParticleSwarmOptimization(int size, double omega, double c1, double c2, double maxVel,NumericCandidateFactory<E> candidateFactory, Evaluator<E> evaluator, String name, boolean multiThreaded) {
+        super(size, candidateFactory, evaluator, name);
         this.multiThreaded = multiThreaded;
         this.omega = omega;
         this.c1 = c1;
         this.c2 = c2;
-    }
-    
-    public ParticleSwarmOptimization(Class<?> clazz, int size, double omega, double c1, double c2, Evaluator<E> evaluator, boolean multiThreaded) {
-        super(clazz, size, evaluator, multiThreaded ? "MultiThreaded Particle Swarm Optimization" : "SingleThreaded Particle Swarm Optimization");
-        this.multiThreaded = multiThreaded;
-        this.omega = omega;
-        this.c1 = c1;
-        this.c2 = c2;
-    }
-
-    public ParticleSwarmOptimization(Class<?> clazz, int size, Evaluator<E> evaluator, boolean multiThreaded) {
-        super(clazz, size, evaluator, multiThreaded ? "MultiThreaded Particle Swarm Optimization" : "SingleThreaded Particle Swarm Optimization");
-        this.multiThreaded = multiThreaded;
-    }
-
-    public ParticleSwarmOptimization(Class<?> clazz, int size, Evaluator<E> evaluator, String name, boolean multiThreaded) {
-        super(clazz, size, evaluator, name);
-        this.multiThreaded = multiThreaded;
+        this.maxVel = maxVel;
     }
 
     @Override
@@ -114,10 +112,10 @@ public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> im
             particle.set(i, newPos);
             particle.setVelocityAt(i, newVel);
         }
-        double cost = evaluate(particle);
-        particle.setCost(cost);
+        evaluate(particle);
+        double cost = particle.getCost();
         if (cost < particle.getLocalBest().getCost()) {
-            particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
+            particle.setLocalBest((NumericCandidate<E>) (particle).copy());
             setBestCandidateIfBetter(particle);
         }
 
@@ -163,7 +161,7 @@ public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> im
 
     @Override
     public void setFreeParameters(double[] array) {
-        this.size = (int) new NormUtil(1, 0, 60, 10).normalize(array[0]);
+        setSize((int) new NormUtil(1, 0, 60, 10).normalize(array[0]));
         this.omega = new NormUtil(1, 0, 1, 0.01).normalize(array[1]);
         this.c1 = new NormUtil(1, 0, 2, 0.01).normalize(array[2]);
         this.c2 = new NormUtil(1, 0, 2, 0.01).normalize(array[3]);
@@ -172,6 +170,6 @@ public class ParticleSwarmOptimization<E> extends GeneralPopBasedAlgorithm<E> im
 
     @Override
     public double[] getFreeParameters() {
-        return new double[]{size, omega, c1, c2, maxVel};
+        return new double[]{size(), omega, c1, c2, maxVel};
     }
 }

@@ -43,6 +43,11 @@ public interface  NumericCandidate<E> extends Candidate<E> {
     public abstract void set(int index, Number value);
 
     @Override
+    public NumericCandidate<E> copy();
+    
+    
+
+    @Override
     public abstract Number get(int index);
 
 }

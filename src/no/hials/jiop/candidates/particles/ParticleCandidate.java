@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,40 +23,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package no.hials.jiop.candidates.particles;
 
-package no.hials.jiop;
-
-import java.util.List;
-import no.hials.jiop.candidates.Candidate;
-
+import no.hials.jiop.candidates.NumericCandidate;
 
 /**
- * Interface used for evaluating performance of the candidates
+ *
  * @author Lars Ivar Hatledal
- * @param <E>
  */
-public abstract class Evaluator<E> {
-    private final int dimension;
+public interface ParticleCandidate<E> extends NumericCandidate<E> {
 
-    public Evaluator(int dimension) {
-        this.dimension = dimension;
-    }
+    public NumericCandidate<E> getLocalBest();
 
-    public int getDimension() {
-        return dimension;
-    }
+    public void setLocalBest(NumericCandidate<E> localBest);
+
+    public Number getVelocityAt(int index);
+
+    public void setVelocityAt(int index, Number value);
+
+    @Override
+    public ParticleCandidate<E> copy();
     
-    public Candidate<E> evaluate(Candidate<E> candidate) {
-        candidate.setCost(getCost(candidate.getElements()));
-        return candidate;
-    }
     
-    public List<Candidate<E>> evaluateAll(List<Candidate<E>> candidates) {
-        for (Candidate<E> c : candidates) {
-            evaluate(c);
-        }
-        return candidates;
-    }
-    
-    public abstract double getCost(E elements);
+
 }

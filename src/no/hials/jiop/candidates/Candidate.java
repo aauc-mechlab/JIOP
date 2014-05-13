@@ -34,13 +34,11 @@ import java.io.Serializable;
  */
 public interface Candidate<E> extends Serializable, Iterable, Comparable<Candidate> {
 
-    public int size();
+    public int getDimension();
 
     public double getCost();
 
     public void setCost(double cost);
-
-    public Candidate<E> copy();
 
     public E getElements();
 
@@ -48,7 +46,7 @@ public interface Candidate<E> extends Serializable, Iterable, Comparable<Candida
 
     public Object get(int index);
 
-    public E randomElements(int length);
-
     public Candidate<E> neighbor(double proximity);
+
+    public Candidate<E> copy();
 }

@@ -28,10 +28,9 @@ package no.hials.jiop.evolutionary.ga;
 import no.hials.jiop.evolutionary.ga.mutation.MutationOperator;
 import no.hials.jiop.evolutionary.ga.selection.SelectionOperator;
 import no.hials.jiop.evolutionary.ga.crossover.CrossoverOperator;
-import java.util.List;
 import no.hials.jiop.Evaluator;
 import no.hials.jiop.GeneralPopBasedAlgorithm;
-import no.hials.jiop.candidates.Candidate;
+import no.hials.jiop.factories.CandidateFactory;
 
 /**
  *
@@ -45,8 +44,8 @@ public class GeneticAlgorithm<E> extends GeneralPopBasedAlgorithm<E> {
 
     private double elitism, selectionRate, mutationRate;
 
-    public GeneticAlgorithm(Class<?> templateClass, int size, double elitism, double selectionRate, double mutationRate, Evaluator<E> evaluator, String name) {
-        super(templateClass, size, evaluator, name);
+    public GeneticAlgorithm(int size, double elitism, double selectionRate, double mutationRate, CandidateFactory<E> candidateFactory, Evaluator<E> evaluator, String name) {
+        super(size, candidateFactory, evaluator, name);
         this.elitism = elitism;
         this.selectionRate = selectionRate;
         this.mutationRate = mutationRate;
@@ -54,16 +53,16 @@ public class GeneticAlgorithm<E> extends GeneralPopBasedAlgorithm<E> {
 
     @Override
     protected void singleIteration() {
-        List<Candidate<E>> eliteCandidates = copySubrange(0, (int) (getSize() * elitism));
-        List<Candidate<E>> selectedCandidates = selection.performSelection(getPopulation(), (int) (getSize() * selectionRate));
-        List<Candidate<E>> offspringCandidates = crossover.performCrossover(selectedCandidates, getSize() - (selectedCandidates.size() / 2));
-        mutation.performMutation(offspringCandidates, (int) (selectedCandidates.size() * mutationRate));
-
-        getPopulation().clear();
-        getPopulation().addAll(eliteCandidates);
-        getPopulation().addAll(offspringCandidates);
-        evaluateAll();
-        sortCandidates();
+//        List<Candidate<E>> eliteCandidates = copySubrange(0, (int) (size() * elitism));
+//        List<Candidate<E>> selectedCandidates = selection.performSelection(getPopulation(), (int) (size() * selectionRate));
+//        List<Candidate<E>> offspringCandidates = crossover.performCrossover(selectedCandidates, size() - (selectedCandidates.size() / 2));
+//        mutation.performMutation(offspringCandidates, (int) (selectedCandidates.size() * mutationRate));
+//
+//        getPopulation().clear();
+//        getPopulation().addAll(eliteCandidates);
+//        getPopulation().addAll(offspringCandidates);
+//        evaluateAll();
+//        sortCandidates();
 
     }
 

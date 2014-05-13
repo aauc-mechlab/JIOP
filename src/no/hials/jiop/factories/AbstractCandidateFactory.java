@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,40 +23,43 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package no.hials.jiop.factories;
 
-package no.hials.jiop;
-
+import java.util.ArrayList;
 import java.util.List;
 import no.hials.jiop.candidates.Candidate;
 
-
 /**
- * Interface used for evaluating performance of the candidates
- * @author Lars Ivar Hatledal
- * @param <E>
+ *
+ * @author LarsIvar
  */
-public abstract class Evaluator<E> {
-    private final int dimension;
+public abstract class AbstractCandidateFactory<E> implements CandidateFactory<E> {
 
-    public Evaluator(int dimension) {
-        this.dimension = dimension;
-    }
-
-    public int getDimension() {
-        return dimension;
-    }
-    
-    public Candidate<E> evaluate(Candidate<E> candidate) {
-        candidate.setCost(getCost(candidate.getElements()));
-        return candidate;
-    }
-    
-    public List<Candidate<E>> evaluateAll(List<Candidate<E>> candidates) {
-        for (Candidate<E> c : candidates) {
-            evaluate(c);
+    @Override
+    public List<Candidate<E>> generatePopulation(int size, int dimension) {
+        List<Candidate<E>> population = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            population.add(generateRandom(dimension));
         }
-        return candidates;
+        return population;
     }
-    
-    public abstract double getCost(E elements);
+
+    @Override
+    public List<Candidate<E>> generatePopulation(int size, int dimension, List<E> seed) {
+        if (seed == null) {
+            return generatePopulation(size, dimension);
+        } else if (seed.size() > size) {
+            throw new IllegalArgumentException();
+        } else {
+            List<Candidate<E>> population = new ArrayList<>(size);
+            for (int i = 0; i < seed.size(); i++) {
+                population.add(generateFromElements(seed.get(i)));
+            }
+            for (int i = seed.size(); i < size; i++) {
+                population.add(generateRandom(dimension));
+            }
+            return population;
+        }
+    }
+
 }

@@ -23,33 +23,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
+package no.hials.jiop.candidates.particles;
+
+import no.hials.jiop.candidates.DoubleArrayCandidate;
+import no.hials.jiop.candidates.NumericCandidate;
 
 /**
  *
  * @author LarsIvar
  */
-public class DoubleArrayParticleCandidate extends DoubleArrayCandidate implements ParticleCandidate<double[]> {
+public class DoubleArrayParticle extends DoubleArrayCandidate implements ParticleCandidate<double[]> {
 
     private double[] localBestPosition;
     private double localBestCost;
     private final double[] velocity;
 
-    public DoubleArrayParticleCandidate(int length) {
-        super(length);
-        this.localBestPosition = elements.clone();
-        this.localBestCost = cost;
-        this.velocity = new double[length];
-    }
-
-    public DoubleArrayParticleCandidate(double[] elements) {
+    public DoubleArrayParticle(double[] elements) {
         super(elements);
         this.localBestPosition = elements.clone();
         this.localBestCost = cost;
         this.velocity = new double[elements.length];
     }
 
-    public DoubleArrayParticleCandidate(double[] elements, double cost) {
+    public DoubleArrayParticle(double[] elements, double cost) {
         super(elements, cost);
         this.localBestPosition = elements.clone();
         this.localBestCost = cost;
@@ -67,13 +63,13 @@ public class DoubleArrayParticleCandidate extends DoubleArrayCandidate implement
     }
 
     @Override
-    public DoubleArrayParticleCandidate copy() {
-        return new DoubleArrayParticleCandidate(elements.clone(), cost);
+    public DoubleArrayParticle copy() {
+        return new DoubleArrayParticle(elements.clone(), cost);
     }
 
     @Override
     public NumericCandidate<double[]> getLocalBest() {
-        return new DoubleArrayParticleCandidate(localBestPosition, localBestCost);
+        return new DoubleArrayParticle(localBestPosition, localBestCost);
     }
 
     @Override

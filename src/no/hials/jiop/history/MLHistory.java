@@ -23,10 +23,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop;
+package no.hials.jiop.history;
 
 import java.util.ArrayList;
-import no.hials.jiop.MLHistory.MLHistoryPoint;
+import no.hials.jiop.history.MLHistory.MLHistoryPoint;
 
 /**
  * Class to store the performance history of an algorithm

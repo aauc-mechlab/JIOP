@@ -23,25 +23,32 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
+
+package no.hials.jiop.candidates.bacterium;
+
+import no.hials.jiop.candidates.DoubleArrayCandidate;
+import no.hials.jiop.candidates.NumericCandidate;
+import no.hials.jiop.factories.AbstractCandidateFactory;
+import no.hials.jiop.factories.NumericCandidateFactory;
 
 /**
  *
- * @author Lars Ivar Hatledal
+ * @author LarsIvar
  */
-public interface ParticleCandidate<E> extends NumericCandidate<E> {
-
-    public NumericCandidate<E> getLocalBest();
-
-    public void setLocalBest(NumericCandidate<E> localBest);
-
-    public Number getVelocityAt(int index);
-
-    public void setVelocityAt(int index, Number value);
+public class DoubleArrayBacteriaFactory extends AbstractCandidateFactory<double[]> implements NumericCandidateFactory<double[]>{
 
     @Override
-    public Candidate<E> copy();
-    
-    
+    public NumericCandidate<double[]> generateFromElements(double[] e) {
+        return new DoubleArrayBacteria(e);
+    }
 
+    @Override
+    public NumericCandidate<double[]> generateRandom(int dimension) {
+         double[] random = new double[dimension];
+        for (int i = 0; i < random.length; i++) {
+            random[i] = Math.random();
+        }
+        return new DoubleArrayBacteria(random);
+    }
+    
 }

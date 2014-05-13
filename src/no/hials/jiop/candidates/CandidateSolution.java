@@ -24,7 +24,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 package no.hials.jiop.candidates;
-import no.hials.jiop.candidates.Candidate;
 
 /**
  * 
@@ -32,21 +31,32 @@ import no.hials.jiop.candidates.Candidate;
  */
 public class CandidateSolution<E> {
 
-    public final long millis;
-    public final double cost;
-    public final int iterations;
-    public final Candidate<E>  solution;
+    private final long millis;
+    private final int iterations;
+    private final Candidate<E>  solution;
 
     public CandidateSolution(Candidate<E>  solution, double cost, int iterations, long millis) {
-        this.cost = cost;
         this.millis = millis;
         this.solution = solution;
         this.iterations = iterations;
     }
 
+    public long getMillis() {
+        return millis;
+    }
+
+
+    public int getIterations() {
+        return iterations;
+    }
+
+    public Candidate<E> getSolution() {
+        return solution;
+    }
+
     @Override
     public String toString() {
-        return "SolutionData{" + "#cost=" + cost + ", \t#iterations=" + iterations + ", \t#time=" + millis + ", \t#solution=" + solution + '}';
+        return "SolutionData{" + "#cost=" + solution.getCost() + ", \t#iterations=" + iterations + ", \t#time=" + millis + ", \t#solution=" + solution + '}';
     }
     
     

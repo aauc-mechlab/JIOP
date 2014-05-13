@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,39 +24,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop;
-
-import java.util.List;
-import no.hials.jiop.candidates.Candidate;
-
+package no.hials.jiop.physical.sa;
 
 /**
- * Interface used for evaluating performance of the candidates
- * @author Lars Ivar Hatledal
- * @param <E>
+ *
+ * @author LarsIvar
  */
-public abstract class Evaluator<E> {
-    private final int dimension;
-
-    public Evaluator(int dimension) {
-        this.dimension = dimension;
-    }
-
-    public int getDimension() {
-        return dimension;
-    }
+public interface AnnealingSchedule<E> {
     
-    public Candidate<E> evaluate(Candidate<E> candidate) {
-        candidate.setCost(getCost(candidate.getElements()));
-        return candidate;
-    }
+    public E cool(E T);
     
-    public List<Candidate<E>> evaluateAll(List<Candidate<E>> candidates) {
-        for (Candidate<E> c : candidates) {
-            evaluate(c);
-        }
-        return candidates;
-    }
-    
-    public abstract double getCost(E elements);
 }

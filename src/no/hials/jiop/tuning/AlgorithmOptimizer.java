@@ -29,7 +29,7 @@ import java.io.Serializable;
 import no.hials.jiop.AbstractAlgorithm;
 import no.hials.jiop.Evaluator;
 import no.hials.jiop.candidates.CandidateSolution;
-import no.hials.jiop.candidates.DoubleArrayCandidate;
+import no.hials.jiop.factories.DoubleArrayCandidateFactory;
 import no.hials.jiop.evolutionary.de.DifferentialEvolution;
 import no.hials.jiop.temination.CostCriteria;
 import no.hials.jiop.temination.TimeElapsedCriteria;
@@ -41,19 +41,17 @@ import no.hials.jiop.temination.TimeElapsedCriteria;
 public class AlgorithmOptimizer implements Serializable {
 
     public final AbstractAlgorithm algorithm;
-    public final Optimizable optimizable;
 
-    public AlgorithmOptimizer(Optimizable optimizable) {
-        this.optimizable = optimizable;
-        this.algorithm = new DifferentialEvolution(DoubleArrayCandidate.class, 15, 0.8, 0.9, new OptimizerEvalutor(), true);
+    public AlgorithmOptimizer() {
+        this.algorithm = new DifferentialEvolution(15, 0.8, 0.9, new DoubleArrayCandidateFactory(), null, true);
     }
 
-    public AlgorithmOptimizer(AbstractAlgorithm algorithm, Optimizable optimizable) {
+    public AlgorithmOptimizer(AbstractAlgorithm algorithm) {
         this.algorithm = algorithm;
-        this.optimizable = optimizable;
     }
 
-    public CandidateSolution optimize(double cost, long timeOut) {
+    public CandidateSolution optimize(Optimizable optimizable, double cost, long timeOut) {
+        this.algorithm.setEvaluator(new OptimizerEvalutor(optimizable));
         this.algorithm.init();
         CandidateSolution compute = algorithm.compute(new CostCriteria(cost), new TimeElapsedCriteria(timeOut));
         AbstractAlgorithm alg = (AbstractAlgorithm) optimizable;
@@ -61,24 +59,25 @@ public class AlgorithmOptimizer implements Serializable {
         return compute;
     }
 
-    private class OptimizerEvalutor implements Evaluator<double[]> {
+    private class OptimizerEvalutor extends Evaluator<double[]> {
+        
+        private final Optimizable optimizable;
 
+        public OptimizerEvalutor(Optimizable optimizable) {
+            super(optimizable.getNumberOfFreeParameters());
+            this.optimizable = optimizable;
+        }
+        
         @Override
-        public double evaluate(double[] array) {
+        public double getCost(double[] array) {
             double cost = 0;
             optimizable.setFreeParameters(array);
             for (int i = 0; i < 5; i++) {
                 optimizable.init();
-                CandidateSolution compute = optimizable.compute(new CostCriteria(0), new TimeElapsedCriteria(50l));
-//                cost += compute.millis;
-                cost += compute.cost;
+                CandidateSolution compute = optimizable.compute(new TimeElapsedCriteria(50l));
+                cost += compute.getSolution().getCost();
             }
             return cost;
-        }
-
-        @Override
-        public int getDimension() {
-           return optimizable.getNumberOfFreeParameters();
         }
     }
 

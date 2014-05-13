@@ -23,15 +23,31 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package no.hials.jiop.factories;
 
-package no.hials.jiop.physical;
+import java.util.ArrayList;
+import java.util.List;
+import no.hials.jiop.candidates.Candidate;
+import no.hials.jiop.candidates.DoubleListCandidate;
+import no.hials.jiop.candidates.NumericCandidate;
 
 /**
  *
  * @author LarsIvar
  */
-public interface AnnealingSchedule<E> {
-    
-    public E cool(E T);
-    
+public class DoubleListCandidateFactory extends AbstractCandidateFactory<List<Double>> implements NumericCandidateFactory<List<Double>> {
+
+    @Override
+    public NumericCandidate<List<Double>> generateFromElements(List<Double> e) {
+        return new DoubleListCandidate(e);
+    }
+
+    @Override
+    public NumericCandidate<List<Double>> generateRandom(int dimension) {
+        List<Double> list = new ArrayList<>(dimension);
+        for (int i = 0; i < dimension; i++) {
+            list.add(Math.random());
+        }
+        return new DoubleListCandidate(list);
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Aalesund University College 
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,40 +23,31 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package no.hials.jiop.candidates.particles;
 
-package no.hials.jiop;
-
-import java.util.List;
-import no.hials.jiop.candidates.Candidate;
-
+import no.hials.jiop.candidates.particles.DoubleArrayParticle;
+import no.hials.jiop.candidates.NumericCandidate;
+import no.hials.jiop.factories.AbstractCandidateFactory;
+import no.hials.jiop.factories.NumericCandidateFactory;
 
 /**
- * Interface used for evaluating performance of the candidates
- * @author Lars Ivar Hatledal
- * @param <E>
+ *
+ * @author LarsIvar
  */
-public abstract class Evaluator<E> {
-    private final int dimension;
+public class DoubleArrayParticleFactory extends AbstractCandidateFactory<double[]> implements NumericCandidateFactory<double[]> {
 
-    public Evaluator(int dimension) {
-        this.dimension = dimension;
+    @Override
+    public NumericCandidate<double[]> generateFromElements(double[] e) {
+        return new DoubleArrayParticle(e);
     }
 
-    public int getDimension() {
-        return dimension;
-    }
-    
-    public Candidate<E> evaluate(Candidate<E> candidate) {
-        candidate.setCost(getCost(candidate.getElements()));
-        return candidate;
-    }
-    
-    public List<Candidate<E>> evaluateAll(List<Candidate<E>> candidates) {
-        for (Candidate<E> c : candidates) {
-            evaluate(c);
+    @Override
+    public NumericCandidate<double[]> generateRandom(int dimension) {
+        double[] random = new double[dimension];
+        for (int i = 0; i < random.length; i++) {
+            random[i] = Math.random();
         }
-        return candidates;
+        return new DoubleArrayParticle(random);
     }
-    
-    public abstract double getCost(E elements);
+
 }

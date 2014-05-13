@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, laht
+ * Copyright (c) 2014, LarsIvar
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,24 +23,24 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.candidates;
+package no.hials.jiop.factories;
+
+import java.util.List;
+import no.hials.jiop.candidates.Candidate;
 
 /**
  *
- * @author Lars Ivar Hatledal
+ * @author LarsIvar
  * @param <E>
  */
-public interface BacteriaCandidate<E> extends NumericCandidate<E> {
+public interface CandidateFactory<E> {
 
-    public double getPrevCost();
+    public List<Candidate<E>> generatePopulation(int size, int dimension);
 
-    public void setPrevCost(double prevCost);
+    public List<Candidate<E>> generatePopulation(int size, int dimension, List<E> seed);
 
-    public double getHealth();
+    public Candidate<E> generateRandom(int dimension);
 
-    public void setHealth(double health);
-
-    @Override
-    public BacteriaCandidate<E> copy();
+    public Candidate<E> generateFromElements(E e);
 
 }

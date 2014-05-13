@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import no.hials.jiop.candidates.Candidate;
-import no.hials.jiop.candidates.NumericCandidate;
+import no.hials.jiop.factories.CandidateFactory;
 
 /**
  *
@@ -37,42 +37,43 @@ import no.hials.jiop.candidates.NumericCandidate;
  */
 public abstract class GeneralPopBasedAlgorithm<E> extends AbstractAlgorithm<E> implements PopBasedAlgorithm {
 
-    protected int size;
-    protected Population population;
+    private int size;
+    public List<Candidate<E>> population;
 
-    public GeneralPopBasedAlgorithm(Class<?> templateClass, int size, Evaluator<E> evaluator, String name) {
-        super(templateClass, evaluator, name);
+    public GeneralPopBasedAlgorithm(int size, CandidateFactory<E> candidateFactory, Evaluator<E> evaluator, String name) {
+        super(candidateFactory, evaluator, name);
         this.size = size;
     }
 
     @Override
     public Candidate<E> subInit() {
-        this.population = new Population(size);
+        this.population = evaluateAll(getCandidateFactory().generatePopulation(size, getDimension()));
         sortCandidates();
         return population.get(0);
     }
 
     @Override
     public Candidate<E> subInit(List<E> seeds) {
-        this.population = new Population(size - seeds.size());
-        for (E seed : seeds) {
-            population.add((NumericCandidate<E>) newCandidate(seed));
-        }
-
+        this.population = evaluateAll(getCandidateFactory().generatePopulation(size, getDimension(), seeds));
         sortCandidates();
         return population.get(0);
     }
-
-    public void evaluateAll() {
+    
+    @Override
+    public double getAverageCost() {
+        double avg = 0;
         for (Candidate<E> c : population) {
-            getCompletionService().submit(() -> {
-                evaluate(c);
-            }, null);
+            avg += c.getCost();
         }
-
+        avg /= population.size();
+        return avg;
     }
 
-    public int getSize() {
+    public void sortCandidates() {
+        Collections.sort(population);
+    }
+
+    public int size() {
         return population.size();
     }
 
@@ -80,21 +81,7 @@ public abstract class GeneralPopBasedAlgorithm<E> extends AbstractAlgorithm<E> i
         this.size = size;
     }
 
-    public void sortCandidates() {
-        Collections.sort(population);
-    }
-
-    @Override
-    public double getAverageCost() {
-        double avg = 0;
-        for (Candidate<E> c : population) {
-            avg += c.getCost();
-        }
-        avg /= getSize();
-        return avg;
-    }
-
-    public Population getPopulation() {
+    public List<Candidate<E>> getPopulation() {
         return population;
     }
 
@@ -105,16 +92,4 @@ public abstract class GeneralPopBasedAlgorithm<E> extends AbstractAlgorithm<E> i
         }
         return subList;
     }
-
-    protected class Population extends ArrayList<Candidate<E>> {
-
-        public Population(int size) {
-            super(size);
-            for (int i = 0; i < size; i++) {
-                add(newCandidate());
-            }
-        }
-
-    }
-
 }

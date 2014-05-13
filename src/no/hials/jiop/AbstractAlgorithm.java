@@ -25,9 +25,14 @@
  */
 package no.hials.jiop;
 
+import no.hials.jiop.history.MLHistory;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletionService;
@@ -38,8 +43,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.CandidateSolution;
-import no.hials.jiop.temination.TerminationData;
+import no.hials.jiop.factories.CandidateFactory;
 import no.hials.jiop.temination.TerminationCriteria;
+import no.hials.jiop.temination.TerminationData;
 import no.hials.jiop.temination.TimeElapsedCriteria;
 import org.jfree.data.xy.XYSeries;
 
@@ -52,9 +58,10 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
 
     protected final static int availableProcessors = Runtime.getRuntime().availableProcessors();
 
+    private final CandidateFactory<E> candidateFactory;
+
     private String name;
     private Evaluator<E> evaluator;
-    private final Class<?> templateClass;
 
     private MLHistory timeSeries;
     protected final Random rng = new Random();
@@ -64,72 +71,10 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
 
     private Candidate<E> bestCandidate;
 
-    public AbstractAlgorithm(Class<?> templateClass, Evaluator<E> evaluator, String name) {
+    public AbstractAlgorithm(CandidateFactory<E> candidateFactory, Evaluator<E> evaluator, String name) {
         this.name = name;
-        this.templateClass = templateClass;
+        this.candidateFactory = candidateFactory;
         this.evaluator = evaluator;
-        this.timeSeries = new MLHistory();
-    }
-
-    protected abstract void singleIteration();
-
-    protected abstract Candidate<E> subInit();
-
-    protected abstract Candidate<E> subInit(List<E> seeds);
-
-    /**
-     * Evaluates the cost of the given candidate and returns it This is the same
-     * as to call getEvaluator().evaluate(candidate) Note: This call does not
-     * update the candidates affiliated cost.
-     *
-     * @param candidate the candidate to evaluate
-     * @return the candidates cost
-     */
-    public double evaluate(Candidate<E> candidate) {
-        return getEvaluator().evaluate(candidate.getElements());
-    }
-
-    /**
-     * Evaluates and updates the cost of the given candidate. This is the same
-     * as to call candidate.setCost(getEvaluator().evaluate(candidate))
-     *
-     * @param candidate the candidate to evaluate
-     * @return the updated candidate instance
-     */
-    public Candidate<E> evaluateAndUpdate(Candidate<E> candidate) {
-        candidate.setCost(getEvaluator().evaluate(candidate.getElements()));
-        return candidate;
-    }
-
-    /**
-     * Creates and returns a new candidate. Uses reflection to construct a new
-     * instance of the template class
-     *
-     * @return a new Candidate instance initialized with random values
-     */
-    public Candidate<E> newCandidate() {
-        try {
-            Constructor<?> constructor = templateClass.getConstructor(int.class);
-            Candidate<E> newInstance = (Candidate) constructor.newInstance(getEvaluator().getDimension());
-            return evaluateAndUpdate(newInstance);
-        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Logger.getLogger(AbstractAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    public Candidate<E> newCandidate(E e) {
-        try {
-            Constructor<?> constructor = templateClass.getConstructor(e.getClass());
-            Candidate<E> newInstance = (Candidate) constructor.newInstance(e);
-            return evaluateAndUpdate(newInstance);
-        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Logger.getLogger(AbstractAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    public void clearHistory() {
         this.timeSeries = new MLHistory();
     }
 
@@ -139,18 +84,60 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
     }
 
     public final void init(List<E> seeds) {
-        this.bestCandidate = null;
-        if (seeds == null || seeds.isEmpty()) {
+        if (seeds == null) {
+            init();
+        } else if (seeds.isEmpty()) {
             init();
         } else {
+            this.bestCandidate = null;
             setBestCandidateIfBetter(subInit(seeds));
         }
+    }
+
+    protected abstract Candidate<E> subInit();
+
+    protected abstract Candidate<E> subInit(List<E> seeds);
+
+    protected abstract void singleIteration();
+
+    /**
+     * Evaluates the cost of the given candidate and returns it This is the same
+     * as to call getEvaluator().evaluate(candidate) Note: This call does not
+     * update the candidates affiliated cost.
+     *
+     * @param candidate the candidate to evaluate
+     * @return the candidates cost
+     */
+    public Candidate<E> evaluate(Candidate<E> candidate) {
+        return getEvaluator().evaluate(candidate);
+    }
+
+    public List<Candidate<E>> evaluateAll(List<Candidate<E>> candidates) {
+        return getEvaluator().evaluateAll(candidates);
+    }
+
+    /**
+     * Creates and returns a new candidate. Uses reflection to construct a new
+     * instance of the template class
+     *
+     * @return a new Candidate instance initialized with random values
+     */
+    public Candidate<E> randomCandidate() {
+        return candidateFactory.generateRandom(getEvaluator().getDimension());
+    }
+
+    public Candidate<E> generateFromElements(E e) {
+        return candidateFactory.generateFromElements(e);
+    }
+
+    public void clearHistory() {
+        this.timeSeries = new MLHistory();
     }
 
     public synchronized Candidate<E> getBestCandidate() {
         return bestCandidate.copy();
     }
-    
+
     public synchronized double getBestCost() {
         return bestCandidate.getCost();
     }
@@ -188,7 +175,7 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
         while (!terminate) {
             long start = System.nanoTime();
             singleIteration();
-            double end = (double)(System.nanoTime()-start)/1000000000;
+            double end = (double) (System.nanoTime() - start) / 1000000000;
             timeElapsed = (System.currentTimeMillis() - t0);
             bestCost = getBestCandidate().getCost();
             numIterations++;
@@ -199,36 +186,35 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
                 }
             }
         }
-
         return new CandidateSolution(getBestCandidate(), getBestCandidate().getCost(), numIterations, timeElapsed);
     }
 
-//    /**
-//     * Writes the MLHistory data to file. If the directory does not exist, a new
-//     * one will be created.
-//     *
-//     * @param dir the directory
-//     * @param fileName the name of the file
-//     */
-//    public void dumpHistoryToFile(String dir, String fileName) {
-//        File file = new File(dir);
-//        if (!file.exists()) {
-//            file.mkdir();
-//        }
-//        StringBuilder sb = new StringBuilder();
-//        try (
-//                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dir + "//" + fileName)))) {
-//            for (int i = 0; i < series; i++) {
-//                sb.append(history.getIterations()[i]).append("\t").append(history.getTimestamps()[i]).append("\t").append(history.getCosts()[i]).append("\n");
-//            }
-//            bw.write(sb.toString());
-//            bw.flush();
-//        } catch (FileNotFoundException ex) {
-//            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (IOException ex) {
-//            Logger.getLogger(Algorithm.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
+    /**
+     * Writes the MLHistory data to file. If the directory does not exist, a new
+     * one will be created.
+     *
+     * @param dir the directory
+     * @param fileName the name of the file
+     */
+    public void dumpHistoryToFile(String dir, String fileName) {
+        File file = new File(dir);
+        if (!file.exists()) {
+            file.mkdir();
+        }
+        StringBuilder sb = new StringBuilder();
+        try (
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dir + "//" + fileName)))) {
+            for (int i = 0; i < timeSeries.size(); i++) {
+                sb.append(timeSeries.getIterations()[i]).append("\t").append(timeSeries.getTimestamps()[i]).append("\t").append(timeSeries.getCosts()[i]).append("\n");
+            }
+            bw.write(sb.toString());
+            bw.flush();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(AbstractAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(AbstractAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 //    public void optimizeFreeParameters(double error, long timeOut) {
 //        DoubleArray freeParameters = getFreeParameters();
 //        AlgorithmOptimizer optimizer = new AlgorithmOptimizer(this);
@@ -250,6 +236,7 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
 //        frame.pack();
 //
 //    }
+
     public XYSeries getSeries() {
         XYSeries series = new XYSeries(getName());
         double[] timestamps = timeSeries.getTimestamps();
@@ -258,6 +245,14 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
             series.add(timestamps[i], costs[i]);
         }
         return series;
+    }
+
+    public CandidateFactory<E> getCandidateFactory() {
+        return candidateFactory;
+    }
+
+    public int getDimension() {
+        return evaluator.getDimension();
     }
 
     public Evaluator<E> getEvaluator() {
@@ -274,10 +269,6 @@ public abstract class AbstractAlgorithm<E> implements Serializable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getDimension() {
-        return evaluator.getDimension();
     }
 
     @Override

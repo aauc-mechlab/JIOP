@@ -24,7 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.hials.jiop.physical;
+package no.hials.jiop.physical.sa;
 
 /**
  *

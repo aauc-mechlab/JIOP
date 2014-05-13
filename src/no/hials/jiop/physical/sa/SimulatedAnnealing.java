@@ -23,13 +23,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.physical;
+package no.hials.jiop.physical.sa;
 
 import java.util.List;
 import no.hials.jiop.AbstractAlgorithm;
 import no.hials.jiop.Evaluator;
 import no.hials.jiop.candidates.Candidate;
-import no.hials.jiop.candidates.NumericCandidate;
+import no.hials.jiop.factories.CandidateFactory;
 
 /**
  *
@@ -41,40 +41,38 @@ public class SimulatedAnnealing<E> extends AbstractAlgorithm<E> {
     private double startingTemperature;
     private double temperature, alpha;
     private Candidate<E> current;
-    
+
     private AnnealingSchedule schedule;
 
-    public SimulatedAnnealing(Class<?> clazz, double startingTemperature, double alpha, Evaluator<E> evaluator, String name) {
-        super(clazz, evaluator, name);
-        this.startingTemperature = startingTemperature;
-        this.alpha = alpha;
-        this.schedule = new GeometricAnnealingSchedule(alpha);
+    public SimulatedAnnealing(double startingTemperature, double alpha, CandidateFactory<E> candidateFactory, Evaluator<E> evaluator) {
+        this(startingTemperature, alpha, candidateFactory, evaluator, "Simulated Annealing");
     }
 
-    public SimulatedAnnealing(Class<?> clazz, double startingTemperature, double alpha, Evaluator<E> evaluator) {
-        this(clazz, startingTemperature, alpha, evaluator, "Simulated Annealing");
+    public SimulatedAnnealing(double startingTemperature, double alpha, CandidateFactory<E> candidateFactory, Evaluator<E> evaluator, String name) {
+        super(candidateFactory, evaluator, name);
+        this.startingTemperature = startingTemperature;
+        this.alpha = alpha;
         this.schedule = new GeometricAnnealingSchedule(alpha);
     }
 
     @Override
     public Candidate<E> subInit() {
         this.temperature = startingTemperature;
-        this.current = (NumericCandidate<E>) newCandidate();
+        this.current = getCandidateFactory().generateRandom(getDimension());
         return current;
     }
 
     @Override
-    protected Candidate<E> subInit(List<E> seeds) {
+    public Candidate<E> subInit(List<E> seeds) {
         this.temperature = startingTemperature;
-        this.current = newCandidate(seeds.get(0));
-
+        this.current = getCandidateFactory().generateFromElements(seeds.get(0));
         return current;
     }
 
     @Override
     protected void singleIteration() {
         double prox = rng.nextDouble() * Math.abs(0.25 - 0.00001) + 0.00001;
-        Candidate<E> newSample = evaluateAndUpdate(current.neighbor(getBestCandidate().getCost()/20));
+        Candidate<E> newSample = evaluate(current.neighbor(getBestCandidate().getCost() / 5));
         if (doAccept(current, newSample)) {
             current = newSample;
         }

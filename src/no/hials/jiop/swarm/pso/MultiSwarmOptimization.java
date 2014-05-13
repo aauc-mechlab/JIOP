@@ -23,9 +23,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package no.hials.jiop.swarm;
+package no.hials.jiop.swarm.pso;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -33,15 +34,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.hials.jiop.AbstractAlgorithm;
 import no.hials.jiop.Evaluator;
+import no.hials.jiop.PopBasedAlgorithm;
 import no.hials.jiop.candidates.Candidate;
 import no.hials.jiop.candidates.NumericCandidate;
-import no.hials.jiop.candidates.ParticleCandidate;
+import no.hials.jiop.candidates.particles.ParticleCandidate;
+import no.hials.jiop.factories.NumericCandidateFactory;
+import no.hials.jiop.tuning.Optimizable;
+import no.hials.utilities.DoubleArray;
+import no.hials.utilities.NormUtil;
 
 /**
  *
  * @author Lars Ivar Hatledal
  */
-public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
+public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> implements PopBasedAlgorithm, Optimizable {
 
     private List<Swarm> swarms;
     public int numSwarms, numParticles;
@@ -49,15 +55,26 @@ public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
 
     boolean multiThreaded = false;
 
-    public MultiSwarmOptimization(Class<?> clazz, int numSwarms, int numParticles, Evaluator<E> evalutor, String name, boolean multiCore) {
-        super(clazz, evalutor, name);
+    public MultiSwarmOptimization(int numSwarms, int numParticles, NumericCandidateFactory<E> candidateFactory, Evaluator<E> evalutor, boolean multiThreaded) {
+        this(numSwarms, numParticles, candidateFactory, evalutor, multiThreaded ? "MultiThreaded Multi Swarm Optimization" : "SingleThreaded Multi Swarm Optimization", multiThreaded);
+    }
+
+    public MultiSwarmOptimization(int numSwarms, int numParticles, NumericCandidateFactory<E> candidateFactory, Evaluator<E> evalutor, String name, boolean multiCore) {
+        super(candidateFactory, evalutor, name);
         this.numSwarms = numSwarms;
         this.numParticles = numParticles;
         this.multiThreaded = multiCore;
     }
 
-    public MultiSwarmOptimization(Class<?> clazz, int numSwarms, int numParticles, Evaluator<E> evalutor, boolean multiThreaded) {
-        this(clazz, numSwarms, numParticles, evalutor, multiThreaded ? "MultiThreaded Multi Swarm Optimization" : "SingleThreaded Multi Swarm Optimization", multiThreaded);
+    public MultiSwarmOptimization(int numSwarms, int numParticles, double omega, double c1, double c2, double c3, double maxVel, NumericCandidateFactory<E> candidateFactory, Evaluator<E> evalutor, boolean multiThreaded) {
+        this(numSwarms, numParticles, omega, c1, c2, c3, maxVel, candidateFactory, evalutor, multiThreaded ? "MultiThreaded Multi Swarm Optimization" : "SingleThreaded Multi Swarm Optimization", multiThreaded);
+    }
+
+    public MultiSwarmOptimization(int numSwarms, int numParticles, double omega, double c1, double c2, double c3, double maxVel, NumericCandidateFactory<E> candidateFactory, Evaluator<E> evalutor, String name, boolean multiThreaded) {
+        super(candidateFactory, evalutor, name);
+        this.numSwarms = numSwarms;
+        this.numParticles = numParticles;
+        this.multiThreaded = multiThreaded;
     }
 
     @Override
@@ -65,12 +82,12 @@ public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
         Candidate<E> bestCandidate = null;
         this.swarms = new ArrayList<>(numSwarms);
         for (int i = 0; i < numSwarms; i++) {
-            Swarm swarm = new Swarm(numParticles);
+            Swarm swarm = new Swarm(evaluateAll(getCandidateFactory().generatePopulation(numParticles, getDimension())));
             if (bestCandidate == null) {
-                bestCandidate = (ParticleCandidate<E>) (swarm.get(0).copy());
+                bestCandidate = (swarm.get(0).copy());
             } else {
                 if (swarm.get(0).getCost() < bestCandidate.getCost()) {
-                    bestCandidate = (NumericCandidate<E>) (swarm.get(0).copy());
+                    bestCandidate = (swarm.get(0).copy());
                 }
             }
             swarms.add(swarm);
@@ -81,9 +98,10 @@ public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
     @Override
     public Candidate<E> subInit(List<E> seeds) {
         Candidate<E> bestCandidate = subInit();
-        double cost = getEvaluator().evaluate(seeds.get(0));
+        double cost = getEvaluator().getCost(seeds.get(0));
         if (cost < bestCandidate.getCost()) {
-            bestCandidate = newCandidate(seeds.get(0));
+            bestCandidate = generateFromElements(seeds.get(0));
+            bestCandidate.setCost(cost);
         }
         return bestCandidate;
     }
@@ -137,44 +155,56 @@ public class MultiSwarmOptimization<E> extends AbstractAlgorithm<E> {
                 particle.setVelocityAt(i, newVel);
             }
 
-            double cost = evaluate(particle);
-            particle.setCost(cost);
-            if (cost < particle.getLocalBest().getCost()) {
+            evaluate(particle);
+            if (particle.getCost() < particle.getLocalBest().getCost()) {
                 particle.setLocalBest((ParticleCandidate<E>) (particle).copy());
             }
-            if (cost < swarm.swarmBest.getCost()) {
+            if (particle.getCost() < swarm.swarmBest.getCost()) {
                 swarm.swarmBest = (ParticleCandidate<E>) (particle).copy();
                 setBestCandidateIfBetter(particle);
             }
         }
     }
 
-//    @Override
-//    public int getNumberOfFreeParameters() {
-//        return 5;
-//    }
-//
-//    @Override
-//    public void setFreeParameters(DoubleArray array) {
-//        this.omega = new NormUtil(1, 0, 1, 0.1).normalize(array.get(0));
-//        this.c1 = new NormUtil(1, 0, 2, 0.1).normalize(array.get(1));
-//        this.c2 = new NormUtil(1, 0, 2, 0.1).normalize(array.get(2));
-//        this.c3 = new NormUtil(1, 0, 2, 0.1).normalize(array.get(3));
-//        this.maxVel = new NormUtil(1, 0, 1, 0.1).normalize(array.get(4));
-//    }
-//
-//    @Override
-//    public DoubleArray getFreeParameters() {
-//        return new DoubleArray(omega, c1, c2, c3, maxVel);
-//    }
+    @Override
+    public double getAverageCost() {
+        double avgCost = 0;
+        for (Swarm swarm : swarms) {
+            for (Candidate<E> c : swarm) {
+                avgCost += c.getCost();
+            }
+        }
+        return avgCost;
+    }
+
+    @Override
+    public int getNumberOfFreeParameters() {
+        return 7;
+    }
+
+    @Override
+    public void setFreeParameters(double[] array) {
+        this.numSwarms = (int) new NormUtil(1, 0, 6, 2).normalize(array[0]);
+        this.numParticles = (int) new NormUtil(1, 0, 60, 10).normalize(array[1]);
+        this.omega = new NormUtil(1, 0, 1, 0.1).normalize(array[2]);
+        this.c1 = new NormUtil(1, 0, 2, 0.1).normalize(array[3]);
+        this.c2 = new NormUtil(1, 0, 2, 0.1).normalize(array[4]);
+        this.c3 = new NormUtil(1, 0, 2, 0.1).normalize(array[5]);
+        this.maxVel = new NormUtil(1, 0, 1, 0.1).normalize(array[6]);
+    }
+
+    @Override
+    public double[] getFreeParameters() {
+        return new double[]{numSwarms, numParticles, omega, c1, c2, c3, maxVel};
+    }
+
     private class Swarm extends ArrayList<ParticleCandidate<E>> {
 
         public ParticleCandidate<E> swarmBest;
 
-        public Swarm(int size) {
-            super(size);
-            for (int i = 0; i < size; i++) {
-                add((ParticleCandidate<E>) newCandidate());
+        public Swarm(Collection<? extends Candidate<E>> c) {
+            for (Candidate<E> candidate : c) {
+                add((ParticleCandidate<E>) candidate);
             }
             Collections.sort(this);
             swarmBest = (ParticleCandidate<E>) (get(0).copy());
