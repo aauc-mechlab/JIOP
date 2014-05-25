@@ -25,21 +25,28 @@
  */
 package no.hials.jiop;
 
+import no.hials.jiop.generic.Evaluator;
+import no.hials.jiop.generic.AlgorithmCollection;
+import no.hials.jiop.util.NormalizationUtility;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import no.hials.jiop.candidates.bacterium.DoubleArrayBacteriaFactory;
-import no.hials.jiop.candidates.particles.DoubleArrayParticleFactory;
-import no.hials.jiop.evolutionary.de.DifferentialEvolution;
-import no.hials.jiop.factories.DoubleArrayCandidateFactory;
-import no.hials.jiop.factories.DoubleListCandidateFactory;
-import no.hials.jiop.heuristic.amoeba.AmoebaOptimization;
-import no.hials.jiop.physical.sa.SimulatedAnnealing;
-import no.hials.jiop.swarm.abs.ArtificialBeeColony;
-import no.hials.jiop.swarm.bfo.BacterialForagingOptimization;
-import no.hials.jiop.swarm.pso.MultiSwarmOptimization;
-import no.hials.jiop.swarm.pso.ParticleSwarmOptimization;
-import no.hials.jiop.temination.TimeElapsedCriteria;
-import no.hials.utilities.NormUtil;
+import no.hials.jiop.generic.candidates.bacterium.DoubleArrayBacteriaFactory;
+import no.hials.jiop.generic.candidates.particles.DoubleArrayParticleFactory;
+import no.hials.jiop.generic.evolutionary.de.DifferentialEvolution;
+import no.hials.jiop.generic.evolutionary.ga.GeneticAlgorithm;
+import no.hials.jiop.generic.evolutionary.ga.crossover.DoubleArrayBlending;
+import no.hials.jiop.generic.evolutionary.ga.crossover.DoubleArrayCrossover;
+import no.hials.jiop.generic.evolutionary.ga.mutation.NeighborMutation;
+import no.hials.jiop.generic.evolutionary.ga.selection.StochasticUniversalSampling;
+import no.hials.jiop.generic.factories.DoubleArrayCandidateFactory;
+import no.hials.jiop.generic.factories.DoubleListCandidateFactory;
+import no.hials.jiop.generic.heuristic.amoeba.AmoebaOptimization;
+import no.hials.jiop.generic.physical.sa.SimulatedAnnealing;
+import no.hials.jiop.generic.swarm.abs.ArtificialBeeColony;
+import no.hials.jiop.generic.swarm.bfo.BacterialForagingOptimization;
+import no.hials.jiop.generic.swarm.pso.MultiSwarmOptimization;
+import no.hials.jiop.generic.swarm.pso.ParticleSwarmOptimization;
+import no.hials.jiop.generic.temination.TimeElapsedCriteria;
 
 /**
  * Main class
@@ -54,6 +61,8 @@ public class Main {
         Evaluator<List<Double>> deval2 = new Deval2(5);
         AlgorithmCollection<double[]> algorithms = new AlgorithmCollection<>();
 
+        algorithms.add(new GeneticAlgorithm(80, 0.1, new StochasticUniversalSampling(0.5), new DoubleArrayBlending(0.5), new NeighborMutation(0.4, 0.4), new DoubleArrayCandidateFactory(), deval, "GA"));
+        algorithms.add(new GeneticAlgorithm(80, 0.1, new StochasticUniversalSampling(0.5), new DoubleArrayCrossover(0.5, 2), new NeighborMutation(0.4, 0.4), new DoubleArrayCandidateFactory(), deval, "GA1"));
         algorithms.add(new DifferentialEvolution(30, 0.9, 0.7, new DoubleArrayCandidateFactory(), deval, false));
         algorithms.add(new DifferentialEvolution(30, 0.9, 0.7, new DoubleListCandidateFactory(), deval2, "DE -List", false));
         algorithms.add(new DifferentialEvolution(30, 0.9, 0.7, new DoubleArrayCandidateFactory(), deval, true));
@@ -67,11 +76,6 @@ public class Main {
         algorithms.add(new SimulatedAnnealing(20, 0.995, new DoubleArrayCandidateFactory(), deval));
         algorithms.add(new BacterialForagingOptimization(100, new DoubleArrayBacteriaFactory(), deval, false));
         algorithms.add(new BacterialForagingOptimization(100, new DoubleArrayBacteriaFactory(), deval, true));
-//        DifferentialEvolution de = new DifferentialEvolution(DoubleArrayCandidate.class, 30, 0.9, 0.7, deval, "DE - Optimized", false);
-//        CandidateSolution optimize = new AlgorithmOptimizer(de).optimize(0, 20000);
-//        de.setFreeParameters((double[]) optimize.solution.getElements());
-//        System.out.println(Arrays.toString(de.getFreeParameters()));
-//        algorithms.add(de);
 
         algorithms.warmUp(100l);
         algorithms.computeAll(new TimeElapsedCriteria(100l));
@@ -89,7 +93,7 @@ public class Main {
         public double getCost(double[] elements) {
             double cost = 0;
             for (int i = 0; i < elements.length; i++) {
-                double xi = new NormUtil(1, 0, 10, -10).normalize(elements[i]);
+                double xi = new NormalizationUtility(1, 0, 10, -10).normalize(elements[i]);
                 cost += (xi * xi) - (10 * Math.cos(2 * Math.PI * xi)) + 10;
             }
 
@@ -108,7 +112,7 @@ public class Main {
         public double getCost(List<Double> elements) {
             double cost = 0;
             for (int i = 0; i < elements.size(); i++) {
-                double xi = new NormUtil(1, 0, 10, -10).normalize(elements.get(i));
+                double xi = new NormalizationUtility(1, 0, 10, -10).normalize(elements.get(i));
                 cost += (xi * xi) - (10 * Math.cos(2 * Math.PI * xi)) + 10;
             }
 

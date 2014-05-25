@@ -30,38 +30,40 @@ import no.hials.jiop.history.MLHistory.MLHistoryPoint;
 
 /**
  * Class to store the performance history of an algorithm
+ *
  * @author Lars Ivar Hatledal
  */
 public class MLHistory extends ArrayList<MLHistoryPoint> {
-    
-    private double tOffset = 0;
+
+    private long tOffset = 0;
     private int iteration = 0;
-    
+
     /**
      * Adds a new element to the list
+     *
      * @param cost the cost
      * @param timestamp the time it took to get the solution
      */
-    public void add (double timestamp, double cost) {
+    public void add(long timestamp, double cost) {
         add(new MLHistoryPoint(timestamp + tOffset, cost, iteration++));
         tOffset += timestamp;
     }
 
     @Override
     public void clear() {
-        super.clear(); 
-        tOffset  = 0;
+        super.clear();
+        tOffset = 0;
         iteration = 0;
     }
-    
+
     public double[] getTimestamps() {
         double[] stamps = new double[size()];
         for (int i = 0; i < size(); i++) {
-            stamps[i] = get(i).timestamp;
+            stamps[i] = ((double) get(i).timestamp) / 1000000 ;
         }
         return stamps;
     }
-    
+
     public double[] getCosts() {
         double[] costs = new double[size()];
         for (int i = 0; i < size(); i++) {
@@ -69,8 +71,8 @@ public class MLHistory extends ArrayList<MLHistoryPoint> {
         }
         return costs;
     }
-    
-     public int[] getIterations() {
+
+    public int[] getIterations() {
         int[] iterations = new int[size()];
         for (int i = 0; i < size(); i++) {
             iterations[i] = get(i).iteration;
@@ -92,21 +94,21 @@ public class MLHistory extends ArrayList<MLHistoryPoint> {
 
     protected class MLHistoryPoint {
 
-    public final double cost;
-    public final int iteration;
-    public final double timestamp;
+        public final double cost;
+        public final int iteration;
+        public final long timestamp;
 
-        public MLHistoryPoint(double timestamp, double cost, int iteration) {
+        public MLHistoryPoint(long timestamp, double cost, int iteration) {
             this.cost = cost;
             this.iteration = iteration;
             this.timestamp = timestamp;
         }
 
-    @Override
-    public String toString() {
-        return "MLHistoryPoint{" + "cost=" + cost + ", timestamp=" + timestamp + '}';
+        @Override
+        public String toString() {
+            return "MLHistoryPoint{" + "cost=" + cost + ", timestamp=" + timestamp + '}';
+        }
+
     }
 
-}
-    
 }

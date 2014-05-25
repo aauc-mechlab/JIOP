@@ -16,4 +16,5 @@ nbproject/
 dist/
 *.xml
 *.mf
+*.csv
 
