@@ -34,10 +34,11 @@ import no.hials.jiop.generic.temination.TimeElapsedCriteria;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 /**
- * A collection of algorithms. Useful for comparsion plots
+ * A collection of algorithms. Useful for comparison plots
  * @author Lars Ivar Hatledal
  */
 public class AlgorithmCollection<E> extends ArrayList<Algorithm<E>> {
@@ -47,7 +48,7 @@ public class AlgorithmCollection<E> extends ArrayList<Algorithm<E>> {
     /**
      * Invoking this methods runs each algorithm the specified amount of time.
      * Used for warming up the JVM. Important if you want to get correct
-     * comparision values.
+     * comparison values.
      *
      * @param millisPerAlgorithm how long each algorithm should be run
      */
@@ -101,7 +102,7 @@ public class AlgorithmCollection<E> extends ArrayList<Algorithm<E>> {
             JFrame frame = new JFrame("Results");
             final JFreeChart chart = ChartFactory.createXYLineChart("", "Time[ms]", "Cost", xySeriesCollection);
             final ChartPanel chartPanel = new ChartPanel(chart);
-            chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+            //chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
             frame.setContentPane(chartPanel);
             frame.setVisible(true);
             frame.pack();

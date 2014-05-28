@@ -75,7 +75,7 @@ public class SimulatedAnnealing<E> extends Algorithm<E> implements Optimizable {
     protected void singleIteration() {
         double prox = rng.nextDouble() * Math.abs(0.25 - 0.00001) + 0.00001;
         double dyn = (getBestCandidate().getCost() / 5);
-        Candidate<E> newSample = evaluate(current.neighbor(prox));
+        Candidate<E> newSample = evaluate(current.neighbor(dyn));
         if (doAccept(current, newSample)) {
             current = newSample;
         }

@@ -77,7 +77,8 @@ public class Main {
         algorithms.add(new BacterialForagingOptimization(100, new DoubleArrayBacteriaFactory(), deval, false));
         algorithms.add(new BacterialForagingOptimization(100, new DoubleArrayBacteriaFactory(), deval, true));
 
-        algorithms.warmUp(100l);
+
+        algorithms.warmUp(200l);
         algorithms.computeAll(new TimeElapsedCriteria(100l));
         algorithms.plotResults();
 

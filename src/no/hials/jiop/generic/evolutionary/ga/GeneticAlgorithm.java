@@ -48,6 +48,10 @@ public class GeneticAlgorithm<E> extends GeneralPopulationBasedAlgorithm<E> impl
     private AbstractMutationOperator<E> mutation;
 
     private double elitism;
+    
+    public GeneticAlgorithm(int size, double elitism, AbstractSelectionOperator selection, AbstractCrossoverOperator<E> crossover, AbstractMutationOperator mutation, CandidateFactory<E> candidateFactory, Evaluator<E> evaluator) {
+        this(size, elitism, selection, crossover, mutation, candidateFactory, evaluator, "Genetic Algorithm");
+    }
 
     public GeneticAlgorithm(int size, double elitism, AbstractSelectionOperator selection, AbstractCrossoverOperator<E> crossover, AbstractMutationOperator mutation, CandidateFactory<E> candidateFactory, Evaluator<E> evaluator, String name) {
         super(size, candidateFactory, evaluator, name);
